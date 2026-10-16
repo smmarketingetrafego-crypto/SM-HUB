@@ -10,33 +10,435 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as AgentesIaRouteImport } from './routes/agentes-ia'
+import { Route as AtualizacoesRouteImport } from './routes/atualizacoes'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as BriefingsRouteImport } from './routes/briefings'
+import { Route as CalendarioConteudoRouteImport } from './routes/calendario-conteudo'
+import { Route as ClientesRouteImport } from './routes/clientes'
+import { Route as ColaboradoresRouteImport } from './routes/colaboradores'
+import { Route as ConectarResendRouteImport } from './routes/conectar-resend'
+import { Route as ConfiguracoesRouteImport } from './routes/configuracoes'
+import { Route as ConquistasRouteImport } from './routes/conquistas'
+import { Route as ConteudoRouteImport } from './routes/conteudo'
+import { Route as ConteudosRouteImport } from './routes/conteudos'
+import { Route as FinanceiroRouteImport } from './routes/financeiro'
+import { Route as LeadDetailsRouteImport } from './routes/lead-details'
+import { Route as LeadsRouteImport } from './routes/leads'
+import { Route as MetasRouteImport } from './routes/metas'
+import { Route as PipelinesRouteImport } from './routes/pipelines'
+import { Route as ProdutosRouteImport } from './routes/produtos'
+import { Route as ProjetosRouteImport } from './routes/projetos'
+import { Route as PropostasRouteImport } from './routes/propostas'
+import { Route as RelatoriosRouteImport } from './routes/relatorios'
+import { Route as TarefasRouteImport } from './routes/tarefas'
+import { Route as TutoriaisRouteImport } from './routes/tutoriais'
+import { Route as WhatsappRouteImport } from './routes/whatsapp'
+import { Route as BriefingIdRouteImport } from './routes/briefing.$id'
+import { Route as PortalIdRouteImport } from './routes/portal.$id'
+import { Route as PropostaIdRouteImport } from './routes/proposta.$id'
+import { Route as AuthenticatedMetaAdsConexaoRouteImport } from './routes/_authenticated/meta-ads/conexao'
+import { Route as ApiAuthCallbackRouteImport } from './routes/api.auth.callback'
+import { Route as ApiAuthSocialCallbackRouteImport } from './routes/api.auth.social-callback'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AgentesIaRoute = AgentesIaRouteImport.update({
+  id: '/agentes-ia',
+  path: '/agentes-ia',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AtualizacoesRoute = AtualizacoesRouteImport.update({
+  id: '/atualizacoes',
+  path: '/atualizacoes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BriefingsRoute = BriefingsRouteImport.update({
+  id: '/briefings',
+  path: '/briefings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CalendarioConteudoRoute = CalendarioConteudoRouteImport.update({
+  id: '/calendario-conteudo',
+  path: '/calendario-conteudo',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ClientesRoute = ClientesRouteImport.update({
+  id: '/clientes',
+  path: '/clientes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ColaboradoresRoute = ColaboradoresRouteImport.update({
+  id: '/colaboradores',
+  path: '/colaboradores',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConectarResendRoute = ConectarResendRouteImport.update({
+  id: '/conectar-resend',
+  path: '/conectar-resend',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConfiguracoesRoute = ConfiguracoesRouteImport.update({
+  id: '/configuracoes',
+  path: '/configuracoes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConquistasRoute = ConquistasRouteImport.update({
+  id: '/conquistas',
+  path: '/conquistas',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConteudoRoute = ConteudoRouteImport.update({
+  id: '/conteudo',
+  path: '/conteudo',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConteudosRoute = ConteudosRouteImport.update({
+  id: '/conteudos',
+  path: '/conteudos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FinanceiroRoute = FinanceiroRouteImport.update({
+  id: '/financeiro',
+  path: '/financeiro',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LeadDetailsRoute = LeadDetailsRouteImport.update({
+  id: '/lead-details',
+  path: '/lead-details',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LeadsRoute = LeadsRouteImport.update({
+  id: '/leads',
+  path: '/leads',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MetasRoute = MetasRouteImport.update({
+  id: '/metas',
+  path: '/metas',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PipelinesRoute = PipelinesRouteImport.update({
+  id: '/pipelines',
+  path: '/pipelines',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProdutosRoute = ProdutosRouteImport.update({
+  id: '/produtos',
+  path: '/produtos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProjetosRoute = ProjetosRouteImport.update({
+  id: '/projetos',
+  path: '/projetos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PropostasRoute = PropostasRouteImport.update({
+  id: '/propostas',
+  path: '/propostas',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RelatoriosRoute = RelatoriosRouteImport.update({
+  id: '/relatorios',
+  path: '/relatorios',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TarefasRoute = TarefasRouteImport.update({
+  id: '/tarefas',
+  path: '/tarefas',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TutoriaisRoute = TutoriaisRouteImport.update({
+  id: '/tutoriais',
+  path: '/tutoriais',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WhatsappRoute = WhatsappRouteImport.update({
+  id: '/whatsapp',
+  path: '/whatsapp',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BriefingIdRoute = BriefingIdRouteImport.update({
+  id: '/briefing/$id',
+  path: '/briefing/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PortalIdRoute = PortalIdRouteImport.update({
+  id: '/portal/$id',
+  path: '/portal/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PropostaIdRoute = PropostaIdRouteImport.update({
+  id: '/proposta/$id',
+  path: '/proposta/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedMetaAdsConexaoRoute =
+  AuthenticatedMetaAdsConexaoRouteImport.update({
+    id: '/meta-ads/conexao',
+    path: '/meta-ads/conexao',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const ApiAuthCallbackRoute = ApiAuthCallbackRouteImport.update({
+  id: '/api/auth/callback',
+  path: '/api/auth/callback',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthSocialCallbackRoute = ApiAuthSocialCallbackRouteImport.update({
+  id: '/api/auth/social-callback',
+  path: '/api/auth/social-callback',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/agentes-ia': typeof AgentesIaRoute
+  '/atualizacoes': typeof AtualizacoesRoute
+  '/auth': typeof AuthRoute
+  '/briefings': typeof BriefingsRoute
+  '/calendario-conteudo': typeof CalendarioConteudoRoute
+  '/clientes': typeof ClientesRoute
+  '/colaboradores': typeof ColaboradoresRoute
+  '/conectar-resend': typeof ConectarResendRoute
+  '/configuracoes': typeof ConfiguracoesRoute
+  '/conquistas': typeof ConquistasRoute
+  '/conteudo': typeof ConteudoRoute
+  '/conteudos': typeof ConteudosRoute
+  '/financeiro': typeof FinanceiroRoute
+  '/lead-details': typeof LeadDetailsRoute
+  '/leads': typeof LeadsRoute
+  '/metas': typeof MetasRoute
+  '/pipelines': typeof PipelinesRoute
+  '/produtos': typeof ProdutosRoute
+  '/projetos': typeof ProjetosRoute
+  '/propostas': typeof PropostasRoute
+  '/relatorios': typeof RelatoriosRoute
+  '/tarefas': typeof TarefasRoute
+  '/tutoriais': typeof TutoriaisRoute
+  '/whatsapp': typeof WhatsappRoute
+  '/briefing/$id': typeof BriefingIdRoute
+  '/portal/$id': typeof PortalIdRoute
+  '/proposta/$id': typeof PropostaIdRoute
+  '/meta-ads/conexao': typeof AuthenticatedMetaAdsConexaoRoute
+  '/api/auth/callback': typeof ApiAuthCallbackRoute
+  '/api/auth/social-callback': typeof ApiAuthSocialCallbackRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/agentes-ia': typeof AgentesIaRoute
+  '/atualizacoes': typeof AtualizacoesRoute
+  '/auth': typeof AuthRoute
+  '/briefings': typeof BriefingsRoute
+  '/calendario-conteudo': typeof CalendarioConteudoRoute
+  '/clientes': typeof ClientesRoute
+  '/colaboradores': typeof ColaboradoresRoute
+  '/conectar-resend': typeof ConectarResendRoute
+  '/configuracoes': typeof ConfiguracoesRoute
+  '/conquistas': typeof ConquistasRoute
+  '/conteudo': typeof ConteudoRoute
+  '/conteudos': typeof ConteudosRoute
+  '/financeiro': typeof FinanceiroRoute
+  '/lead-details': typeof LeadDetailsRoute
+  '/leads': typeof LeadsRoute
+  '/metas': typeof MetasRoute
+  '/pipelines': typeof PipelinesRoute
+  '/produtos': typeof ProdutosRoute
+  '/projetos': typeof ProjetosRoute
+  '/propostas': typeof PropostasRoute
+  '/relatorios': typeof RelatoriosRoute
+  '/tarefas': typeof TarefasRoute
+  '/tutoriais': typeof TutoriaisRoute
+  '/whatsapp': typeof WhatsappRoute
+  '/briefing/$id': typeof BriefingIdRoute
+  '/portal/$id': typeof PortalIdRoute
+  '/proposta/$id': typeof PropostaIdRoute
+  '/meta-ads/conexao': typeof AuthenticatedMetaAdsConexaoRoute
+  '/api/auth/callback': typeof ApiAuthCallbackRoute
+  '/api/auth/social-callback': typeof ApiAuthSocialCallbackRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/agentes-ia': typeof AgentesIaRoute
+  '/atualizacoes': typeof AtualizacoesRoute
+  '/auth': typeof AuthRoute
+  '/briefings': typeof BriefingsRoute
+  '/calendario-conteudo': typeof CalendarioConteudoRoute
+  '/clientes': typeof ClientesRoute
+  '/colaboradores': typeof ColaboradoresRoute
+  '/conectar-resend': typeof ConectarResendRoute
+  '/configuracoes': typeof ConfiguracoesRoute
+  '/conquistas': typeof ConquistasRoute
+  '/conteudo': typeof ConteudoRoute
+  '/conteudos': typeof ConteudosRoute
+  '/financeiro': typeof FinanceiroRoute
+  '/lead-details': typeof LeadDetailsRoute
+  '/leads': typeof LeadsRoute
+  '/metas': typeof MetasRoute
+  '/pipelines': typeof PipelinesRoute
+  '/produtos': typeof ProdutosRoute
+  '/projetos': typeof ProjetosRoute
+  '/propostas': typeof PropostasRoute
+  '/relatorios': typeof RelatoriosRoute
+  '/tarefas': typeof TarefasRoute
+  '/tutoriais': typeof TutoriaisRoute
+  '/whatsapp': typeof WhatsappRoute
+  '/briefing/$id': typeof BriefingIdRoute
+  '/portal/$id': typeof PortalIdRoute
+  '/proposta/$id': typeof PropostaIdRoute
+  '/_authenticated/meta-ads/conexao': typeof AuthenticatedMetaAdsConexaoRoute
+  '/api/auth/callback': typeof ApiAuthCallbackRoute
+  '/api/auth/social-callback': typeof ApiAuthSocialCallbackRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/agentes-ia'
+    | '/atualizacoes'
+    | '/auth'
+    | '/briefings'
+    | '/calendario-conteudo'
+    | '/clientes'
+    | '/colaboradores'
+    | '/conectar-resend'
+    | '/configuracoes'
+    | '/conquistas'
+    | '/conteudo'
+    | '/conteudos'
+    | '/financeiro'
+    | '/lead-details'
+    | '/leads'
+    | '/metas'
+    | '/pipelines'
+    | '/produtos'
+    | '/projetos'
+    | '/propostas'
+    | '/relatorios'
+    | '/tarefas'
+    | '/tutoriais'
+    | '/whatsapp'
+    | '/briefing/$id'
+    | '/portal/$id'
+    | '/proposta/$id'
+    | '/meta-ads/conexao'
+    | '/api/auth/callback'
+    | '/api/auth/social-callback'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/agentes-ia'
+    | '/atualizacoes'
+    | '/auth'
+    | '/briefings'
+    | '/calendario-conteudo'
+    | '/clientes'
+    | '/colaboradores'
+    | '/conectar-resend'
+    | '/configuracoes'
+    | '/conquistas'
+    | '/conteudo'
+    | '/conteudos'
+    | '/financeiro'
+    | '/lead-details'
+    | '/leads'
+    | '/metas'
+    | '/pipelines'
+    | '/produtos'
+    | '/projetos'
+    | '/propostas'
+    | '/relatorios'
+    | '/tarefas'
+    | '/tutoriais'
+    | '/whatsapp'
+    | '/briefing/$id'
+    | '/portal/$id'
+    | '/proposta/$id'
+    | '/meta-ads/conexao'
+    | '/api/auth/callback'
+    | '/api/auth/social-callback'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/agentes-ia'
+    | '/atualizacoes'
+    | '/auth'
+    | '/briefings'
+    | '/calendario-conteudo'
+    | '/clientes'
+    | '/colaboradores'
+    | '/conectar-resend'
+    | '/configuracoes'
+    | '/conquistas'
+    | '/conteudo'
+    | '/conteudos'
+    | '/financeiro'
+    | '/lead-details'
+    | '/leads'
+    | '/metas'
+    | '/pipelines'
+    | '/produtos'
+    | '/projetos'
+    | '/propostas'
+    | '/relatorios'
+    | '/tarefas'
+    | '/tutoriais'
+    | '/whatsapp'
+    | '/briefing/$id'
+    | '/portal/$id'
+    | '/proposta/$id'
+    | '/_authenticated/meta-ads/conexao'
+    | '/api/auth/callback'
+    | '/api/auth/social-callback'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AgentesIaRoute: typeof AgentesIaRoute
+  AtualizacoesRoute: typeof AtualizacoesRoute
+  AuthRoute: typeof AuthRoute
+  BriefingsRoute: typeof BriefingsRoute
+  CalendarioConteudoRoute: typeof CalendarioConteudoRoute
+  ClientesRoute: typeof ClientesRoute
+  ColaboradoresRoute: typeof ColaboradoresRoute
+  ConectarResendRoute: typeof ConectarResendRoute
+  ConfiguracoesRoute: typeof ConfiguracoesRoute
+  ConquistasRoute: typeof ConquistasRoute
+  ConteudoRoute: typeof ConteudoRoute
+  ConteudosRoute: typeof ConteudosRoute
+  FinanceiroRoute: typeof FinanceiroRoute
+  LeadDetailsRoute: typeof LeadDetailsRoute
+  LeadsRoute: typeof LeadsRoute
+  MetasRoute: typeof MetasRoute
+  PipelinesRoute: typeof PipelinesRoute
+  ProdutosRoute: typeof ProdutosRoute
+  ProjetosRoute: typeof ProjetosRoute
+  PropostasRoute: typeof PropostasRoute
+  RelatoriosRoute: typeof RelatoriosRoute
+  TarefasRoute: typeof TarefasRoute
+  TutoriaisRoute: typeof TutoriaisRoute
+  WhatsappRoute: typeof WhatsappRoute
+  BriefingIdRoute: typeof BriefingIdRoute
+  PortalIdRoute: typeof PortalIdRoute
+  PropostaIdRoute: typeof PropostaIdRoute
+  ApiAuthCallbackRoute: typeof ApiAuthCallbackRoute
+  ApiAuthSocialCallbackRoute: typeof ApiAuthSocialCallbackRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +450,269 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/agentes-ia': {
+      id: '/agentes-ia'
+      path: '/agentes-ia'
+      fullPath: '/agentes-ia'
+      preLoaderRoute: typeof AgentesIaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/atualizacoes': {
+      id: '/atualizacoes'
+      path: '/atualizacoes'
+      fullPath: '/atualizacoes'
+      preLoaderRoute: typeof AtualizacoesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/briefings': {
+      id: '/briefings'
+      path: '/briefings'
+      fullPath: '/briefings'
+      preLoaderRoute: typeof BriefingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/calendario-conteudo': {
+      id: '/calendario-conteudo'
+      path: '/calendario-conteudo'
+      fullPath: '/calendario-conteudo'
+      preLoaderRoute: typeof CalendarioConteudoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/clientes': {
+      id: '/clientes'
+      path: '/clientes'
+      fullPath: '/clientes'
+      preLoaderRoute: typeof ClientesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/colaboradores': {
+      id: '/colaboradores'
+      path: '/colaboradores'
+      fullPath: '/colaboradores'
+      preLoaderRoute: typeof ColaboradoresRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/conectar-resend': {
+      id: '/conectar-resend'
+      path: '/conectar-resend'
+      fullPath: '/conectar-resend'
+      preLoaderRoute: typeof ConectarResendRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/configuracoes': {
+      id: '/configuracoes'
+      path: '/configuracoes'
+      fullPath: '/configuracoes'
+      preLoaderRoute: typeof ConfiguracoesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/conquistas': {
+      id: '/conquistas'
+      path: '/conquistas'
+      fullPath: '/conquistas'
+      preLoaderRoute: typeof ConquistasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/conteudo': {
+      id: '/conteudo'
+      path: '/conteudo'
+      fullPath: '/conteudo'
+      preLoaderRoute: typeof ConteudoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/conteudos': {
+      id: '/conteudos'
+      path: '/conteudos'
+      fullPath: '/conteudos'
+      preLoaderRoute: typeof ConteudosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/financeiro': {
+      id: '/financeiro'
+      path: '/financeiro'
+      fullPath: '/financeiro'
+      preLoaderRoute: typeof FinanceiroRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lead-details': {
+      id: '/lead-details'
+      path: '/lead-details'
+      fullPath: '/lead-details'
+      preLoaderRoute: typeof LeadDetailsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/leads': {
+      id: '/leads'
+      path: '/leads'
+      fullPath: '/leads'
+      preLoaderRoute: typeof LeadsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/metas': {
+      id: '/metas'
+      path: '/metas'
+      fullPath: '/metas'
+      preLoaderRoute: typeof MetasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pipelines': {
+      id: '/pipelines'
+      path: '/pipelines'
+      fullPath: '/pipelines'
+      preLoaderRoute: typeof PipelinesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/produtos': {
+      id: '/produtos'
+      path: '/produtos'
+      fullPath: '/produtos'
+      preLoaderRoute: typeof ProdutosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/projetos': {
+      id: '/projetos'
+      path: '/projetos'
+      fullPath: '/projetos'
+      preLoaderRoute: typeof ProjetosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/propostas': {
+      id: '/propostas'
+      path: '/propostas'
+      fullPath: '/propostas'
+      preLoaderRoute: typeof PropostasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/relatorios': {
+      id: '/relatorios'
+      path: '/relatorios'
+      fullPath: '/relatorios'
+      preLoaderRoute: typeof RelatoriosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tarefas': {
+      id: '/tarefas'
+      path: '/tarefas'
+      fullPath: '/tarefas'
+      preLoaderRoute: typeof TarefasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tutoriais': {
+      id: '/tutoriais'
+      path: '/tutoriais'
+      fullPath: '/tutoriais'
+      preLoaderRoute: typeof TutoriaisRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/whatsapp': {
+      id: '/whatsapp'
+      path: '/whatsapp'
+      fullPath: '/whatsapp'
+      preLoaderRoute: typeof WhatsappRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/briefing/$id': {
+      id: '/briefing/$id'
+      path: '/briefing/$id'
+      fullPath: '/briefing/$id'
+      preLoaderRoute: typeof BriefingIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/portal/$id': {
+      id: '/portal/$id'
+      path: '/portal/$id'
+      fullPath: '/portal/$id'
+      preLoaderRoute: typeof PortalIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/proposta/$id': {
+      id: '/proposta/$id'
+      path: '/proposta/$id'
+      fullPath: '/proposta/$id'
+      preLoaderRoute: typeof PropostaIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/meta-ads/conexao': {
+      id: '/_authenticated/meta-ads/conexao'
+      path: '/meta-ads/conexao'
+      fullPath: '/meta-ads/conexao'
+      preLoaderRoute: typeof AuthenticatedMetaAdsConexaoRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/api/auth/callback': {
+      id: '/api/auth/callback'
+      path: '/api/auth/callback'
+      fullPath: '/api/auth/callback'
+      preLoaderRoute: typeof ApiAuthCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/social-callback': {
+      id: '/api/auth/social-callback'
+      path: '/api/auth/social-callback'
+      fullPath: '/api/auth/social-callback'
+      preLoaderRoute: typeof ApiAuthSocialCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedMetaAdsConexaoRoute: typeof AuthenticatedMetaAdsConexaoRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedMetaAdsConexaoRoute: AuthenticatedMetaAdsConexaoRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AgentesIaRoute: AgentesIaRoute,
+  AtualizacoesRoute: AtualizacoesRoute,
+  AuthRoute: AuthRoute,
+  BriefingsRoute: BriefingsRoute,
+  CalendarioConteudoRoute: CalendarioConteudoRoute,
+  ClientesRoute: ClientesRoute,
+  ColaboradoresRoute: ColaboradoresRoute,
+  ConectarResendRoute: ConectarResendRoute,
+  ConfiguracoesRoute: ConfiguracoesRoute,
+  ConquistasRoute: ConquistasRoute,
+  ConteudoRoute: ConteudoRoute,
+  ConteudosRoute: ConteudosRoute,
+  FinanceiroRoute: FinanceiroRoute,
+  LeadDetailsRoute: LeadDetailsRoute,
+  LeadsRoute: LeadsRoute,
+  MetasRoute: MetasRoute,
+  PipelinesRoute: PipelinesRoute,
+  ProdutosRoute: ProdutosRoute,
+  ProjetosRoute: ProjetosRoute,
+  PropostasRoute: PropostasRoute,
+  RelatoriosRoute: RelatoriosRoute,
+  TarefasRoute: TarefasRoute,
+  TutoriaisRoute: TutoriaisRoute,
+  WhatsappRoute: WhatsappRoute,
+  BriefingIdRoute: BriefingIdRoute,
+  PortalIdRoute: PortalIdRoute,
+  PropostaIdRoute: PropostaIdRoute,
+  ApiAuthCallbackRoute: ApiAuthCallbackRoute,
+  ApiAuthSocialCallbackRoute: ApiAuthSocialCallbackRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
