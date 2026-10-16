@@ -1,7 +1,8 @@
-import { createAPIFileRoute } from '@tanstack/react-start/api';
+import { createFileRoute } from '@tanstack/react-router';
 import { processPaymentWebhook } from '@/lib/api-webhooks.server';
 
-export const APIRoute = createAPIFileRoute('/api/public/webhook/payment')({
+export const Route = createFileRoute('/api/public/webhook/payment')({
+  server: { handlers: {
   GET: async () => {
     return new Response(
       JSON.stringify({
@@ -17,6 +18,13 @@ export const APIRoute = createAPIFileRoute('/api/public/webhook/payment')({
   },
 
   POST: async ({ request }) => {
+    // Only accept calls carrying the shared token configured in the gateway.
+    const expected = process.env['PAYMENT_WEBHOOK_TOKEN'];
+    const url = new URL(request.url);
+    const given = url.searchParams.get('token') || request.headers.get('asaas-access-token') || '';
+    if (!expected || given !== expected) {
+      return new Response('Unauthorized', { status: 401 });
+    }
     try {
       const body = await request.json();
 
@@ -77,4 +85,5 @@ export const APIRoute = createAPIFileRoute('/api/public/webhook/payment')({
       });
     }
   }
+} },
 });
