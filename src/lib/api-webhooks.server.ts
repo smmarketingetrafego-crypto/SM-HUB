@@ -20,7 +20,7 @@ export interface WebhookPaymentEvent {
 // 1. Processador Central de Webhooks de Pagamento (Asaas, Mercado Pago, Stripe)
 export async function handleWebhookPayment(payload: WebhookPaymentEvent) {
   try {
-      const db = await readDb();
+      const db = await readDb({ publicAccess: true });
       if (!db.orcamentos) db.orcamentos = [...DEFAULT_ORCAMENTOS];
       if (!db.transactions) db.transactions = [];
       if (!db.projects) db.projects = [];
@@ -123,7 +123,7 @@ export async function handleWebhookPayment(payload: WebhookPaymentEvent) {
         updatedEntity = db.activeSubscription;
       }
 
-      await writeDb(db);
+      await writeDb(db, { publicAccess: true });
 
       return {
         success: true,
@@ -147,7 +147,7 @@ export const checkPaymentStatus = createServerFn({ method: "GET" })
   .validator((params: { type: "orcamento" | "subscription"; id: string }) => params)
   .handler(async ({ data: { type, id } }) => {
     try {
-      const db = await readDb();
+      const db = await readDb({ publicAccess: true });
 
       if (type === "orcamento") {
         const orcamentos = db.orcamentos || DEFAULT_ORCAMENTOS;

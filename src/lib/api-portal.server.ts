@@ -45,7 +45,7 @@ export const getClientPortalData = createServerFn({ method: "GET" })
   .validator((clientIdOrName: string) => clientIdOrName)
   .handler(async ({ data: identifier }): Promise<{ success: boolean; data?: ClientPortalData; error?: string }> => {
     try {
-      const db = await readDb();
+      const db = await readDb({ publicAccess: true });
       const decoded = decodeURIComponent(identifier).trim().toLowerCase();
 
       // Busca cliente correspondente
