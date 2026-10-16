@@ -14,7 +14,6 @@ import { ContractClauseEditorModal } from "@/components/propostas/contract-claus
 import { SubscriptionCheckoutModal } from "@/components/subscription/subscription-checkout-modal";
 import { getActiveSubscription } from "@/lib/api-subscriptions.server";
 import { getIntegrations, type IntegrationsData } from "@/lib/api-integracoes.server";
-import { checkDriveConnection, getGoogleAuthUrl, disconnectDrive } from "@/lib/auth.server";
 import {
   BellRing,
   Camera,
@@ -6011,78 +6010,18 @@ function ChangelogTab() {
 }
 
 function DatabaseTab() {
-  const { data: isDriveConnected } = useQuery({
-    queryKey: ['drive_connection'],
-    queryFn: async () => {
-      try {
-        const res = await checkDriveConnection();
-        return Boolean(res);
-      } catch (err) {
-        console.error("Erro ao verificar conexão Google Drive:", err);
-        return false;
-      }
-    },
-    initialData: false,
-  });
-
   return (
     <div className="space-y-6">
-      <div className="flex flex-col md:flex-row gap-6 p-6 border border-white/10 rounded-2xl bg-[#0a0a0a]">
-        <div className="flex-1 space-y-4">
-          <h3 className="text-xl font-medium text-white flex items-center gap-2">
-            <Database className="text-brand size-5" /> Armazenamento em Nuvem
-          </h3>
-          <p className="text-sm text-gray-400">
-            Conecte seu Google Drive para que o SM Hub salve todos os clientes, finanças e projetos na sua nuvem privada.
-          </p>
-          
-          <div className="p-6 border border-white/10 rounded-xl bg-[#111] flex flex-col gap-4 items-start mt-4">
-            <div className="flex items-center gap-4">
-              <div className={`size-12 rounded-full flex items-center justify-center ${isDriveConnected ? 'bg-emerald-500/20 text-emerald-500' : 'bg-white/5 text-gray-400'}`}>
-                <Cloud className="size-6" />
-              </div>
-              <div>
-                <h4 className="text-white font-medium">{isDriveConnected ? "Google Drive Conectado" : "Nenhum Banco de Dados Conectado"}</h4>
-                <p className="text-xs text-gray-500 max-w-sm">
-                  {isDriveConnected ? "Seus dados estão sendo salvos e lidos do seu Drive." : "Acesse o painel do Google Cloud e crie sua chave mestra."}
-                </p>
-              </div>
-            </div>
-            
-            {!isDriveConnected ? (
-              <Button 
-                onClick={async () => {
-                  try {
-                    const url = await getGoogleAuthUrl();
-                    if (url) window.location.href = url;
-                  } catch (e: any) {
-                    toast.error(e.message || "Erro ao conectar com Google");
-                  }
-                }} 
-                className="gradient-brand text-black mt-2 font-bold"
-              >
-                Conectar Google Drive
-              </Button>
-            ) : (
-              <div className="flex gap-3">
-                <Button
-                  variant="outline"
-                  className="border-red-500/50 text-red-500 hover:bg-red-500/10 mt-2 font-medium"
-                  onClick={async () => {
-                    try {
-                      await disconnectDrive();
-                      toast.success("Google Drive desconectado. Você pode reconectar a qualquer momento.");
-                      window.location.reload();
-                    } catch (e: any) {
-                      toast.error(e.message || "Erro ao desconectar");
-                    }
-                  }}
-                >
-                  Desconectar / Reconectar
-                </Button>
-              </div>
-            )}
-          </div>
+      <div className="p-6 border border-border rounded-2xl bg-card">
+        <h3 className="text-xl font-medium flex items-center gap-2">
+          <Database className="text-brand size-5" /> Armazenamento em Nuvem
+        </h3>
+        <p className="text-sm text-muted-foreground mt-2">
+          Todos os clientes, finanças e projetos ficam salvos automaticamente na nuvem segura do SM Hub, com acesso apenas para a sua equipe logada.
+        </p>
+        <div className="mt-4 flex items-center gap-3">
+          <Cloud className="size-6 text-brand" />
+          <span className="font-medium">Banco de dados conectado</span>
         </div>
       </div>
     </div>
