@@ -133,7 +133,7 @@ export const getAutomations = createServerFn({ method: "GET" }).handler(async ()
 });
 
 export const toggleAutomationRule = createServerFn({ method: "POST" })
-  .validator((id: string) => id)
+  .inputValidator((id: string) => id)
   .handler(async ({ data: id }) => {
     try {
       const db = await readDb();
@@ -151,7 +151,7 @@ export const toggleAutomationRule = createServerFn({ method: "POST" })
   });
 
 export const saveAutomationRule = createServerFn({ method: "POST" })
-  .validator((rule: Partial<AutomationRule>) => rule)
+  .inputValidator((rule: Partial<AutomationRule>) => rule)
   .handler(async ({ data: rule }) => {
     try {
       const db = await readDb();
@@ -199,7 +199,7 @@ export const getWhatsAppMessages = createServerFn({ method: "GET" }).handler(asy
 });
 
 export const sendWhatsAppMessage = createServerFn({ method: "POST" })
-  .validator((data: { contactId: string; contactName: string; phone?: string; text: string; sender?: "me" | "automation" }) => data)
+  .inputValidator((data: { contactId: string; contactName: string; phone?: string; text: string; sender?: "me" | "automation" }) => data)
   .handler(async ({ data }) => {
     try {
       const db = await readDb();
@@ -228,7 +228,7 @@ export const sendWhatsAppMessage = createServerFn({ method: "POST" })
   });
 
 export const triggerFunnelAutomation = createServerFn({ method: "POST" })
-  .validator((data: { clientName: string; stageName: string; dealValue?: number }) => data)
+  .inputValidator((data: { clientName: string; stageName: string; dealValue?: number }) => data)
   .handler(async ({ data }) => {
     try {
       const db = await readDb();

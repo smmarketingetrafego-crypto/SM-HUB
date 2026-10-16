@@ -118,7 +118,7 @@ export const getIntegrations = createServerFn({ method: "GET" }).handler(async (
 });
 
 export const saveIntegration = createServerFn({ method: "POST" })
-  .validator((payload: { service: string; data: any }) => payload)
+  .inputValidator((payload: { service: string; data: any }) => payload)
   .handler(async ({ data }) => {
     try {
       const db = await readDb();
@@ -139,7 +139,7 @@ export const saveIntegration = createServerFn({ method: "POST" })
   });
 
 export const disconnectIntegration = createServerFn({ method: "POST" })
-  .validator((service: string) => service)
+  .inputValidator((service: string) => service)
   .handler(async ({ data: service }) => {
     try {
       const db = await readDb();
@@ -169,7 +169,7 @@ export const generateWhatsAppSession = createServerFn({ method: "POST" }).handle
 });
 
 export const pairWhatsAppWithPhone = createServerFn({ method: "POST" })
-  .validator((phone: string) => phone)
+  .inputValidator((phone: string) => phone)
   .handler(async ({ data: phone }) => {
     const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
     let codePart1 = "";

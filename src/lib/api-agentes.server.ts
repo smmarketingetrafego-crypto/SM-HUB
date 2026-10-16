@@ -88,7 +88,7 @@ export const getAgents = createServerFn({ method: "GET" }).handler(async () => {
 });
 
 export const toggleAgent = createServerFn({ method: "POST" })
-  .validator((id: string) => id)
+  .inputValidator((id: string) => id)
   .handler(async ({ data: id }) => {
     try {
       const db = await readDb();
@@ -106,7 +106,7 @@ export const toggleAgent = createServerFn({ method: "POST" })
   });
 
 export const saveAgent = createServerFn({ method: "POST" })
-  .validator((agent: Partial<AIAgent>) => agent)
+  .inputValidator((agent: Partial<AIAgent>) => agent)
   .handler(async ({ data }) => {
     try {
       const db = await readDb();
@@ -140,7 +140,7 @@ export const saveAgent = createServerFn({ method: "POST" })
   });
 
 export const chatWithAgent = createServerFn({ method: "POST" })
-  .validator((payload: { agentId: string; userMessage: string }) => payload)
+  .inputValidator((payload: { agentId: string; userMessage: string }) => payload)
   .handler(async ({ data }) => {
     try {
       const db = await readDb();

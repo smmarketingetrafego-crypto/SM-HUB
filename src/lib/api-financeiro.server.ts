@@ -12,7 +12,7 @@ export const getTransactions = createServerFn({ method: "GET" }).handler(async (
 });
 
 export const addTransaction = createServerFn({ method: "POST" })
-  .validator((data: any) => data)
+  .inputValidator((data: any) => data)
   .handler(async ({ data }) => {
     try {
       const db = await readDb();
@@ -28,7 +28,7 @@ export const addTransaction = createServerFn({ method: "POST" })
   });
 
 export const deleteTransaction = createServerFn({ method: "POST" })
-  .validator((id: string) => id)
+  .inputValidator((id: string) => id)
   .handler(async ({ data: id }) => {
     try {
       const db = await readDb();
@@ -42,7 +42,7 @@ export const deleteTransaction = createServerFn({ method: "POST" })
   });
 
 export const updateTransaction = createServerFn({ method: "POST" })
-  .validator((data: any) => data)
+  .inputValidator((data: any) => data)
   .handler(async ({ data }) => {
     try {
       const db = await readDb();

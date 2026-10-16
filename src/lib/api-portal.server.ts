@@ -42,7 +42,7 @@ export interface ClientPortalData {
 }
 
 export const getClientPortalData = createServerFn({ method: "GET" })
-  .validator((clientIdOrName: string) => clientIdOrName)
+  .inputValidator((clientIdOrName: string) => clientIdOrName)
   .handler(async ({ data: identifier }): Promise<{ success: boolean; data?: ClientPortalData; error?: string }> => {
     try {
       const db = await readDb({ publicAccess: true });

@@ -137,14 +137,14 @@ export async function handleWebhookPayment(payload: WebhookPaymentEvent) {
 }
 
 export const processPaymentWebhook = createServerFn({ method: "POST" })
-  .validator((event: WebhookPaymentEvent) => event)
+  .inputValidator((event: WebhookPaymentEvent) => event)
   .handler(async ({ data: payload }) => {
     return handleWebhookPayment(payload);
   });
 
 // 2. Consulta de Status de Pagamento em Tempo Real (Polling)
 export const checkPaymentStatus = createServerFn({ method: "GET" })
-  .validator((params: { type: "orcamento" | "subscription"; id: string }) => params)
+  .inputValidator((params: { type: "orcamento" | "subscription"; id: string }) => params)
   .handler(async ({ data: { type, id } }) => {
     try {
       const db = await readDb({ publicAccess: true });
@@ -188,7 +188,7 @@ export const checkPaymentStatus = createServerFn({ method: "GET" })
 
 // 3. Simulador de Disparo de Webhook Pix Instantâneo (Ambiente de Testes da Agência)
 export const simulatePaymentConfirmation = createServerFn({ method: "POST" })
-  .validator((params: { type: "orcamento" | "subscription"; id: string; gateway?: "asaas" | "mercadopago" }) => params)
+  .inputValidator((params: { type: "orcamento" | "subscription"; id: string; gateway?: "asaas" | "mercadopago" }) => params)
   .handler(async ({ data: { type, id, gateway = "asaas" } }) => {
     return processPaymentWebhook({
       data: {

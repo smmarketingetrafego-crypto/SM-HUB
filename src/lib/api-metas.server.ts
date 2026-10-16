@@ -194,7 +194,7 @@ export const getMetas = createServerFn({ method: "GET" }).handler(async () => {
 });
 
 export const addMeta = createServerFn({ method: "POST" })
-  .validator((d: any) => d as Omit<MetaRecord, "id" | "createdAt">)
+  .inputValidator((d: any) => d as Omit<MetaRecord, "id" | "createdAt">)
   .handler(async ({ data }) => {
     const db = await readDb();
     const metas: MetaRecord[] = db.metas && Array.isArray(db.metas) ? db.metas : [...DEFAULT_METAS];
@@ -216,7 +216,7 @@ export const addMeta = createServerFn({ method: "POST" })
   });
 
 export const updateMeta = createServerFn({ method: "POST" })
-  .validator((d: any) => d as MetaRecord)
+  .inputValidator((d: any) => d as MetaRecord)
   .handler(async ({ data }) => {
     const db = await readDb();
     let metas: MetaRecord[] = db.metas && Array.isArray(db.metas) ? db.metas : [...DEFAULT_METAS];
@@ -240,7 +240,7 @@ export const updateMeta = createServerFn({ method: "POST" })
   });
 
 export const deleteMeta = createServerFn({ method: "POST" })
-  .validator((id: string) => id)
+  .inputValidator((id: string) => id)
   .handler(async ({ data: id }) => {
     const db = await readDb();
     let metas: MetaRecord[] = db.metas && Array.isArray(db.metas) ? db.metas : [...DEFAULT_METAS];
@@ -253,7 +253,7 @@ export const deleteMeta = createServerFn({ method: "POST" })
   });
 
 export const quickUpdateMetaProgress = createServerFn({ method: "POST" })
-  .validator((d: { id: string; increment: number }) => d)
+  .inputValidator((d: { id: string; increment: number }) => d)
   .handler(async ({ data }) => {
     const db = await readDb();
     let metas: MetaRecord[] = db.metas && Array.isArray(db.metas) ? db.metas : [...DEFAULT_METAS];

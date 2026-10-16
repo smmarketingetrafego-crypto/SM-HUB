@@ -116,7 +116,7 @@ export const getEmailConfig = createServerFn({ method: "GET" }).handler(async ()
 
 // 2. Salvar configuração de e-mail (Resend ou SMTP)
 export const saveEmailConfig = createServerFn({ method: "POST" })
-  .validator((payload: Partial<EmailIntegrationConfig>) => payload)
+  .inputValidator((payload: Partial<EmailIntegrationConfig>) => payload)
   .handler(async ({ data }) => {
     try {
       const db = await readDb();
@@ -138,7 +138,7 @@ export const saveEmailConfig = createServerFn({ method: "POST" })
 
 // 2.1 Verificar e Validar Chave do Resend
 export const verifyResendConnection = createServerFn({ method: "POST" })
-  .validator((payload: { apiKey: string }) => payload)
+  .inputValidator((payload: { apiKey: string }) => payload)
   .handler(async ({ data }) => {
     const apiKey = data.apiKey?.trim();
     if (!apiKey) {
@@ -200,7 +200,7 @@ export const verifyResendConnection = createServerFn({ method: "POST" })
 
 // 3. Disparo de E-mail Transacional (com suporte a Resend API oficial + Fallback)
 export const sendTransactionalEmail = createServerFn({ method: "POST" })
-  .validator(
+  .inputValidator(
     (payload: {
       to: string;
       subject?: string;

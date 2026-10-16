@@ -108,7 +108,7 @@ function generatePixCopiaECola(amount: number, transactionId: string): string {
 
 // 1. Criar transação de assinatura (Pix ou Cartão)
 export const createSubscriptionCheckout = createServerFn({ method: "POST" })
-  .validator(
+  .inputValidator(
     (payload: {
       planId: "freelancer" | "growth" | "scale";
       paymentMethod: "pix" | "credit_card";
@@ -211,7 +211,7 @@ export const createSubscriptionCheckout = createServerFn({ method: "POST" })
 
 // 2. Confirmar pagamento (ex: Pix recebido)
 export const confirmSubscriptionPayment = createServerFn({ method: "POST" })
-  .validator((transactionId: string) => transactionId)
+  .inputValidator((transactionId: string) => transactionId)
   .handler(async ({ data: transactionId }) => {
     try {
       const db = await readDb();
@@ -303,7 +303,7 @@ export const getActiveSubscription = createServerFn({ method: "GET" }).handler(a
 
 // 4. Gerar link personalizado para replicar a plataforma para outras pessoas com 7 dias grátis
 export const generateReplicationInvite = createServerFn({ method: "POST" })
-  .validator((payload: { agencyName?: string; customCode?: string }) => payload)
+  .inputValidator((payload: { agencyName?: string; customCode?: string }) => payload)
   .handler(async ({ data }) => {
     try {
       const code = data?.customCode?.trim() || Math.random().toString(36).substring(2, 8).toUpperCase();

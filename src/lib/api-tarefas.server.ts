@@ -95,7 +95,7 @@ export const getTasks = createServerFn({ method: "GET" })
   });
 
 export const addTask = createServerFn({ method: "POST" })
-  .validator((data: any) => data)
+  .inputValidator((data: any) => data)
   .handler(async ({ data }) => {
     try {
       const db = await readDb();
@@ -115,7 +115,7 @@ export const addTask = createServerFn({ method: "POST" })
   });
 
 export const updateTask = createServerFn({ method: "POST" })
-  .validator((data: any) => data)
+  .inputValidator((data: any) => data)
   .handler(async ({ data }) => {
     try {
       const db = await readDb();
@@ -131,7 +131,7 @@ export const updateTask = createServerFn({ method: "POST" })
   });
 
 export const deleteTask = createServerFn({ method: "POST" })
-  .validator((id: string) => id)
+  .inputValidator((id: string) => id)
   .handler(async ({ data: id }) => {
     try {
       const db = await readDb();

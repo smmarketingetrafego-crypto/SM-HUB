@@ -25,7 +25,7 @@ async function getGoogleOAuthClient(redirectUri?: string) {
 
 // 1. Gerar URL de Autenticação Oficial
 export const getSocialAuthUrl = createServerFn({ method: "POST" })
-  .validator((payload: { provider: "google" | "apple" | "microsoft"; redirectOrigin?: string; isPopup?: boolean }) => payload)
+  .inputValidator((payload: { provider: "google" | "apple" | "microsoft"; redirectOrigin?: string; isPopup?: boolean }) => payload)
   .handler(async ({ data }) => {
     const { provider, redirectOrigin, isPopup } = data;
     const origin = redirectOrigin || "http://localhost:8080";
@@ -86,7 +86,7 @@ export const getSocialAuthUrl = createServerFn({ method: "POST" })
 
 // 2. Processar retorno de código do Google
 export const processGoogleSocialCallback = createServerFn({ method: "POST" })
-  .validator((payload: { code: string; redirectOrigin?: string }) => payload)
+  .inputValidator((payload: { code: string; redirectOrigin?: string }) => payload)
   .handler(async ({ data }) => {
     try {
       const { google } = await import("googleapis");

@@ -13,7 +13,7 @@ export const getProjects = createServerFn({ method: "GET" })
   });
 
 export const addProject = createServerFn({ method: "POST" })
-  .validator((data: any) => data)
+  .inputValidator((data: any) => data)
   .handler(async ({ data }) => {
     try {
       const db = await readDb();
@@ -28,7 +28,7 @@ export const addProject = createServerFn({ method: "POST" })
   });
 
 export const updateProject = createServerFn({ method: "POST" })
-  .validator((data: any) => data)
+  .inputValidator((data: any) => data)
   .handler(async ({ data }) => {
     try {
       const db = await readDb();
@@ -44,7 +44,7 @@ export const updateProject = createServerFn({ method: "POST" })
   });
 
 export const deleteProject = createServerFn({ method: "POST" })
-  .validator((id: string) => id)
+  .inputValidator((id: string) => id)
   .handler(async ({ data: id }) => {
     try {
       const db = await readDb();

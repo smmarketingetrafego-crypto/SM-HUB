@@ -147,7 +147,7 @@ export const getBriefings = createServerFn({ method: "GET" }).handler(async () =
 
 // Busca briefing pelo ID (usado pela tela pública do cliente)
 export const getBriefingById = createServerFn({ method: "GET" })
-  .validator((id: string) => id)
+  .inputValidator((id: string) => id)
   .handler(async ({ data: id }) => {
     try {
       const db = await readDb({ publicAccess: true });
@@ -178,7 +178,7 @@ export const getBriefingById = createServerFn({ method: "GET" })
 
 // Cria novo briefing e gera link
 export const createBriefing = createServerFn({ method: "POST" })
-  .validator((data: { title: string; client: string; clientPhone?: string; clientEmail?: string; category: string; questions: BriefingQuestion[] }) => data)
+  .inputValidator((data: { title: string; client: string; clientPhone?: string; clientEmail?: string; category: string; questions: BriefingQuestion[] }) => data)
   .handler(async ({ data }) => {
     try {
       const db = await readDb();
@@ -210,7 +210,7 @@ export const createBriefing = createServerFn({ method: "POST" })
 
 // Salva respostas do cliente na página pública
 export const submitBriefingResponse = createServerFn({ method: "POST" })
-  .validator((data: { id: string; answers: Record<string, any>; clientName?: string }) => data)
+  .inputValidator((data: { id: string; answers: Record<string, any>; clientName?: string }) => data)
   .handler(async ({ data }) => {
     try {
       const db = await readDb({ publicAccess: true });
@@ -259,7 +259,7 @@ export const submitBriefingResponse = createServerFn({ method: "POST" })
 
 // Deletar briefing
 export const deleteBriefing = createServerFn({ method: "POST" })
-  .validator((id: string) => id)
+  .inputValidator((id: string) => id)
   .handler(async ({ data: id }) => {
     try {
       const db = await readDb();

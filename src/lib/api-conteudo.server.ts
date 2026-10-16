@@ -86,7 +86,7 @@ export const getScheduledPosts = createServerFn({ method: "GET" }).handler(async
 });
 
 export const saveScheduledPost = createServerFn({ method: "POST" })
-  .validator((data: Partial<ScheduledPost>) => data)
+  .inputValidator((data: Partial<ScheduledPost>) => data)
   .handler(async ({ data }) => {
     try {
       const db = await readDb();
@@ -122,7 +122,7 @@ export const saveScheduledPost = createServerFn({ method: "POST" })
   });
 
 export const deleteScheduledPost = createServerFn({ method: "POST" })
-  .validator((id: string) => id)
+  .inputValidator((id: string) => id)
   .handler(async ({ data: id }) => {
     try {
       const db = await readDb();

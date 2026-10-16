@@ -7,7 +7,7 @@ export const getGoogleAuthUrl = createServerFn({ method: 'GET' })
   });
 
 export const processGoogleCallback = createServerFn({ method: 'POST' })
-  .validator((code: string) => code)
+  .inputValidator((code: string) => code)
   .handler(async ({ data: code }) => {
     try {
       const { getTokensFromCode } = await import("./google-auth");
