@@ -20,13 +20,7 @@ export interface TaskRecord {
   comments?: number;
 }
 
-export const DEFAULT_TEAM_MEMBERS: TaskAssignee[] = [
-  { name: "Silas Maroto", role: "Diretor Geral & Estrategista" },
-  { name: "Lucas Rocha", role: "Gestor de Tráfego & Performance" },
-  { name: "Ana Beatriz", role: "Designer & Direção de Arte" },
-  { name: "Carla Souza", role: "Copywriter & Roteirista" },
-  { name: "Felipe Matos", role: "Desenvolvedor Web & Tech" },
-];
+export const DEFAULT_TEAM_MEMBERS: TaskAssignee[] = [];
 
 export const INITIAL_TASKS: TaskRecord[] = [
   {

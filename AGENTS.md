@@ -10,5 +10,6 @@
 <!-- LOVABLE:END -->
 
 ## SM Hub
-- All app data lives in one Cloud `workspace_data` row read/written via `src/lib/db-drive.ts` (server-only); why: original code used a server JSON file, which cannot persist on edge hosting.
+- Each account's app data lives in its own `workspace_data` row (keyed by account id) via `src/lib/db-drive.ts`; founders (platform_admins) may target any account with the `x-sm-account` header; public flows locate the owning account by entity id; why: per-account isolation on edge hosting.
+- Plan billing goes through Asaas (`src/lib/asaas.server.ts`) and the token-verified webhook at /api/public/webhook/payment; why: platform revenue only — agency proposals use the agency's own Pix key.
 - Server functions live in `src/lib/api-*.functions.ts`; only explicitly public flows (portal, proposal, briefing, payment webhook) pass `publicAccess: true`; why: everything else requires a signed-in team member.

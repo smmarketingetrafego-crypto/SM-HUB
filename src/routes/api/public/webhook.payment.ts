@@ -1,89 +1,23 @@
-import { createFileRoute } from '@tanstack/react-router';
-import { processPaymentWebhook } from '@/lib/api-webhooks.functions';
+import { createFileRoute } from "@tanstack/react-router";
+import { handleAsaasEvent } from "@/lib/api-webhooks.functions";
 
-export const Route = createFileRoute('/api/public/webhook/payment')({
-  server: { handlers: {
-  GET: async () => {
-    return new Response(
-      JSON.stringify({
-        status: "ok",
-        message: "SM HUB Payment Webhook Endpoint is active and listening for Asaas and Mercado Pago events.",
-        timestamp: new Date().toISOString()
-      }),
-      {
-        status: 200,
-        headers: { "Content-Type": "application/json" }
-      }
-    );
-  },
-
-  POST: async ({ request }) => {
-    // Only accept calls carrying the shared token configured in the gateway.
-    const expected = process.env['PAYMENT_WEBHOOK_TOKEN'];
-    const url = new URL(request.url);
-    const given = url.searchParams.get('token') || request.headers.get('asaas-access-token') || '';
-    if (!expected || given !== expected) {
-      return new Response('Unauthorized', { status: 401 });
-    }
-    try {
-      const body = await request.json();
-
-      let gateway: "asaas" | "mercadopago" | "stripe" = "asaas";
-      let event = "PAYMENT_RECEIVED";
-      let externalReference = "";
-      let paymentId = "";
-      let amount: number | undefined = undefined;
-      let status: "CONFIRMED" | "RECEIVED" | "PENDING" | "FAILED" = "CONFIRMED";
-
-      // Detect Asaas Webhook
-      if (body.event && (body.event.startsWith("PAYMENT_") || body.payment)) {
-        gateway = "asaas";
-        event = body.event;
-        const p = body.payment || {};
-        paymentId = p.id || "";
-        externalReference = p.externalReference || "";
-        amount = p.value;
-        status = body.event === "PAYMENT_RECEIVED" || body.event === "PAYMENT_CONFIRMED" ? "CONFIRMED" : "PENDING";
-      } 
-      // Detect Mercado Pago Webhook
-      else if (body.action || body.type === "payment" || body.data?.id) {
-        gateway = "mercadopago";
-        event = body.action || "payment.updated";
-        paymentId = body.data?.id || body.id || "";
-        externalReference = body.external_reference || "";
-        status = "CONFIRMED";
-      }
-      // Generic payload
-      else {
-        externalReference = body.externalReference || body.id || "";
-        paymentId = body.paymentId || body.id || "";
-        amount = body.amount;
-      }
-
-      const res = await processPaymentWebhook({
-        data: {
-          gateway,
-          event,
-          externalReference,
-          paymentId,
-          amount,
-          status,
-          paidAt: new Date().toISOString(),
-          customer: body.customer
+export const Route = createFileRoute("/api/public/webhook/payment")({
+  server: {
+    handlers: {
+      POST: async ({ request }) => {
+        // Asaas sends the token configured in its webhook settings in this header.
+        const expected = process.env["ASAAS_WEBHOOK_TOKEN"];
+        const given = request.headers.get("asaas-access-token") || "";
+        if (!expected || given !== expected) return new Response("Unauthorized", { status: 401 });
+        try {
+          const body = await request.json();
+          const res = await handleAsaasEvent(body);
+          return Response.json(res);
+        } catch (err: any) {
+          console.error("Asaas webhook error:", err);
+          return Response.json({ success: false, error: err.message }, { status: 500 });
         }
-      });
-
-      return new Response(JSON.stringify(res), {
-        status: 200,
-        headers: { "Content-Type": "application/json" }
-      });
-    } catch (err: any) {
-      console.error("Webhook processing error:", err);
-      return new Response(JSON.stringify({ success: false, error: err.message }), {
-        status: 400,
-        headers: { "Content-Type": "application/json" }
-      });
-    }
-  }
-} },
+      },
+    },
+  },
 });

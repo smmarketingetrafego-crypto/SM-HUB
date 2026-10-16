@@ -150,7 +150,7 @@ export const getBriefingById = createServerFn({ method: "GET" })
   .inputValidator((id: string) => id)
   .handler(async ({ data: id }) => {
     try {
-      const db = await readDb({ publicAccess: true });
+      const db = await readDb({ publicAccess: true, locate: { collection: "briefings", id } });
       const briefings: BriefingRecord[] = db.briefings || [];
       const found = briefings.find((b) => b.id === id);
       if (found) return found;
@@ -213,7 +213,7 @@ export const submitBriefingResponse = createServerFn({ method: "POST" })
   .inputValidator((data: { id: string; answers: Record<string, any>; clientName?: string }) => data)
   .handler(async ({ data }) => {
     try {
-      const db = await readDb({ publicAccess: true });
+      const db = await readDb({ publicAccess: true, locate: { collection: "briefings", id: data.id } });
       if (!db.briefings) db.briefings = [];
 
       const index = db.briefings.findIndex((b: any) => b.id === data.id);

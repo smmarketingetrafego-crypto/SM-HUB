@@ -45,7 +45,7 @@ export const getClientPortalData = createServerFn({ method: "GET" })
   .inputValidator((clientIdOrName: string) => clientIdOrName)
   .handler(async ({ data: identifier }): Promise<{ success: boolean; data?: ClientPortalData; error?: string }> => {
     try {
-      const db = await readDb({ publicAccess: true });
+      const db = await readDb({ publicAccess: true, locate: { collection: "clients", id: decodeURIComponent(identifier).trim() } });
       const decoded = decodeURIComponent(identifier).trim().toLowerCase();
 
       // Busca cliente correspondente

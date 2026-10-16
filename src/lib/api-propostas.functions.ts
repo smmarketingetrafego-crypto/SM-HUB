@@ -98,60 +98,7 @@ export interface Orcamento {
   lastViewedAt?: string;
 }
 
-export const DEFAULT_ORCAMENTOS: Orcamento[] = [
-  {
-    id: "orc-1",
-    numero: "ORC-2026-001",
-    titulo: "Branding & Identidade Visual Completa",
-    cliente: "Maria Silva",
-    valor: 4500,
-    status: "aprovado",
-    tipoContrato: "pontual",
-    criadoEm: "10/10/2026",
-    validadeAte: "25/10/2026",
-    descricao: "Criação de logotipo, manual da marca, papelaria completa e tipografia exclusiva.",
-    prazoEntrega: "15 dias úteis",
-    condicoesPagamento: "50% de entrada + 50% na aprovação final",
-    itens: [
-      { id: "i1", descricao: "Manual de Identidade Visual e Guidelines", quantidade: 1, valorUnitario: 3000 },
-      { id: "i2", descricao: "Kit de Peças Digitais para Redes Sociais", quantidade: 1, valorUnitario: 1500 }
-    ]
-  },
-  {
-    id: "orc-2",
-    numero: "ORC-2026-002",
-    titulo: "Gestão Estratégica de Tráfego Pago Meta & Google",
-    cliente: "João Pereira",
-    valor: 2800,
-    status: "enviado",
-    tipoContrato: "recorrente",
-    criadoEm: "12/10/2026",
-    validadeAte: "20/10/2026",
-    descricao: "Setup de campanhas, criativos semanais, otimização de ROAS e relatórios quinzenais.",
-    prazoEntrega: "Mensalidade Recorrente",
-    condicoesPagamento: "Pré-pago via Pix ou Boleto Asaas",
-    itens: [
-      { id: "i1", descricao: "Gestão mensal Meta Ads e Google Ads", quantidade: 1, valorUnitario: 2800 }
-    ]
-  },
-  {
-    id: "orc-3",
-    numero: "ORC-2026-003",
-    titulo: "Landing Page de Alta Conversão em Next.js",
-    cliente: "Empresa ABC (Suporte)",
-    valor: 3500,
-    status: "rascunho",
-    tipoContrato: "pontual",
-    criadoEm: "14/10/2026",
-    validadeAte: "30/10/2026",
-    descricao: "Design responsivo, copy persuasiva, integração com WhatsApp e banco de dados rápido.",
-    prazoEntrega: "10 dias corridos",
-    condicoesPagamento: "À vista com 5% de desconto no Pix ou 3x sem juros",
-    itens: [
-      { id: "i1", descricao: "Design UI/UX e desenvolvimento Web", quantidade: 1, valorUnitario: 3500 }
-    ]
-  }
-];
+export const DEFAULT_ORCAMENTOS: Orcamento[] = [];
 
 export const getOrcamentos = createServerFn({ method: "GET" }).handler(async () => {
   try {
@@ -341,10 +288,9 @@ export const sendOrcamentoWhatsApp = createServerFn({ method: "POST" })
 
 export const getAgencyProfile = createServerFn({ method: "GET" }).handler(async () => {
   try {
-    const db = await readDb({ publicAccess: true });
-    if (!db.agencyProfile || db.agencyProfile.legalName === "SM Hub Soluções Digitais Ltda.") {
-      db.agencyProfile = { ...DEFAULT_AGENCY_PROFILE };
-      await writeDb(db, { publicAccess: true });
+    const db = await readDb();
+    if (!db.agencyProfile) {
+      return { ...DEFAULT_AGENCY_PROFILE };
     }
     return db.agencyProfile as AgencyProfile;
   } catch (e: any) {
@@ -388,8 +334,8 @@ export const getPublicOrcamento = createServerFn({ method: "GET" })
   .inputValidator((id: string) => id)
   .handler(async ({ data: id }) => {
     try {
-      const db = await readDb({ publicAccess: true });
-      if (!db.orcamentos) db.orcamentos = [...DEFAULT_ORCAMENTOS];
+      const db = await readDb({ publicAccess: true, locate: { collection: "orcamentos", id } });
+      if (!db.orcamentos) db.orcamentos = [];
       const orc = db.orcamentos.find((o: any) => o.id === id || o.numero?.toLowerCase() === id?.toLowerCase());
       if (!orc) return { success: false, error: "Orçamento não encontrado" };
       
@@ -424,8 +370,8 @@ export const clientApproveOrcamento = createServerFn({ method: "POST" })
   .inputValidator((data: { id: string; clientName: string; clientDocument?: string; signature?: string }) => data)
   .handler(async ({ data }) => {
     try {
-      const db = await readDb({ publicAccess: true });
-      if (!db.orcamentos) db.orcamentos = [...DEFAULT_ORCAMENTOS];
+      const db = await readDb({ publicAccess: true, locate: { collection: "orcamentos", id: data.id } });
+      if (!db.orcamentos) db.orcamentos = [];
       const orc = db.orcamentos.find((o: any) => o.id === data.id);
       if (!orc) return { success: false, error: "Orçamento não encontrado" };
 
@@ -619,8 +565,8 @@ export const trackProposalView = createServerFn({ method: "POST" })
   .inputValidator((params: { id: string; userAgent?: string }) => params)
   .handler(async ({ data: { id, userAgent } }) => {
     try {
-      const db = await readDb({ publicAccess: true });
-      if (!db.orcamentos) db.orcamentos = [...DEFAULT_ORCAMENTOS];
+      const db = await readDb({ publicAccess: true, locate: { collection: "orcamentos", id } });
+      if (!db.orcamentos) db.orcamentos = [];
       const orc = db.orcamentos.find((o: any) => o.id === id);
       if (!orc) return { success: false, error: "Orçamento não encontrado" };
 

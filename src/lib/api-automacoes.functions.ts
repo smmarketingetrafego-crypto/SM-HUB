@@ -26,97 +26,9 @@ export interface WhatsAppMessage {
   isAutomation?: boolean;
 }
 
-export const DEFAULT_AUTOMATIONS: AutomationRule[] = [
-  {
-    id: "auto-1",
-    name: "Boas-Vindas no WhatsApp ao Novo Lead",
-    trigger: "lead_created",
-    triggerLabel: "Quando um novo lead for cadastrado",
-    action: "whatsapp",
-    actionLabel: "Enviar mensagem personalizada no WhatsApp",
-    targetTemplate: "Olá {nome}! Obrigado pelo contato. Recebemos seu interesse e um especialista entrará em contato em breve.",
-    active: true,
-    executionsCount: 14,
-    lastExecutedAt: "Hoje, 10:30"
-  },
-  {
-    id: "auto-2",
-    name: "Comemoração e Contrato ao Fechar Venda",
-    trigger: "lead_won",
-    triggerLabel: "Quando o lead for movido para 'Fechado - Ganho'",
-    action: "whatsapp",
-    actionLabel: "Disparar link do contrato e instruções de onboarding",
-    targetTemplate: "Parabéns pela parceria, {nome}! Seu contrato está pronto para assinatura digital: https://smhub.com.br/c/{id}",
-    active: true,
-    executionsCount: 8,
-    lastExecutedAt: "Ontem, 16:45"
-  },
-  {
-    id: "auto-3",
-    name: "Notificar Equipe sobre Tarefa Concluída",
-    trigger: "task_completed",
-    triggerLabel: "Quando uma tarefa for marcada como concluída",
-    action: "notification",
-    actionLabel: "Notificar gestor e atualizar status do projeto",
-    active: true,
-    executionsCount: 42,
-    lastExecutedAt: "Hoje, 11:15"
-  },
-  {
-    id: "auto-4",
-    name: "Lembrete de Cobrança / Boleto Pendente",
-    trigger: "invoice_pending",
-    triggerLabel: "1 dia antes do vencimento da fatura",
-    action: "whatsapp",
-    actionLabel: "Enviar lembrete amigável com código Pix",
-    targetTemplate: "Olá {nome}, sua fatura vence amanhã. Para pagar via Pix utilize o código enviado.",
-    active: false,
-    executionsCount: 0
-  }
-];
+export const DEFAULT_AUTOMATIONS: AutomationRule[] = [];
 
-export const DEFAULT_WHATSAPP_MESSAGES: WhatsAppMessage[] = [
-  {
-    id: "msg-1",
-    contactId: "c_1",
-    contactName: "Maria Silva",
-    phone: "(11) 98765-4321",
-    text: "Olá Maria! Como combinamos, estou enviando o link para assinatura do contrato.",
-    sender: "me",
-    timestamp: "10:30",
-    status: "read"
-  },
-  {
-    id: "msg-2",
-    contactId: "c_1",
-    contactName: "Maria Silva",
-    phone: "(11) 98765-4321",
-    text: "https://smhub.com.br/c/12345",
-    sender: "me",
-    timestamp: "10:30",
-    status: "read"
-  },
-  {
-    id: "msg-3",
-    contactId: "c_1",
-    contactName: "Maria Silva",
-    phone: "(11) 98765-4321",
-    text: "Maravilha! Vou dar uma lida e já assino.",
-    sender: "contact",
-    timestamp: "10:35",
-    status: "read"
-  },
-  {
-    id: "msg-4",
-    contactId: "c_1",
-    contactName: "Maria Silva",
-    phone: "(11) 98765-4321",
-    text: "Ok, fico no aguardo do contrato finalizado.",
-    sender: "contact",
-    timestamp: "10:45",
-    status: "read"
-  }
-];
+export const DEFAULT_WHATSAPP_MESSAGES: WhatsAppMessage[] = [];
 
 export const getAutomations = createServerFn({ method: "GET" }).handler(async () => {
   try {
