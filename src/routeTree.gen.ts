@@ -39,7 +39,6 @@ import { Route as BriefingIdRouteImport } from './routes/briefing.$id'
 import { Route as PortalIdRouteImport } from './routes/portal.$id'
 import { Route as PropostaIdRouteImport } from './routes/proposta.$id'
 import { Route as AuthenticatedMetaAdsConexaoRouteImport } from './routes/_authenticated/meta-ads/conexao'
-import { Route as ApiAuthCallbackRouteImport } from './routes/api.auth.callback'
 import { Route as ApiAuthSocialCallbackRouteImport } from './routes/api.auth.social-callback'
 import { Route as ApiPublicWebhookPaymentRouteImport } from './routes/api/public/webhook.payment'
 
@@ -193,11 +192,6 @@ const AuthenticatedMetaAdsConexaoRoute =
     path: '/meta-ads/conexao',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const ApiAuthCallbackRoute = ApiAuthCallbackRouteImport.update({
-  id: '/api/auth/callback',
-  path: '/api/auth/callback',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ApiAuthSocialCallbackRoute = ApiAuthSocialCallbackRouteImport.update({
   id: '/api/auth/social-callback',
   path: '/api/auth/social-callback',
@@ -239,7 +233,6 @@ export interface FileRoutesByFullPath {
   '/portal/$id': typeof PortalIdRoute
   '/proposta/$id': typeof PropostaIdRoute
   '/meta-ads/conexao': typeof AuthenticatedMetaAdsConexaoRoute
-  '/api/auth/callback': typeof ApiAuthCallbackRoute
   '/api/auth/social-callback': typeof ApiAuthSocialCallbackRoute
   '/api/public/webhook/payment': typeof ApiPublicWebhookPaymentRoute
 }
@@ -273,7 +266,6 @@ export interface FileRoutesByTo {
   '/portal/$id': typeof PortalIdRoute
   '/proposta/$id': typeof PropostaIdRoute
   '/meta-ads/conexao': typeof AuthenticatedMetaAdsConexaoRoute
-  '/api/auth/callback': typeof ApiAuthCallbackRoute
   '/api/auth/social-callback': typeof ApiAuthSocialCallbackRoute
   '/api/public/webhook/payment': typeof ApiPublicWebhookPaymentRoute
 }
@@ -309,7 +301,6 @@ export interface FileRoutesById {
   '/portal/$id': typeof PortalIdRoute
   '/proposta/$id': typeof PropostaIdRoute
   '/_authenticated/meta-ads/conexao': typeof AuthenticatedMetaAdsConexaoRoute
-  '/api/auth/callback': typeof ApiAuthCallbackRoute
   '/api/auth/social-callback': typeof ApiAuthSocialCallbackRoute
   '/api/public/webhook/payment': typeof ApiPublicWebhookPaymentRoute
 }
@@ -345,7 +336,6 @@ export interface FileRouteTypes {
     | '/portal/$id'
     | '/proposta/$id'
     | '/meta-ads/conexao'
-    | '/api/auth/callback'
     | '/api/auth/social-callback'
     | '/api/public/webhook/payment'
   fileRoutesByTo: FileRoutesByTo
@@ -379,7 +369,6 @@ export interface FileRouteTypes {
     | '/portal/$id'
     | '/proposta/$id'
     | '/meta-ads/conexao'
-    | '/api/auth/callback'
     | '/api/auth/social-callback'
     | '/api/public/webhook/payment'
   id:
@@ -414,7 +403,6 @@ export interface FileRouteTypes {
     | '/portal/$id'
     | '/proposta/$id'
     | '/_authenticated/meta-ads/conexao'
-    | '/api/auth/callback'
     | '/api/auth/social-callback'
     | '/api/public/webhook/payment'
   fileRoutesById: FileRoutesById
@@ -449,7 +437,6 @@ export interface RootRouteChildren {
   BriefingIdRoute: typeof BriefingIdRoute
   PortalIdRoute: typeof PortalIdRoute
   PropostaIdRoute: typeof PropostaIdRoute
-  ApiAuthCallbackRoute: typeof ApiAuthCallbackRoute
   ApiAuthSocialCallbackRoute: typeof ApiAuthSocialCallbackRoute
   ApiPublicWebhookPaymentRoute: typeof ApiPublicWebhookPaymentRoute
 }
@@ -666,13 +653,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMetaAdsConexaoRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/api/auth/callback': {
-      id: '/api/auth/callback'
-      path: '/api/auth/callback'
-      fullPath: '/api/auth/callback'
-      preLoaderRoute: typeof ApiAuthCallbackRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/auth/social-callback': {
       id: '/api/auth/social-callback'
       path: '/api/auth/social-callback'
@@ -731,7 +711,6 @@ const rootRouteChildren: RootRouteChildren = {
   BriefingIdRoute: BriefingIdRoute,
   PortalIdRoute: PortalIdRoute,
   PropostaIdRoute: PropostaIdRoute,
-  ApiAuthCallbackRoute: ApiAuthCallbackRoute,
   ApiAuthSocialCallbackRoute: ApiAuthSocialCallbackRoute,
   ApiPublicWebhookPaymentRoute: ApiPublicWebhookPaymentRoute,
 }
