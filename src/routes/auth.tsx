@@ -102,6 +102,10 @@ export function AuthPage() {
 
   // Mode & step
   const [mode, setMode] = useState<AuthMode>("login");
+  useEffect(() => {
+    const p = new URLSearchParams(window.location.search);
+    if (p.get("mode") === "reset" || window.location.hash.includes("type=recovery")) setMode("reset");
+  }, []);
   const [loginStep, setLoginStep] = useState<LoginStep>("email");
 
   // Login & Signup fields
@@ -449,7 +453,7 @@ export function AuthPage() {
     }
     setLoading(true);
     const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-      redirectTo: `${window.location.origin}/reset-password`,
+      redirectTo: `${window.location.origin}/auth?mode=reset`,
     });
     setLoading(false);
     if (error) {
