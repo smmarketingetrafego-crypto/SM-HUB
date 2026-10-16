@@ -1,0 +1,54 @@
+{
+  "name": "SM Hub — Gestão para Agências & Criativos",
+  "short_name": "SM Hub",
+  "description": "Plataforma completa de gestão, CRM, financeiro, orçamentos e inteligência artificial para agências.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0c",
+  "theme_color": "#C9A227",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/smhub-logo.png",
+      "sizes": "1024x682",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/sm-mark.png",
+      "sizes": "400x400",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "categories": ["business", "productivity", "finance"],
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "url": "/",
+      "description": "Visualizar métricas e visão geral da agência"
+    },
+    {
+      "name": "Clientes",
+      "url": "/clientes",
+      "description": "Gerenciar clientes e portais de acesso"
+    },
+    {
+      "name": "Pipelines & CRM",
+      "url": "/pipelines",
+      "description": "Acompanhar funil de vendas e leads"
+    },
+    {
+      "name": "Financeiro",
+      "url": "/financeiro",
+      "description": "Fluxo de caixa, faturas e contas"
+    }
+  ]
+}

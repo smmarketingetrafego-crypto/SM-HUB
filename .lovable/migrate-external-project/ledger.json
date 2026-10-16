@@ -1,0 +1,9 @@
+[
+ {"capability":"code","source":"sm-hub-code.zip","outcome":"migrate","status":"done","next_action":null},
+ {"capability":"data store","source":"server JSON file","outcome":"Lovable Cloud workspace document","status":"done","next_action":null},
+ {"capability":"records","source":"smhub_database.json (demo only)","outcome":"not imported","status":"pending","next_action":"user may send real data"},
+ {"capability":"auth","source":"fake login + hardcoded admin","outcome":"Cloud email/Google/Apple/Microsoft","status":"done","next_action":"first sign-up becomes admin"},
+ {"capability":"payment webhook","source":"/api/public/webhook/payment","outcome":"token-protected","status":"pending","next_action":"PAYMENT_WEBHOOK_TOKEN secret"},
+ {"capability":"Google Drive sync","source":"file tokens","outcome":"removed (Cloud replaces it)","status":"done","next_action":null},
+ {"capability":"Meta Ads sync","source":"stub code","outcome":"removed stubs","status":"pending","next_action":"build real integration if wanted"}
+]

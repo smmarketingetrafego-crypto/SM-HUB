@@ -1,0 +1,284 @@
+import { createServerFn } from "@tanstack/react-start";
+import { readDb, writeDb } from "./db-drive";
+
+export interface AutomationRule {
+  id: string;
+  name: string;
+  trigger: "lead_created" | "lead_won" | "lead_lost" | "task_completed" | "invoice_pending";
+  triggerLabel: string;
+  action: "whatsapp" | "email" | "notification" | "move_stage";
+  actionLabel: string;
+  targetTemplate?: string;
+  active: boolean;
+  executionsCount: number;
+  lastExecutedAt?: string;
+}
+
+export interface WhatsAppMessage {
+  id: string;
+  contactId: string;
+  contactName: string;
+  phone: string;
+  text: string;
+  sender: "me" | "contact" | "automation";
+  timestamp: string;
+  status: "sent" | "delivered" | "read";
+  isAutomation?: boolean;
+}
+
+export const DEFAULT_AUTOMATIONS: AutomationRule[] = [
+  {
+    id: "auto-1",
+    name: "Boas-Vindas no WhatsApp ao Novo Lead",
+    trigger: "lead_created",
+    triggerLabel: "Quando um novo lead for cadastrado",
+    action: "whatsapp",
+    actionLabel: "Enviar mensagem personalizada no WhatsApp",
+    targetTemplate: "Olá {nome}! Obrigado pelo contato. Recebemos seu interesse e um especialista entrará em contato em breve.",
+    active: true,
+    executionsCount: 14,
+    lastExecutedAt: "Hoje, 10:30"
+  },
+  {
+    id: "auto-2",
+    name: "Comemoração e Contrato ao Fechar Venda",
+    trigger: "lead_won",
+    triggerLabel: "Quando o lead for movido para 'Fechado - Ganho'",
+    action: "whatsapp",
+    actionLabel: "Disparar link do contrato e instruções de onboarding",
+    targetTemplate: "Parabéns pela parceria, {nome}! Seu contrato está pronto para assinatura digital: https://smhub.com.br/c/{id}",
+    active: true,
+    executionsCount: 8,
+    lastExecutedAt: "Ontem, 16:45"
+  },
+  {
+    id: "auto-3",
+    name: "Notificar Equipe sobre Tarefa Concluída",
+    trigger: "task_completed",
+    triggerLabel: "Quando uma tarefa for marcada como concluída",
+    action: "notification",
+    actionLabel: "Notificar gestor e atualizar status do projeto",
+    active: true,
+    executionsCount: 42,
+    lastExecutedAt: "Hoje, 11:15"
+  },
+  {
+    id: "auto-4",
+    name: "Lembrete de Cobrança / Boleto Pendente",
+    trigger: "invoice_pending",
+    triggerLabel: "1 dia antes do vencimento da fatura",
+    action: "whatsapp",
+    actionLabel: "Enviar lembrete amigável com código Pix",
+    targetTemplate: "Olá {nome}, sua fatura vence amanhã. Para pagar via Pix utilize o código enviado.",
+    active: false,
+    executionsCount: 0
+  }
+];
+
+export const DEFAULT_WHATSAPP_MESSAGES: WhatsAppMessage[] = [
+  {
+    id: "msg-1",
+    contactId: "c_1",
+    contactName: "Maria Silva",
+    phone: "(11) 98765-4321",
+    text: "Olá Maria! Como combinamos, estou enviando o link para assinatura do contrato.",
+    sender: "me",
+    timestamp: "10:30",
+    status: "read"
+  },
+  {
+    id: "msg-2",
+    contactId: "c_1",
+    contactName: "Maria Silva",
+    phone: "(11) 98765-4321",
+    text: "https://smhub.com.br/c/12345",
+    sender: "me",
+    timestamp: "10:30",
+    status: "read"
+  },
+  {
+    id: "msg-3",
+    contactId: "c_1",
+    contactName: "Maria Silva",
+    phone: "(11) 98765-4321",
+    text: "Maravilha! Vou dar uma lida e já assino.",
+    sender: "contact",
+    timestamp: "10:35",
+    status: "read"
+  },
+  {
+    id: "msg-4",
+    contactId: "c_1",
+    contactName: "Maria Silva",
+    phone: "(11) 98765-4321",
+    text: "Ok, fico no aguardo do contrato finalizado.",
+    sender: "contact",
+    timestamp: "10:45",
+    status: "read"
+  }
+];
+
+export const getAutomations = createServerFn({ method: "GET" }).handler(async () => {
+  try {
+    const db = await readDb();
+    if (!db.automations || !Array.isArray(db.automations) || db.automations.length === 0) {
+      db.automations = DEFAULT_AUTOMATIONS;
+      await writeDb(db);
+    }
+    return db.automations as AutomationRule[];
+  } catch (e: any) {
+    console.error("Failed to read automations:", e);
+    return DEFAULT_AUTOMATIONS;
+  }
+});
+
+export const toggleAutomationRule = createServerFn({ method: "POST" })
+  .inputValidator((id: string) => id)
+  .handler(async ({ data: id }) => {
+    try {
+      const db = await readDb();
+      if (!db.automations) db.automations = [...DEFAULT_AUTOMATIONS];
+      const item = db.automations.find((a: any) => a.id === id);
+      if (item) {
+        item.active = !item.active;
+        await writeDb(db);
+        return { success: true, rule: item, automations: db.automations };
+      }
+      return { success: false, error: "Regra não encontrada" };
+    } catch (e: any) {
+      return { success: false, error: e.message };
+    }
+  });
+
+export const saveAutomationRule = createServerFn({ method: "POST" })
+  .inputValidator((rule: Partial<AutomationRule>) => rule)
+  .handler(async ({ data: rule }) => {
+    try {
+      const db = await readDb();
+      if (!db.automations) db.automations = [...DEFAULT_AUTOMATIONS];
+      if (rule.id) {
+        const idx = db.automations.findIndex((a: any) => a.id === rule.id);
+        if (idx !== -1) {
+          db.automations[idx] = { ...db.automations[idx], ...rule };
+        } else {
+          db.automations.push(rule);
+        }
+      } else {
+        const newRule: AutomationRule = {
+          id: `auto-${Date.now()}`,
+          name: rule.name || "Nova Automação",
+          trigger: rule.trigger || "lead_created",
+          triggerLabel: rule.triggerLabel || "Gatilho automático",
+          action: rule.action || "whatsapp",
+          actionLabel: rule.actionLabel || "Ação de disparo",
+          targetTemplate: rule.targetTemplate || "",
+          active: true,
+          executionsCount: 0,
+        };
+        db.automations.push(newRule);
+      }
+      await writeDb(db);
+      return { success: true, automations: db.automations };
+    } catch (e: any) {
+      return { success: false, error: e.message };
+    }
+  });
+
+export const getWhatsAppMessages = createServerFn({ method: "GET" }).handler(async () => {
+  try {
+    const db = await readDb();
+    if (!db.whatsapp || !Array.isArray(db.whatsapp) || db.whatsapp.length === 0) {
+      db.whatsapp = DEFAULT_WHATSAPP_MESSAGES;
+      await writeDb(db);
+    }
+    return db.whatsapp as WhatsAppMessage[];
+  } catch (e: any) {
+    console.error("Failed to read whatsapp messages:", e);
+    return DEFAULT_WHATSAPP_MESSAGES;
+  }
+});
+
+export const sendWhatsAppMessage = createServerFn({ method: "POST" })
+  .inputValidator((data: { contactId: string; contactName: string; phone?: string; text: string; sender?: "me" | "automation" }) => data)
+  .handler(async ({ data }) => {
+    try {
+      const db = await readDb();
+      if (!db.whatsapp) db.whatsapp = [...DEFAULT_WHATSAPP_MESSAGES];
+      const now = new Date();
+      const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+      
+      const newMsg: WhatsAppMessage = {
+        id: `msg-${Date.now()}`,
+        contactId: data.contactId,
+        contactName: data.contactName,
+        phone: data.phone || "",
+        text: data.text,
+        sender: data.sender || "me",
+        timestamp: timeStr,
+        status: "sent",
+        isAutomation: data.sender === "automation"
+      };
+
+      db.whatsapp.push(newMsg);
+      await writeDb(db);
+      return { success: true, message: newMsg, messages: db.whatsapp };
+    } catch (e: any) {
+      return { success: false, error: e.message };
+    }
+  });
+
+export const triggerFunnelAutomation = createServerFn({ method: "POST" })
+  .inputValidator((data: { clientName: string; stageName: string; dealValue?: number }) => data)
+  .handler(async ({ data }) => {
+    try {
+      const db = await readDb();
+      if (!db.automations) db.automations = [...DEFAULT_AUTOMATIONS];
+      if (!db.whatsapp) db.whatsapp = [...DEFAULT_WHATSAPP_MESSAGES];
+
+      const isWon = data.stageName.toLowerCase().includes("ganho");
+      const isLead = data.stageName.toLowerCase().includes("lead");
+
+      const rule = db.automations.find((a: any) => 
+        a.active && ((isWon && a.trigger === "lead_won") || (isLead && a.trigger === "lead_created"))
+      );
+
+      if (rule) {
+        rule.executionsCount = (rule.executionsCount || 0) + 1;
+        rule.lastExecutedAt = "Agora mesmo";
+
+        const text = (rule.targetTemplate || "Olá {nome}, seu atendimento foi iniciado!")
+          .replace(/{nome}/g, data.clientName)
+          .replace(/{id}/g, Date.now().toString());
+
+        const now = new Date();
+        const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+        const autoMsg: WhatsAppMessage = {
+          id: `msg-${Date.now()}`,
+          contactId: `c_${data.clientName}`,
+          contactName: data.clientName,
+          phone: (data as any).phone || "",
+          text: text,
+          sender: "automation",
+          timestamp: timeStr,
+          status: "delivered",
+          isAutomation: true
+        };
+
+        db.whatsapp.push(autoMsg);
+        await writeDb(db);
+
+        return { 
+          triggered: true, 
+          ruleName: rule.name,
+          message: text,
+          clientName: data.clientName
+        };
+      }
+
+      return { triggered: false };
+    } catch (e: any) {
+      console.error("Error triggering automation:", e);
+      return { triggered: false, error: e.message };
+    }
+  });
