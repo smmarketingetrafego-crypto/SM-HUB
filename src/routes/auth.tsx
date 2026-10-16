@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { sendTransactionalEmail } from "@/lib/api-email.server";
-import { getSocialAuthUrl } from "@/lib/social-auth.server";
+import { lovable } from "@/integrations/lovable/index";
 import { notifyAuthSuccess } from "@/lib/auth-popup";
 import {
   Mail,
@@ -283,32 +283,23 @@ export function AuthPage() {
 
     setLoading(true);
 
-    // Master admin credentials bypass
-    if (email.trim().toLowerCase() === "smmarketingetrafego@gmail.com" && password === "76154394") {
-      toast.success("Acesso administrativo autenticado com sucesso!");
-      handleAuthCompleted({ email, name: "Administrador SM Hub", role: "admin", verified: true });
-      return;
-    }
-
     try {
       const { error } = await supabase.auth.signInWithPassword({
         email: email.trim(),
         password,
       });
-
       if (error) {
-        // Fallback local auth for testing
-        toast.success("Login realizado com sucesso!");
-        handleAuthCompleted({ email, name: email.split("@")[0], verified: true });
+        toast.error(
+          error.message.includes("Email not confirmed")
+            ? "Confirme seu e-mail pelo link que enviamos antes de entrar."
+            : "E-mail ou senha incorretos.",
+        );
         return;
       }
-
       toast.success("Login realizado com sucesso!");
       handleAuthCompleted({ email, name: email.split("@")[0], verified: true });
     } catch (err: any) {
-      // Fallback
-      toast.success("Login realizado com sucesso!");
-      handleAuthCompleted({ email, name: email.split("@")[0], verified: true });
+      toast.error(err?.message || "Não foi possível entrar agora.");
     } finally {
       setLoading(false);
     }
@@ -357,8 +348,27 @@ export function AuthPage() {
       console.error(err);
     }
 
-    // Envia verificação de e-mail antes de ativar a conta
-    sendEmailVerificationCode(email);
+    setLoading(true);
+    const { data: signData, error: signErr } = await supabase.auth.signUp({
+      email: email.trim(),
+      password,
+      options: {
+        emailRedirectTo: window.location.origin,
+        data: { full_name: fullName.trim(), phone: whatsapp.trim() },
+      },
+    });
+    setLoading(false);
+    if (signErr) {
+      toast.error(signErr.message);
+      return;
+    }
+    if (signData.session) {
+      handleAuthCompleted({ email, name: fullName, verified: true });
+      return;
+    }
+    toast.success("Conta criada! Enviamos um link de confirmação para o seu e-mail.", { duration: 10000 });
+    setMode("login");
+    setLoginStep("password");
   };
 
   // Social Auth Handlers (OAuth Oficial com Google, Apple e Microsoft)
@@ -367,47 +377,15 @@ export function AuthPage() {
     const provider: "google" | "apple" | "microsoft" = 
       raw.includes("google") ? "google" : raw.includes("apple") ? "apple" : "microsoft";
 
-    toast.loading(`Conectando com conta ${providerName}...`, { id: "social-login" });
-
-    try {
-      // 1. Tenta Supabase OAuth caso URL oficial esteja configurada
-      try {
-        const supProvider = provider === "microsoft" ? "azure" : provider;
-        const { data: supaData, error: supaErr } = await supabase.auth.signInWithOAuth({
-          provider: supProvider as any,
-          options: {
-            redirectTo: `${window.location.origin}/api/auth/social-callback`,
-          },
-        });
-        if (supaData?.url && !supaErr) {
-          toast.dismiss("social-login");
-          window.location.href = supaData.url;
-          return;
-        }
-      } catch (e) {
-        // Fallback para OAuth nativo
-      }
-
-      // 2. Provedor nativo oficial (Google OAuth2 v2 / Microsoft / Apple)
-      const res = await getSocialAuthUrl({
-        data: {
-          provider,
-          redirectOrigin: window.location.origin,
-          isPopup,
-        },
-      });
-
-      toast.dismiss("social-login");
-
-      if (res.success && res.url) {
-        window.location.href = res.url;
-      } else {
-        toast.error(res.error || `Não foi possível conectar com ${providerName}. Digite seu e-mail abaixo.`);
-      }
-    } catch (err: any) {
-      toast.dismiss("social-login");
-      toast.error(`Erro ao conectar: ${err.message}`);
+    const result = await lovable.auth.signInWithOAuth(provider, {
+      redirect_uri: window.location.origin,
+    });
+    if (result.error) {
+      toast.error(`Não foi possível conectar com ${providerName}.`);
+      return;
     }
+    if (result.redirected) return;
+    handleAuthCompleted({ email: "", verified: true });
   };
 
   // Verification PIN Code
@@ -448,7 +426,7 @@ export function AuthPage() {
   const verifyCode = (codeStr: string) => {
     setLoading(true);
     setTimeout(() => {
-      if (codeStr === sentCode || codeStr === "123456" || codeStr.length === 6) {
+      if (sentCode && codeStr === sentCode) {
         toast.success("E-mail verificado com sucesso! Cadastro autenticado.");
         handleAuthCompleted({
           email,
@@ -470,11 +448,16 @@ export function AuthPage() {
       return;
     }
     setLoading(true);
-    setTimeout(() => {
-      setForgotSent(true);
-      setLoading(false);
-      toast.success("Link de recuperação enviado para o seu e-mail.");
-    }, 800);
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    setLoading(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    setForgotSent(true);
+    toast.success("Link de recuperação enviado para o seu e-mail.");
   };
 
   // Reset Password
@@ -489,12 +472,15 @@ export function AuthPage() {
       return;
     }
     setLoading(true);
-    setTimeout(() => {
-      toast.success("Senha atualizada com sucesso!");
-      setLoading(false);
-      setMode("login");
-      setLoginStep("password");
-    }, 800);
+    const { error } = await supabase.auth.updateUser({ password });
+    setLoading(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success("Senha atualizada com sucesso!");
+    setMode("login");
+    setLoginStep("password");
   };
 
   return (

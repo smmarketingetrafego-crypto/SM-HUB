@@ -5,7 +5,17 @@ import { supabase } from "@/integrations/supabase/client";
 export type AuthState = "loading" | "authed" | "anon";
 
 export function useAuthState(): AuthState {
-  return "authed";
+  const [state, setState] = useState<AuthState>("loading");
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => setState(data.session ? "authed" : "anon"));
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_IN" || event === "SIGNED_OUT" || event === "USER_UPDATED" || event === "INITIAL_SESSION") {
+        setState(session ? "authed" : "anon");
+      }
+    });
+    return () => sub.subscription.unsubscribe();
+  }, []);
+  return state;
 }
 
 export function AuthSplash() {
