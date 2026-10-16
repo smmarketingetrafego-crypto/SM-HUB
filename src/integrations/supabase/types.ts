@@ -14,6 +14,230 @@ export type Database = {
   }
   public: {
     Tables: {
+      account_drive_folders: {
+        Row: {
+          account_id: string
+          created_at: string
+          folder_id: string
+        }
+        Insert: {
+          account_id: string
+          created_at?: string
+          folder_id: string
+        }
+        Update: {
+          account_id?: string
+          created_at?: string
+          folder_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "account_drive_folders_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: true
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      account_members: {
+        Row: {
+          account_id: string
+          created_at: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          account_id: string
+          created_at?: string
+          role?: string
+          user_id: string
+        }
+        Update: {
+          account_id?: string
+          created_at?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "account_members_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      accounts: {
+        Row: {
+          asaas_customer_id: string | null
+          created_at: string
+          email: string
+          id: string
+          lifetime: boolean
+          name: string
+          notes: string
+          owner_id: string
+          plan_id: string | null
+          plan_status: string
+          plan_valid_until: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          asaas_customer_id?: string | null
+          created_at?: string
+          email?: string
+          id: string
+          lifetime?: boolean
+          name?: string
+          notes?: string
+          owner_id: string
+          plan_id?: string | null
+          plan_status?: string
+          plan_valid_until?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          asaas_customer_id?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          lifetime?: boolean
+          name?: string
+          notes?: string
+          owner_id?: string
+          plan_id?: string | null
+          plan_status?: string
+          plan_valid_until?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "accounts_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payments: {
+        Row: {
+          account_id: string
+          amount: number
+          asaas_payment_id: string | null
+          billing_type: string
+          created_at: string
+          description: string
+          id: string
+          invoice_url: string | null
+          kind: string
+          paid_at: string | null
+          pix_image: string | null
+          pix_payload: string | null
+          reference: string
+          status: string
+        }
+        Insert: {
+          account_id: string
+          amount?: number
+          asaas_payment_id?: string | null
+          billing_type?: string
+          created_at?: string
+          description?: string
+          id?: string
+          invoice_url?: string | null
+          kind?: string
+          paid_at?: string | null
+          pix_image?: string | null
+          pix_payload?: string | null
+          reference?: string
+          status?: string
+        }
+        Update: {
+          account_id?: string
+          amount?: number
+          asaas_payment_id?: string | null
+          billing_type?: string
+          created_at?: string
+          description?: string
+          id?: string
+          invoice_url?: string | null
+          kind?: string
+          paid_at?: string | null
+          pix_image?: string | null
+          pix_payload?: string | null
+          reference?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      plans: {
+        Row: {
+          active: boolean
+          created_at: string
+          cycle: string
+          description: string
+          features: Json
+          id: string
+          name: string
+          price: number
+          sort: number
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          cycle?: string
+          description?: string
+          features?: Json
+          id: string
+          name: string
+          price?: number
+          sort?: number
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          cycle?: string
+          description?: string
+          features?: Json
+          id?: string
+          name?: string
+          price?: number
+          sort?: number
+        }
+        Relationships: []
+      }
+      platform_admins: {
+        Row: {
+          created_at: string
+          label: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          label?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          label?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -35,6 +259,80 @@ export type Database = {
           full_name?: string
           id?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      support_messages: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          sender: string
+          ticket_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          sender: string
+          ticket_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          sender?: string
+          ticket_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_messages_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "support_tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      support_tickets: {
+        Row: {
+          account_id: string | null
+          created_at: string
+          id: string
+          needs_human: boolean
+          requester_type: string
+          status: string
+          subject: string
+          updated_at: string
+          user_email: string
+          user_id: string
+          user_name: string
+        }
+        Insert: {
+          account_id?: string | null
+          created_at?: string
+          id?: string
+          needs_human?: boolean
+          requester_type?: string
+          status?: string
+          subject?: string
+          updated_at?: string
+          user_email?: string
+          user_id: string
+          user_name?: string
+        }
+        Update: {
+          account_id?: string | null
+          created_at?: string
+          id?: string
+          needs_human?: boolean
+          requester_type?: string
+          status?: string
+          subject?: string
+          updated_at?: string
+          user_email?: string
+          user_id?: string
+          user_name?: string
         }
         Relationships: []
       }
@@ -89,6 +387,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_founder: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
       app_role:
