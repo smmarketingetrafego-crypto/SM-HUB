@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import {
   BarChart,

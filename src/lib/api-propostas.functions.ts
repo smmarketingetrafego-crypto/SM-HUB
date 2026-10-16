@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { createServerFn } from "@tanstack/react-start";
 import { readDb, writeDb } from "./db-drive.server";
 

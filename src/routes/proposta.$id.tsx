@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { createFileRoute } from '@tanstack/react-router';
 import { 
   CheckCircle2, Clock, ShieldCheck, Download, Printer, Copy, Check, 

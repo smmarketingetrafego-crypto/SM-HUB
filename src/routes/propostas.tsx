@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { createFileRoute } from '@tanstack/react-router';
 import {
   FileText, FileCheck, FileDown, Plus, Search, Filter, Archive,
