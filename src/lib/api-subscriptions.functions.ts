@@ -79,6 +79,7 @@ export const createSubscriptionCheckout = createServerFn({ method: "POST" })
       const { data: plan } = await supabaseAdmin.from("plans").select("*").eq("id", data.planId).eq("active", true).maybeSingle();
       if (!plan) return { success: false, error: "Plano não encontrado." };
       const { data: acc } = await supabaseAdmin.from("accounts").select("*").eq("id", accountId).single();
+      if (!acc) return { success: false, error: "Conta não encontrada." };
 
       let customerId = acc.asaas_customer_id as string | null;
       if (!customerId) {
