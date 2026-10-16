@@ -445,7 +445,7 @@ export function AuthPage() {
   };
 
   // Forgot Password
-  const handleForgotPassword = (e: React.FormEvent) => {
+  const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim()) {
       toast.error("Digite seu e-mail.");
@@ -465,7 +465,7 @@ export function AuthPage() {
   };
 
   // Reset Password
-  const handleResetPassword = (e: React.FormEvent) => {
+  const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (password.length < 6) {
       toast.error("A nova senha deve ter pelo menos 6 caracteres.");
