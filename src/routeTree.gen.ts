@@ -39,7 +39,6 @@ import { Route as BriefingIdRouteImport } from './routes/briefing.$id'
 import { Route as PortalIdRouteImport } from './routes/portal.$id'
 import { Route as PropostaIdRouteImport } from './routes/proposta.$id'
 import { Route as AuthenticatedMetaAdsConexaoRouteImport } from './routes/_authenticated/meta-ads/conexao'
-import { Route as ApiAuthSocialCallbackRouteImport } from './routes/api.auth.social-callback'
 import { Route as ApiPublicWebhookPaymentRouteImport } from './routes/api/public/webhook.payment'
 
 const IndexRoute = IndexRouteImport.update({
@@ -192,11 +191,6 @@ const AuthenticatedMetaAdsConexaoRoute =
     path: '/meta-ads/conexao',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const ApiAuthSocialCallbackRoute = ApiAuthSocialCallbackRouteImport.update({
-  id: '/api/auth/social-callback',
-  path: '/api/auth/social-callback',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ApiPublicWebhookPaymentRoute = ApiPublicWebhookPaymentRouteImport.update({
   id: '/api/public/webhook/payment',
   path: '/api/public/webhook/payment',
@@ -233,7 +227,6 @@ export interface FileRoutesByFullPath {
   '/portal/$id': typeof PortalIdRoute
   '/proposta/$id': typeof PropostaIdRoute
   '/meta-ads/conexao': typeof AuthenticatedMetaAdsConexaoRoute
-  '/api/auth/social-callback': typeof ApiAuthSocialCallbackRoute
   '/api/public/webhook/payment': typeof ApiPublicWebhookPaymentRoute
 }
 export interface FileRoutesByTo {
@@ -266,7 +259,6 @@ export interface FileRoutesByTo {
   '/portal/$id': typeof PortalIdRoute
   '/proposta/$id': typeof PropostaIdRoute
   '/meta-ads/conexao': typeof AuthenticatedMetaAdsConexaoRoute
-  '/api/auth/social-callback': typeof ApiAuthSocialCallbackRoute
   '/api/public/webhook/payment': typeof ApiPublicWebhookPaymentRoute
 }
 export interface FileRoutesById {
@@ -301,7 +293,6 @@ export interface FileRoutesById {
   '/portal/$id': typeof PortalIdRoute
   '/proposta/$id': typeof PropostaIdRoute
   '/_authenticated/meta-ads/conexao': typeof AuthenticatedMetaAdsConexaoRoute
-  '/api/auth/social-callback': typeof ApiAuthSocialCallbackRoute
   '/api/public/webhook/payment': typeof ApiPublicWebhookPaymentRoute
 }
 export interface FileRouteTypes {
@@ -336,7 +327,6 @@ export interface FileRouteTypes {
     | '/portal/$id'
     | '/proposta/$id'
     | '/meta-ads/conexao'
-    | '/api/auth/social-callback'
     | '/api/public/webhook/payment'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -369,7 +359,6 @@ export interface FileRouteTypes {
     | '/portal/$id'
     | '/proposta/$id'
     | '/meta-ads/conexao'
-    | '/api/auth/social-callback'
     | '/api/public/webhook/payment'
   id:
     | '__root__'
@@ -403,7 +392,6 @@ export interface FileRouteTypes {
     | '/portal/$id'
     | '/proposta/$id'
     | '/_authenticated/meta-ads/conexao'
-    | '/api/auth/social-callback'
     | '/api/public/webhook/payment'
   fileRoutesById: FileRoutesById
 }
@@ -437,7 +425,6 @@ export interface RootRouteChildren {
   BriefingIdRoute: typeof BriefingIdRoute
   PortalIdRoute: typeof PortalIdRoute
   PropostaIdRoute: typeof PropostaIdRoute
-  ApiAuthSocialCallbackRoute: typeof ApiAuthSocialCallbackRoute
   ApiPublicWebhookPaymentRoute: typeof ApiPublicWebhookPaymentRoute
 }
 
@@ -653,13 +640,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMetaAdsConexaoRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/api/auth/social-callback': {
-      id: '/api/auth/social-callback'
-      path: '/api/auth/social-callback'
-      fullPath: '/api/auth/social-callback'
-      preLoaderRoute: typeof ApiAuthSocialCallbackRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/public/webhook/payment': {
       id: '/api/public/webhook/payment'
       path: '/api/public/webhook/payment'
@@ -711,7 +691,6 @@ const rootRouteChildren: RootRouteChildren = {
   BriefingIdRoute: BriefingIdRoute,
   PortalIdRoute: PortalIdRoute,
   PropostaIdRoute: PropostaIdRoute,
-  ApiAuthSocialCallbackRoute: ApiAuthSocialCallbackRoute,
   ApiPublicWebhookPaymentRoute: ApiPublicWebhookPaymentRoute,
 }
 export const routeTree = rootRouteImport
