@@ -18,8 +18,8 @@ import type { Pipeline } from "@/data/extra";
 import { brl } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getPipelines, addLeadDeal, moveLeadDeal, removeLeadDeal, removeBatchDeals, addPipeline } from "@/lib/api-pipelines.server";
-import { triggerFunnelAutomation } from "@/lib/api-automacoes.server";
+import { getPipelines, addLeadDeal, moveLeadDeal, removeLeadDeal, removeBatchDeals, addPipeline } from "@/lib/api-pipelines.functions";
+import { triggerFunnelAutomation } from "@/lib/api-automacoes.functions";
 
 export const Route = createFileRoute("/pipelines")({
   head: () => ({

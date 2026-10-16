@@ -38,8 +38,8 @@ import {
   saveScheduledPost,
   deleteScheduledPost,
   type ScheduledPost
-} from "@/lib/api-conteudo.server";
-import { getClients } from "@/lib/api-clientes.server";
+} from "@/lib/api-conteudo.functions";
+import { getClients } from "@/lib/api-clientes.functions";
 import { toast } from "sonner";
 import {
   format,

@@ -29,7 +29,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuthUser, openAuthPopup } from "@/lib/auth-popup";
 import { useQuery } from "@tanstack/react-query";
-import { getActiveSubscription } from "@/lib/api-subscriptions.server";
+import { getActiveSubscription } from "@/lib/api-subscriptions.functions";
 import { SubscriptionCheckoutModal } from "@/components/subscription/subscription-checkout-modal";
 
 export function Topbar() {

@@ -21,9 +21,9 @@ import {
   chatWithAgent, 
   type AIAgent, 
   type AgentMessage 
-} from "@/lib/api-agentes.server";
+} from "@/lib/api-agentes.functions";
 import { AIConnectModal } from "@/components/integrations/ai-connect-modal";
-import { getIntegrations, type IntegrationsData } from "@/lib/api-integracoes.server";
+import { getIntegrations, type IntegrationsData } from "@/lib/api-integracoes.functions";
 
 export const Route = createFileRoute("/agentes-ia")({
   head: () => ({

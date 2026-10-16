@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { checkPaymentStatus, simulatePaymentConfirmation } from "@/lib/api-webhooks.server";
+import { checkPaymentStatus, simulatePaymentConfirmation } from "@/lib/api-webhooks.functions";
 import {
   Dialog,
   DialogContent,
@@ -18,8 +18,8 @@ import {
   confirmSubscriptionPayment,
   type PlanDefinition,
   type SubscriptionTransaction,
-} from "@/lib/api-subscriptions.server";
-import { sendTransactionalEmail } from "@/lib/api-email.server";
+} from "@/lib/api-subscriptions.functions";
+import { sendTransactionalEmail } from "@/lib/api-email.functions";
 import {
   CheckCircle2,
   Copy,

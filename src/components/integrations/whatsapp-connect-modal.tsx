@@ -15,7 +15,7 @@ import {
   disconnectIntegration, 
   pairWhatsAppWithPhone,
   type WhatsAppConnection 
-} from "@/lib/api-integracoes.server";
+} from "@/lib/api-integracoes.functions";
 
 interface WhatsAppConnectModalProps {
   open: boolean;

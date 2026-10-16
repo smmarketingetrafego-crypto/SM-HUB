@@ -29,8 +29,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getProjects, addProject, updateProject, deleteProject } from "@/lib/api-projetos.server";
-import { getClients } from "@/lib/api-clientes.server";
+import { getProjects, addProject, updateProject, deleteProject } from "@/lib/api-projetos.functions";
+import { getClients } from "@/lib/api-clientes.functions";
 import { brl } from "@/lib/format";
 import { toast } from "sonner";
 

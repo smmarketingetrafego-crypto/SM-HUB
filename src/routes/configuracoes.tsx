@@ -3,8 +3,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { useServerFn } from "@tanstack/react-start";
 import { updateAppSettings } from "./-settings.functions";
-import { getTutorials, saveTutorialItem, deleteTutorialItem } from "@/lib/api-tutoriais.server";
-import { getAutomations, toggleAutomationRule, saveAutomationRule, type AutomationRule } from "@/lib/api-automacoes.server";
+import { getTutorials, saveTutorialItem, deleteTutorialItem } from "@/lib/api-tutoriais.functions";
+import { getAutomations, toggleAutomationRule, saveAutomationRule, type AutomationRule } from "@/lib/api-automacoes.functions";
 import { WhatsAppConnectModal } from "@/components/integrations/whatsapp-connect-modal";
 import { AIConnectModal } from "@/components/integrations/ai-connect-modal";
 import { GatewayConnectModal } from "@/components/integrations/gateway-connect-modal";
@@ -12,8 +12,8 @@ import { EmailConnectModal } from "@/components/integrations/email-connect-modal
 import { openResendConnectPopup, RESEND_EVENT_NAME } from "@/lib/resend-connect";
 import { ContractClauseEditorModal } from "@/components/propostas/contract-clause-editor-modal";
 import { SubscriptionCheckoutModal } from "@/components/subscription/subscription-checkout-modal";
-import { getActiveSubscription } from "@/lib/api-subscriptions.server";
-import { getIntegrations, type IntegrationsData } from "@/lib/api-integracoes.server";
+import { getActiveSubscription } from "@/lib/api-subscriptions.functions";
+import { getIntegrations, type IntegrationsData } from "@/lib/api-integracoes.functions";
 import {
   BellRing,
   Camera,
@@ -88,7 +88,7 @@ import {
   Share2,
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { getAgencyProfile, saveAgencyProfile, type AgencyProfile, DEFAULT_AGENCY_PROFILE } from "@/lib/api-propostas.server";
+import { getAgencyProfile, saveAgencyProfile, type AgencyProfile, DEFAULT_AGENCY_PROFILE } from "@/lib/api-propostas.functions";
 import { AddressFormFields } from "@/components/common/address-form-fields";
 import { TutorialBanner } from "@/components/layout/tutorial-banner";
 import React, { Component, useEffect, useState, type ErrorInfo, type ReactNode } from "react";

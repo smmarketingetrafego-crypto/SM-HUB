@@ -15,7 +15,7 @@ import {
   saveIntegration, 
   disconnectIntegration, 
   type IntegrationsData 
-} from "@/lib/api-integracoes.server";
+} from "@/lib/api-integracoes.functions";
 
 interface GatewayConnectModalProps {
   open: boolean;

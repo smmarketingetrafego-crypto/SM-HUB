@@ -17,7 +17,7 @@ import {
   verifyResendConnection,
   sendTransactionalEmail,
   type EmailIntegrationConfig,
-} from "@/lib/api-email.server";
+} from "@/lib/api-email.functions";
 import {
   openResendConnectPopup,
   openResendDirectLogin,

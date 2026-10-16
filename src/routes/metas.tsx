@@ -63,7 +63,7 @@ import {
   deleteMeta,
   quickUpdateMetaProgress,
   type MetaRecord,
-} from "@/lib/api-metas.server";
+} from "@/lib/api-metas.functions";
 import { TutorialBanner } from "@/components/layout/tutorial-banner";
 
 export const Route = createFileRoute("/metas")({

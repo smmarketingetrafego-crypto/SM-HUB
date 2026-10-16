@@ -59,7 +59,7 @@ import {
   updateCollaborator, 
   deleteCollaborator,
   Collaborator 
-} from "@/lib/api-colaboradores.server";
+} from "@/lib/api-colaboradores.functions";
 
 export const Route = createFileRoute("/colaboradores")({
   component: ColaboradoresPage,

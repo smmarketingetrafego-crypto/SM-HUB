@@ -1,5 +1,5 @@
 import { toast } from "sonner";
-import type { EmailIntegrationConfig } from "./api-email.server";
+import type { EmailIntegrationConfig } from "./api-email.functions";
 
 export const RESEND_EVENT_NAME = "smhub_resend_connected";
 

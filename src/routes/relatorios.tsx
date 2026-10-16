@@ -24,8 +24,8 @@ import {
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
-import { getClients } from "@/lib/api-clientes.server";
-import { getAgencyProfile, type AgencyProfile, DEFAULT_AGENCY_PROFILE } from "@/lib/api-propostas.server";
+import { getClients } from "@/lib/api-clientes.functions";
+import { getAgencyProfile, type AgencyProfile, DEFAULT_AGENCY_PROFILE } from "@/lib/api-propostas.functions";
 import { brl } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

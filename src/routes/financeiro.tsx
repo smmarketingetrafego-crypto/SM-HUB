@@ -43,10 +43,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getTransactions, addTransaction, deleteTransaction, updateTransaction } from "@/lib/api-financeiro.server";
-import { getProducts } from "@/lib/api-produtos.server";
-import { getClients } from "@/lib/api-clientes.server";
-import { getMetas } from "@/lib/api-metas.server";
+import { getTransactions, addTransaction, deleteTransaction, updateTransaction } from "@/lib/api-financeiro.functions";
+import { getProducts } from "@/lib/api-produtos.functions";
+import { getClients } from "@/lib/api-clientes.functions";
+import { getMetas } from "@/lib/api-metas.functions";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/financeiro")({

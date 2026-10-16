@@ -21,10 +21,10 @@ import "react-day-picker/style.css";
 import { brl } from "@/lib/format";
 import { useGoogleLogin } from "@react-oauth/google";
 import { useQuery } from "@tanstack/react-query";
-import { getTransactions } from "@/lib/api-financeiro.server";
-import { getClients } from "@/lib/api-clientes.server";
-import { getPipelines } from "@/lib/api-pipelines.server";
-import { getMetas } from "@/lib/api-metas.server";
+import { getTransactions } from "@/lib/api-financeiro.functions";
+import { getClients } from "@/lib/api-clientes.functions";
+import { getPipelines } from "@/lib/api-pipelines.functions";
+import { getMetas } from "@/lib/api-metas.functions";
 import { useEffect } from "react";
 
 export const Route = createFileRoute("/")(({

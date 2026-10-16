@@ -25,7 +25,7 @@ import { TutorialBanner } from "@/components/layout/tutorial-banner";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getClients } from "@/lib/api-clientes.server";
+import { getClients } from "@/lib/api-clientes.functions";
 import {
   getBriefings,
   createBriefing,
@@ -34,7 +34,7 @@ import {
   type BriefingRecord,
   type BriefingTemplate,
   type BriefingQuestion
-} from "@/lib/api-briefings.server";
+} from "@/lib/api-briefings.functions";
 
 import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";

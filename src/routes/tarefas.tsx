@@ -36,9 +36,9 @@ import {
   DEFAULT_TEAM_MEMBERS,
   type TaskRecord,
   type TaskAssignee
-} from "@/lib/api-tarefas.server";
-import { getProjects } from "@/lib/api-projetos.server";
-import { getCollaborators } from "@/lib/api-colaboradores.server";
+} from "@/lib/api-tarefas.functions";
+import { getProjects } from "@/lib/api-projetos.functions";
+import { getCollaborators } from "@/lib/api-colaboradores.functions";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/tarefas")({

@@ -12,7 +12,7 @@ import {
   saveEmailConfig,
   getEmailConfig,
   sendTransactionalEmail,
-} from "@/lib/api-email.server";
+} from "@/lib/api-email.functions";
 import {
   Sparkles,
   KeyRound,

@@ -37,8 +37,8 @@ import {
   type TipoContrato,
   type OrcamentoItem,
   type FollowUpRecord
-} from "@/lib/api-propostas.server";
-import { getClients } from "@/lib/api-clientes.server";
+} from "@/lib/api-propostas.functions";
+import { getClients } from "@/lib/api-clientes.functions";
 import { ContractClauseEditorModal } from "@/components/propostas/contract-clause-editor-modal";
 import { ContractDocumentModal } from "@/components/propostas/contract-document-modal";
 

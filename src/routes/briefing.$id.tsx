@@ -11,8 +11,8 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { getBriefingById, submitBriefingResponse, type BriefingRecord } from "@/lib/api-briefings.server";
-import { getAgencyProfile, type AgencyProfile, DEFAULT_AGENCY_PROFILE } from "@/lib/api-propostas.server";
+import { getBriefingById, submitBriefingResponse, type BriefingRecord } from "@/lib/api-briefings.functions";
+import { getAgencyProfile, type AgencyProfile, DEFAULT_AGENCY_PROFILE } from "@/lib/api-propostas.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";

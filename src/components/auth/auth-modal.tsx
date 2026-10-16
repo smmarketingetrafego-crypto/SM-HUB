@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { sendTransactionalEmail } from "@/lib/api-email.server";
+import { sendTransactionalEmail } from "@/lib/api-email.functions";
 import { notifyAuthSuccess, openAuthPopup } from "@/lib/auth-popup";
 import {
   Mail,

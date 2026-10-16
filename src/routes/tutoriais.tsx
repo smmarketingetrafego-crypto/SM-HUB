@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useStore, setStore } from "@/lib/store";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getTutorials, saveTutorialItem, deleteTutorialItem, type TutorialItem } from "@/lib/api-tutoriais.server";
+import { getTutorials, saveTutorialItem, deleteTutorialItem, type TutorialItem } from "@/lib/api-tutoriais.functions";
 
 export const Route = createFileRoute("/tutoriais")({
   head: () => ({

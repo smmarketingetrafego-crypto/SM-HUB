@@ -8,8 +8,8 @@ import {
 import { useState, useRef, useEffect } from "react";
 import { toast } from "sonner";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getPublicOrcamento, clientApproveOrcamento, trackProposalView, type Orcamento } from "@/lib/api-propostas.server";
-import { checkPaymentStatus } from "@/lib/api-webhooks.server";
+import { getPublicOrcamento, clientApproveOrcamento, trackProposalView, type Orcamento } from "@/lib/api-propostas.functions";
+import { checkPaymentStatus } from "@/lib/api-webhooks.functions";
 import { ContractDocumentModal } from "@/components/propostas/contract-document-modal";
 import { brl } from "@/lib/format";
 import { Button } from "@/components/ui/button";

@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { readDb } from "./db-drive.server";
-import { type Orcamento, type AgencyProfile, DEFAULT_AGENCY_PROFILE, DEFAULT_ORCAMENTOS } from "./api-propostas.server";
+import { type Orcamento, type AgencyProfile, DEFAULT_AGENCY_PROFILE, DEFAULT_ORCAMENTOS } from "./api-propostas.functions";
 
 export interface ClientPortalData {
   client: {

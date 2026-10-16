@@ -6,10 +6,10 @@ import { Button } from "@/components/ui/button";
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getWhatsAppMessages, sendWhatsAppMessage, type WhatsAppMessage } from "@/lib/api-automacoes.server";
-import { getClients } from "@/lib/api-clientes.server";
+import { getWhatsAppMessages, sendWhatsAppMessage, type WhatsAppMessage } from "@/lib/api-automacoes.functions";
+import { getClients } from "@/lib/api-clientes.functions";
 import { WhatsAppConnectModal } from "@/components/integrations/whatsapp-connect-modal";
-import { getIntegrations, type IntegrationsData } from "@/lib/api-integracoes.server";
+import { getIntegrations, type IntegrationsData } from "@/lib/api-integracoes.functions";
 
 export const Route = createFileRoute("/whatsapp")({
   head: () => ({

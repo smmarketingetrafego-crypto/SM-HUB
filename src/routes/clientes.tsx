@@ -28,7 +28,7 @@ import { brl, initials, shortDate } from "@/lib/format";
 import { startQuoteFor } from "@/lib/store";
 import { cn } from "@/lib/utils";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getClients, addClient, updateClient, archiveClient, deleteClient, addClientGroup, deleteClientGroup } from "@/lib/api-clientes.server";
+import { getClients, addClient, updateClient, archiveClient, deleteClient, addClientGroup, deleteClientGroup } from "@/lib/api-clientes.functions";
 
 export const Route = createFileRoute("/clientes")({
   head: () => ({ meta: [

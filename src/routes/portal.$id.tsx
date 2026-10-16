@@ -21,13 +21,13 @@ import {
 import { useState } from "react";
 import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
-import { getClientPortalData } from "@/lib/api-portal.server";
+import { getClientPortalData } from "@/lib/api-portal.functions";
 import { brl } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { ContractDocumentModal } from "@/components/propostas/contract-document-modal";
-import type { Orcamento } from "@/lib/api-propostas.server";
+import type { Orcamento } from "@/lib/api-propostas.functions";
 
 export const Route = createFileRoute("/portal/$id")({
   loader: async ({ params }) => {

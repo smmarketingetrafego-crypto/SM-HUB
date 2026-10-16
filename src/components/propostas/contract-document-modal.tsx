@@ -18,7 +18,7 @@ import {
   Lock,
 } from "lucide-react";
 import { toast } from "sonner";
-import type { Orcamento, AgencyProfile } from "@/lib/api-propostas.server";
+import type { Orcamento, AgencyProfile } from "@/lib/api-propostas.functions";
 
 interface ContractDocumentModalProps {
   open: boolean;
