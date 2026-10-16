@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import { readDb, writeDb } from "./db-drive.server";
+import { readDb, writeDb } from "./db-drive";
 
 export const getClients = createServerFn({ method: "GET" }).handler(async () => {
   try {

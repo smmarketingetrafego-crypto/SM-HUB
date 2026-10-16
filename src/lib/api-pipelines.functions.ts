@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import { readDb, writeDb } from "./db-drive.server";
+import { readDb, writeDb } from "./db-drive";
 import type { Pipeline } from "@/data/extra";
 
 export const DEFAULT_PIPELINE: Pipeline = {

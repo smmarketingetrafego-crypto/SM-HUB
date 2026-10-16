@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import { readDb, writeDb } from "./db-drive.server";
+import { readDb, writeDb } from "./db-drive";
 
 export interface PlanDefinition {
   id: "freelancer" | "growth" | "scale";
