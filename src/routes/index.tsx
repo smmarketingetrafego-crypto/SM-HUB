@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { useState, useRef } from "react";
 import { toast } from "sonner";
+import { isToday } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useStore, setStore } from "@/lib/store";
