@@ -341,10 +341,9 @@ export const sendOrcamentoWhatsApp = createServerFn({ method: "POST" })
 
 export const getAgencyProfile = createServerFn({ method: "GET" }).handler(async () => {
   try {
-    const db = await readDb({ publicAccess: true });
-    if (!db.agencyProfile || db.agencyProfile.legalName === "SM Hub Soluções Digitais Ltda.") {
-      db.agencyProfile = { ...DEFAULT_AGENCY_PROFILE };
-      await writeDb(db, { publicAccess: true });
+    const db = await readDb();
+    if (!db.agencyProfile) {
+      return { ...DEFAULT_AGENCY_PROFILE };
     }
     return db.agencyProfile as AgencyProfile;
   } catch (e: any) {
@@ -388,8 +387,8 @@ export const getPublicOrcamento = createServerFn({ method: "GET" })
   .inputValidator((id: string) => id)
   .handler(async ({ data: id }) => {
     try {
-      const db = await readDb({ publicAccess: true });
-      if (!db.orcamentos) db.orcamentos = [...DEFAULT_ORCAMENTOS];
+      const db = await readDb({ publicAccess: true, locate: { collection: "orcamentos", id } });
+      if (!db.orcamentos) db.orcamentos = [];
       const orc = db.orcamentos.find((o: any) => o.id === id || o.numero?.toLowerCase() === id?.toLowerCase());
       if (!orc) return { success: false, error: "Orçamento não encontrado" };
       
@@ -424,8 +423,8 @@ export const clientApproveOrcamento = createServerFn({ method: "POST" })
   .inputValidator((data: { id: string; clientName: string; clientDocument?: string; signature?: string }) => data)
   .handler(async ({ data }) => {
     try {
-      const db = await readDb({ publicAccess: true });
-      if (!db.orcamentos) db.orcamentos = [...DEFAULT_ORCAMENTOS];
+      const db = await readDb({ publicAccess: true, locate: { collection: "orcamentos", id: data.id } });
+      if (!db.orcamentos) db.orcamentos = [];
       const orc = db.orcamentos.find((o: any) => o.id === data.id);
       if (!orc) return { success: false, error: "Orçamento não encontrado" };
 
@@ -619,8 +618,8 @@ export const trackProposalView = createServerFn({ method: "POST" })
   .inputValidator((params: { id: string; userAgent?: string }) => params)
   .handler(async ({ data: { id, userAgent } }) => {
     try {
-      const db = await readDb({ publicAccess: true });
-      if (!db.orcamentos) db.orcamentos = [...DEFAULT_ORCAMENTOS];
+      const db = await readDb({ publicAccess: true, locate: { collection: "orcamentos", id } });
+      if (!db.orcamentos) db.orcamentos = [];
       const orc = db.orcamentos.find((o: any) => o.id === id);
       if (!orc) return { success: false, error: "Orçamento não encontrado" };
 
