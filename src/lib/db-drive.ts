@@ -1,11 +1,10 @@
 import { createServerOnlyFn } from "@tanstack/react-start";
-// Agency data store backed by Lovable Cloud.
-// The whole agency shares one workspace document; only signed-in team members
-// can read/write it, except explicitly public flows (client portal, proposals,
-// payment webhook) which pass { publicAccess: true }.
+// Per-account data store backed by Lovable Cloud.
+// Each account (one per signup) has its own workspace_data row keyed by account id.
+// Signed-in calls resolve the caller's account; the founder may act on any account
+// by sending the `x-sm-account` header. Public flows (portal, proposal, briefing,
+// payment webhook) must pass { publicAccess: true, locate } to find the owning account.
 export const DB_FILENAME = "smhub_database.json";
-
-const AGENCY_ROW_ID = "00000000-0000-0000-0000-000000000001";
 
 const EMPTY_DB = () => ({
   transactions: [],
@@ -20,12 +19,16 @@ const EMPTY_DB = () => ({
   tutorials: [],
   automations: [],
   orcamentos: [],
+  briefings: [],
   integrations: {},
 });
 
-type Opts = { publicAccess?: boolean };
+export type Locate = { collection: string; id: string; field?: string };
+type Opts = { publicAccess?: boolean; accountId?: string; locate?: Locate };
 
-const assertSignedIn = createServerOnlyFn(async () => {
+const ACCOUNT_KEY = "__accountId";
+
+export const getCaller = createServerOnlyFn(async () => {
   const { getRequest } = await import("@tanstack/react-start/server");
   const req = getRequest();
   const auth = req?.headers.get("authorization") ?? "";
@@ -34,27 +37,89 @@ const assertSignedIn = createServerOnlyFn(async () => {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data, error } = await supabaseAdmin.auth.getUser(token);
   if (error || !data.user) throw new Error("Sessão expirada. Faça login novamente.");
-  return data.user;
+  const { data: f } = await supabaseAdmin
+    .from("platform_admins")
+    .select("user_id")
+    .eq("user_id", data.user.id)
+    .maybeSingle();
+  return { user: data.user, isFounder: !!f, requestedAccount: req?.headers.get("x-sm-account") || "" };
+});
+
+export const resolveAccountId = createServerOnlyFn(async (): Promise<string> => {
+  const { user, isFounder, requestedAccount } = await getCaller();
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  if (isFounder && requestedAccount) return requestedAccount;
+  const { data: acc } = await supabaseAdmin
+    .from("accounts")
+    .select("id,status")
+    .eq("id", user.id)
+    .maybeSingle();
+  if (acc) {
+    if (acc.status === "suspended" && !isFounder) throw new Error("Conta suspensa. Fale com o suporte.");
+    return acc.id;
+  }
+  const { data: mem } = await supabaseAdmin
+    .from("account_members")
+    .select("account_id")
+    .eq("user_id", user.id)
+    .limit(1)
+    .maybeSingle();
+  if (mem) return mem.account_id;
+  // Safety net if the signup trigger did not run.
+  await supabaseAdmin.from("accounts").insert({ id: user.id, owner_id: user.id, email: user.email ?? "" });
+  return user.id;
+});
+
+const locateAccount = createServerOnlyFn(async (loc: Locate): Promise<string> => {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const field = loc.field || "id";
+  const { data, error } = await supabaseAdmin
+    .from("workspace_data")
+    .select("user_id")
+    .filter(`data->${loc.collection}`, "cs", JSON.stringify([{ [field]: loc.id }]))
+    .limit(1)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  if (!data) throw new Error("Link não encontrado ou expirado.");
+  return data.user_id;
 });
 
 export const readDb = createServerOnlyFn(async (opts: Opts = {}): Promise<any> => {
-  if (!opts.publicAccess) await assertSignedIn();
+  let accountId = opts.accountId;
+  if (!accountId) {
+    if (opts.publicAccess) {
+      if (!opts.locate) throw new Error("Link inválido.");
+      accountId = await locateAccount(opts.locate);
+    } else {
+      accountId = await resolveAccountId();
+    }
+  }
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data, error } = await supabaseAdmin
     .from("workspace_data")
     .select("data")
-    .eq("user_id", AGENCY_ROW_ID)
+    .eq("user_id", accountId)
     .maybeSingle();
   if (error) throw new Error(error.message);
-  return { ...EMPTY_DB(), ...((data?.data as object) ?? {}) };
+  const db = { ...EMPTY_DB(), ...((data?.data as object) ?? {}) };
+  Object.defineProperty(db, ACCOUNT_KEY, { value: accountId, enumerable: false });
+  return db;
 });
 
 export const writeDb = createServerOnlyFn(async (value: any, opts: Opts = {}): Promise<void> => {
-  if (!opts.publicAccess) await assertSignedIn();
+  let accountId: string | undefined = opts.accountId || value?.[ACCOUNT_KEY];
+  if (!accountId) {
+    if (opts.publicAccess) throw new Error("Conta não identificada.");
+    accountId = await resolveAccountId();
+  } else if (!opts.publicAccess && !opts.accountId) {
+    // Signed-in writes must target the caller's own (or founder-selected) account.
+    const mine = await resolveAccountId();
+    if (mine !== accountId) throw new Error("Acesso negado.");
+  }
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { error } = await supabaseAdmin
     .from("workspace_data")
-    .upsert({ user_id: AGENCY_ROW_ID, data: value, updated_at: new Date().toISOString() });
+    .upsert({ user_id: accountId, data: value, updated_at: new Date().toISOString() });
   if (error) throw new Error(error.message);
 });
 
