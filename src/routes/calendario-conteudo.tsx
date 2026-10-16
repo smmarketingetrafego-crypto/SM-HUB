@@ -1,4 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router';
+import { useEffect } from "react";
 import { PageHeader } from "@/components/layout/page-header";
 import { TutorialBanner } from "@/components/layout/tutorial-banner";
 import {
