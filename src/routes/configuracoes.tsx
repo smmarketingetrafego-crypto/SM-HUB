@@ -158,6 +158,7 @@ import { useTheme, applyThemeAndAccent } from "@/lib/theme";
 import { Video as VideoIcon, Plus as PlusIcon, Trash2 as TrashIcon } from "lucide-react";
 import { useStore, setStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
+import { IntegrationStatusPanel } from "@/components/integrations/integration-status-panel";
 
 export const Route = createFileRoute("/configuracoes")({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -324,13 +325,13 @@ function SettingsPage() {
 
         <TabsContent value="integracoes">
           <TabErrorBoundary title="Integrações">
-            <IntegrationsTab prefs={prefs} setPref={setPref} action={saveButton("integrações")} />
+            <IntegrationStatusPanel />
           </TabErrorBoundary>
         </TabsContent>
 
         <TabsContent value="email">
           <TabErrorBoundary title="E-mail">
-            <EmailTab prefs={prefs} setPref={setPref} action={saveButton("e-mail")} />
+            <IntegrationStatusPanel />
           </TabErrorBoundary>
         </TabsContent>
 

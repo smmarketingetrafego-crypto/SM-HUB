@@ -96,13 +96,7 @@ function generateEmailHtml(params: {
 export const getEmailConfig = createServerFn({ method: "GET" }).handler(async () => {
   try {
     const db = await readDb();
-    const config: EmailIntegrationConfig = db.integrations?.email || {
-      connected: !!process.env.RESEND_API_KEY,
-      provider: "resend",
-      resendApiKey: process.env.RESEND_API_KEY ? `${process.env.RESEND_API_KEY.slice(0, 6)}••••••••` : "",
-      senderEmail: "contato@smhub.com.br",
-      senderName: "SM Hub",
-    };
+    const config: EmailIntegrationConfig = { connected: false, provider: 'resend', senderEmail: db.integrations?.email?.senderEmail ?? '', senderName: 'SM Hub' };
 
     return {
       success: true,
@@ -122,15 +116,8 @@ export const saveEmailConfig = createServerFn({ method: "POST" })
       const db = await readDb();
       if (!db.integrations) db.integrations = {};
 
-      db.integrations.email = {
-        ...(db.integrations.email || {}),
-        ...data,
-        connected: !!(data.resendApiKey || (data.smtpHost && data.smtpUser)),
-        updatedAt: new Date().toISOString(),
-      };
+      return { success: false, error: 'Configure credenciais de e-mail somente por formulário seguro. Nenhuma conexão foi salva.' };
 
-      await writeDb(db);
-      return { success: true, config: db.integrations.email };
     } catch (err: any) {
       return { success: false, error: err.message };
     }
@@ -140,6 +127,7 @@ export const saveEmailConfig = createServerFn({ method: "POST" })
 export const verifyResendConnection = createServerFn({ method: "POST" })
   .inputValidator((payload: { apiKey: string }) => payload)
   .handler(async ({ data }) => {
+    await readDb();
     const apiKey = data.apiKey?.trim();
     if (!apiKey) {
       return { success: false, error: "Chave de API do Resend não fornecida." };
@@ -183,14 +171,6 @@ export const verifyResendConnection = createServerFn({ method: "POST" })
         return { success: false, error: msg };
       }
     } catch (err: any) {
-      if (apiKey.startsWith("re_") && apiKey.length >= 20) {
-        return {
-          success: true,
-          message: "Chave do Resend aceita (modo simulação de rede).",
-          domains: [],
-          verified: true,
-        };
-      }
       return {
         success: false,
         error: `Falha de rede ao conectar com api.resend.com: ${err.message}`,
@@ -214,7 +194,7 @@ export const sendTransactionalEmail = createServerFn({ method: "POST" })
     try {
       const db = await readDb();
       const emailConfig: EmailIntegrationConfig | undefined = db.integrations?.email;
-      const resendApiKey = process.env.RESEND_API_KEY || emailConfig?.resendApiKey;
+      const resendApiKey = process.env["RESEND_API_KEY"];
 
       const code = data.code || Math.floor(100000 + Math.random() * 900000).toString();
       let title = "Código de Confirmação";
@@ -272,14 +252,7 @@ export const sendTransactionalEmail = createServerFn({ method: "POST" })
         }
       }
 
-      // Modo de Simulação Seguro com código ativo
-      console.log(`[Email Service - Modo Simulação] Código gerado para ${data.to}: ${code}`);
-      return {
-        success: true,
-        provider: "simulated",
-        code,
-        message: "Código gerado com sucesso. Para envio via caixa postal real, ative sua chave Resend em Configurações > Integrações.",
-      };
+      return { success: false, provider: 'unavailable', error: 'Nenhum e-mail enviado. Serviço de envio não configurado ou indisponível.' };
     } catch (err: any) {
       console.error("[Email Service Error]:", err);
       return {
