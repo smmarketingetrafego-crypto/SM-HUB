@@ -13,3 +13,7 @@
 - Each account's app data lives in its own `workspace_data` row (keyed by account id) via `src/lib/db-drive.ts`; founders (platform_admins) may target any account with the `x-sm-account` header; public flows locate the owning account by entity id; why: per-account isolation on edge hosting.
 - Plan billing goes through Asaas (`src/lib/asaas.server.ts`) and the token-verified webhook at /api/public/webhook/payment; why: platform revenue only — agency proposals use the agency's own Pix key.
 - Server functions live in `src/lib/api-*.functions.ts`; only explicitly public flows (portal, proposal, briefing, payment webhook) pass `publicAccess: true`; why: everything else requires a signed-in team member.
+- Platform administration uses authenticated functions with founder membership checked through the caller's RLS client before privileged writes; why: sidebar visibility and account context are not authorization.
+- Support uses persisted tickets and ordered messages with dedicated ticket URLs; initial AI is a one-shot guidance response, not an autonomous agent; why: human escalation and reload history must stay attached to the ticket.
+- New subscription inserts require a confirmed billing catalog in both the server action and a database trigger; why: old published clients must also fail closed on unapproved prices.
+- Drive configuration and file records are server-only and keyed by account; connection stays pending until a central App connector is linked; why: no shared credentials or unrestricted folder access reach account users.

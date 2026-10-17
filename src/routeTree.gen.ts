@@ -25,6 +25,7 @@ import { Route as ConteudoRouteImport } from './routes/conteudo'
 import { Route as ConteudosRouteImport } from './routes/conteudos'
 import { Route as FinanceiroRouteImport } from './routes/financeiro'
 import { Route as FundadorRouteImport } from './routes/fundador'
+import { Route as IntegracoesRouteImport } from './routes/integracoes'
 import { Route as LeadDetailsRouteImport } from './routes/lead-details'
 import { Route as LeadsRouteImport } from './routes/leads'
 import { Route as MetasRouteImport } from './routes/metas'
@@ -121,6 +122,11 @@ const FinanceiroRoute = FinanceiroRouteImport.update({
 const FundadorRoute = FundadorRouteImport.update({
   id: '/fundador',
   path: '/fundador',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IntegracoesRoute = IntegracoesRouteImport.update({
+  id: '/integracoes',
+  path: '/integracoes',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LeadDetailsRoute = LeadDetailsRouteImport.update({
@@ -231,6 +237,7 @@ export interface FileRoutesByFullPath {
   '/conteudos': typeof ConteudosRoute
   '/financeiro': typeof FinanceiroRoute
   '/fundador': typeof FundadorRoute
+  '/integracoes': typeof IntegracoesRoute
   '/lead-details': typeof LeadDetailsRoute
   '/leads': typeof LeadsRoute
   '/metas': typeof MetasRoute
@@ -266,6 +273,7 @@ export interface FileRoutesByTo {
   '/conteudos': typeof ConteudosRoute
   '/financeiro': typeof FinanceiroRoute
   '/fundador': typeof FundadorRoute
+  '/integracoes': typeof IntegracoesRoute
   '/lead-details': typeof LeadDetailsRoute
   '/leads': typeof LeadsRoute
   '/metas': typeof MetasRoute
@@ -303,6 +311,7 @@ export interface FileRoutesById {
   '/conteudos': typeof ConteudosRoute
   '/financeiro': typeof FinanceiroRoute
   '/fundador': typeof FundadorRoute
+  '/integracoes': typeof IntegracoesRoute
   '/lead-details': typeof LeadDetailsRoute
   '/leads': typeof LeadsRoute
   '/metas': typeof MetasRoute
@@ -340,6 +349,7 @@ export interface FileRouteTypes {
     | '/conteudos'
     | '/financeiro'
     | '/fundador'
+    | '/integracoes'
     | '/lead-details'
     | '/leads'
     | '/metas'
@@ -375,6 +385,7 @@ export interface FileRouteTypes {
     | '/conteudos'
     | '/financeiro'
     | '/fundador'
+    | '/integracoes'
     | '/lead-details'
     | '/leads'
     | '/metas'
@@ -411,6 +422,7 @@ export interface FileRouteTypes {
     | '/conteudos'
     | '/financeiro'
     | '/fundador'
+    | '/integracoes'
     | '/lead-details'
     | '/leads'
     | '/metas'
@@ -448,6 +460,7 @@ export interface RootRouteChildren {
   ConteudosRoute: typeof ConteudosRoute
   FinanceiroRoute: typeof FinanceiroRoute
   FundadorRoute: typeof FundadorRoute
+  IntegracoesRoute: typeof IntegracoesRoute
   LeadDetailsRoute: typeof LeadDetailsRoute
   LeadsRoute: typeof LeadsRoute
   MetasRoute: typeof MetasRoute
@@ -578,6 +591,13 @@ declare module '@tanstack/react-router' {
       path: '/fundador'
       fullPath: '/fundador'
       preLoaderRoute: typeof FundadorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/integracoes': {
+      id: '/integracoes'
+      path: '/integracoes'
+      fullPath: '/integracoes'
+      preLoaderRoute: typeof IntegracoesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/lead-details': {
@@ -748,6 +768,7 @@ const rootRouteChildren: RootRouteChildren = {
   ConteudosRoute: ConteudosRoute,
   FinanceiroRoute: FinanceiroRoute,
   FundadorRoute: FundadorRoute,
+  IntegracoesRoute: IntegracoesRoute,
   LeadDetailsRoute: LeadDetailsRoute,
   LeadsRoute: LeadsRoute,
   MetasRoute: MetasRoute,

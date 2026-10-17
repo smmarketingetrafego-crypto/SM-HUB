@@ -99,7 +99,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
       { name: "apple-mobile-web-app-title", content: "SM Hub" },
       { property: "og:type", content: "website" },
-      { property: "og:image", content: "/smhub-logo.png" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [
@@ -247,6 +246,7 @@ function RootComponent() {
               </div>
               <div className="flex min-w-0 flex-1 flex-col">
                 <Topbar />
+                <FounderAccountBanner />
                 <main className="flex-1 space-y-6 px-5 py-6 md:px-8 md:py-8">
                   {/* Required: nested routes render here. */}
                   <Outlet />
@@ -262,4 +262,11 @@ function RootComponent() {
       </GoogleOAuthProvider>
     </QueryClientProvider>
   );
+}
+
+function FounderAccountBanner() {
+  const [label, setLabel] = useState("");
+  useEffect(() => { setLabel(sessionStorage.getItem("smhub-founder-account-label") ?? ""); }, []);
+  if (!label) return null;
+  return <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border bg-secondary px-6 py-3 text-sm text-secondary-foreground"><span>Founder Master · Conta aberta: {label}</span><a href="/fundador" className="underline" onClick={() => { sessionStorage.removeItem("smhub-founder-account"); sessionStorage.removeItem("smhub-founder-account-label"); }}>Voltar à minha conta</a></div>;
 }
