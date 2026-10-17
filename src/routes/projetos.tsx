@@ -37,6 +37,10 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/projetos")({
   head: () => ({
     meta: [
+      { property: 'og:title', content: 'Projetos & Entregas — SM Hub' },
+      { property: 'og:description', content: 'Acompanhe a entrega dos serviços e cronogramas dos clientes.' },
+      { property: 'og:type', content: 'website' },
+      { name: 'twitter:card', content: 'summary_large_image' },
       { title: "Projetos & Entregas — SM Hub" },
       { name: "description", content: "Acompanhe a entrega dos serviços e cronogramas dos clientes." },
     ],

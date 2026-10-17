@@ -61,6 +61,8 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 export const Route = createFileRoute("/briefings")({
   head: () => ({
     meta: [
+      { property: 'og:type', content: 'website' },
+      { name: 'twitter:card', content: 'summary_large_image' },
       { title: "Briefings — SM Hub" },
       { name: "description", content: "Crie briefings em etapas, envie o link ao cliente e receba as respostas." },
       { property: "og:title", content: "Briefings — SM Hub" },

@@ -37,6 +37,10 @@ import { Badge } from "@/components/ui/badge";
 export const Route = createFileRoute("/relatorios")({
   head: () => ({
     meta: [
+      { property: 'og:title', content: 'Relatórios Executivos de Performance — SM Hub' },
+      { property: 'og:description', content: 'Gere relatórios executivos de tráfego, conversão e ROI com períodos configuráveis.' },
+      { property: 'og:type', content: 'website' },
+      { name: 'twitter:card', content: 'summary_large_image' },
       { title: "Relatórios Executivos de Performance — SM Hub" },
       { name: "description", content: "Gere relatórios executivos de tráfego, conversão e ROI com períodos configuráveis." },
     ],

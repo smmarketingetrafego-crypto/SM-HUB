@@ -1,3 +1,4 @@
+import { pageMeta } from '@/lib/page-meta';
 import { createFileRoute } from '@tanstack/react-router';
 import { TutorialBanner } from "@/components/layout/tutorial-banner";
 import { Search, Plus, Filter, Package, MoreVertical, Edit2, Trash2 } from "lucide-react";
@@ -15,6 +16,7 @@ import { getProducts, addProduct, updateProduct, deleteProduct } from "@/lib/api
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/produtos")({
+  head: () => pageMeta('Produtos', 'Área de produtos do SM Hub.'),
   component: ProdutosPage,
 });
 

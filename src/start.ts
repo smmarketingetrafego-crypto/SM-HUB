@@ -24,7 +24,12 @@ const csrfMiddleware = createCsrfMiddleware({
   filter: (ctx) => ctx.handlerType === "serverFn",
 });
 
+const attachAccountContext = createMiddleware({ type: "function" }).client(async ({ next }) => {
+  const account = sessionStorage.getItem("smhub-founder-account");
+  return next({ headers: account ? { "x-sm-account": account } : {} });
+});
+
 export const startInstance = createStart(() => ({
-  functionMiddleware: [attachSupabaseAuth],
+  functionMiddleware: [attachSupabaseAuth, attachAccountContext],
   requestMiddleware: [errorMiddleware, csrfMiddleware],
 }));

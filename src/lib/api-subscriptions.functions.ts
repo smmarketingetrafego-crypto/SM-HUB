@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { getCaller, resolveAccountId } from "./db-drive";
+import { canChargePlan } from "./platform-rules";
 
 export interface PlanRow {
   id: string;
@@ -10,11 +11,15 @@ export interface PlanRow {
   features: string[];
   active: boolean;
   sort: number;
+  billing_ready: boolean;
 }
 
 export const listPlans = createServerFn({ method: "GET" }).handler(async () => {
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const { data, error } = await supabaseAdmin.from("plans").select("*").eq("active", true).order("sort");
+  const { createClient } = await import('@supabase/supabase-js');
+  const key = process.env['SUPABASE_PUBLISHABLE_KEY']; const url = process.env['SUPABASE_URL'];
+  if (!key || !url) throw new Error('Catálogo indisponível.');
+  const client = createClient(url, key, { auth: { persistSession: false }, global: { fetch: (input, init) => { const headers = new Headers(init?.headers); if (key.startsWith('sb_')) headers.delete('Authorization'); headers.set('apikey', key); return fetch(input, { ...init, headers }); } } });
+  const { data, error } = await client.from('plans').select('*').eq('active', true).eq('billing_ready', true).order('sort');
   if (error) throw new Error(error.message);
   return (data ?? []).map((p) => ({ ...p, price: Number(p.price), features: (p.features as string[]) ?? [] })) as PlanRow[];
 });
@@ -77,7 +82,8 @@ export const createSubscriptionCheckout = createServerFn({ method: "POST" })
       const { asaas } = await import("./asaas.server");
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
       const { data: plan } = await supabaseAdmin.from("plans").select("*").eq("id", data.planId).eq("active", true).maybeSingle();
-      if (!plan) return { success: false, error: "Plano não encontrado." };
+      if (!plan || !canChargePlan(plan)) return { success: false, error: "Plano ainda não liberado para cobrança pelo fundador." };
+      if (!process.env["ASAAS_API_KEY"] || !process.env["ASAAS_WEBHOOK_TOKEN"]) return { success: false, error: "Pagamentos aguardam configuração segura do Asaas e confirmação automática." };
       const { data: acc } = await supabaseAdmin.from("accounts").select("*").eq("id", accountId).single();
       if (!acc) return { success: false, error: "Conta não encontrada." };
 

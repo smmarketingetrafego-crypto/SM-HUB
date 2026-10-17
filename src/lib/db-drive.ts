@@ -48,7 +48,11 @@ export const getCaller = createServerOnlyFn(async () => {
 export const resolveAccountId = createServerOnlyFn(async (): Promise<string> => {
   const { user, isFounder, requestedAccount } = await getCaller();
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  if (isFounder && requestedAccount) return requestedAccount;
+  if (isFounder && requestedAccount) {
+    const { data: target, error } = await supabaseAdmin.from("accounts").select("id").eq("id", requestedAccount).maybeSingle();
+    if (error || !target) throw new Error("Conta não encontrada.");
+    return target.id;
+  }
   const { data: acc } = await supabaseAdmin
     .from("accounts")
     .select("id,status")
@@ -64,7 +68,11 @@ export const resolveAccountId = createServerOnlyFn(async (): Promise<string> => 
     .eq("user_id", user.id)
     .limit(1)
     .maybeSingle();
-  if (mem) return mem.account_id;
+  if (mem) {
+    const { data: teamAccount } = await supabaseAdmin.from("accounts").select("status").eq("id", mem.account_id).maybeSingle();
+    if (!teamAccount || (teamAccount.status === "suspended" && !isFounder)) throw new Error("Conta suspensa ou indisponível. Fale com o suporte.");
+    return mem.account_id;
+  }
   // Safety net if the signup trigger did not run.
   await supabaseAdmin.from("accounts").insert({ id: user.id, owner_id: user.id, email: user.email ?? "" });
   return user.id;

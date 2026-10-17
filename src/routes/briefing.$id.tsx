@@ -1,3 +1,4 @@
+import { pageMeta } from '@/lib/page-meta';
 import { createFileRoute } from '@tanstack/react-router';
 import {
   ClipboardCheck,
@@ -21,6 +22,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/briefing/$id")({
+  head: () => pageMeta('Briefing', 'Área de briefing do SM Hub.'),
   component: PublicBriefingPage,
 });
 

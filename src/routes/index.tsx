@@ -31,6 +31,10 @@ import { useEffect } from "react";
 export const Route = createFileRoute("/")(({
   head: () => ({
     meta: [
+      { property: 'og:title', content: 'Dashboard — SM Hub' },
+      { property: 'og:description', content: 'Visão geral do seu negócio' },
+      { property: 'og:type', content: 'website' },
+      { name: 'twitter:card', content: 'summary_large_image' },
       { title: "Dashboard — SM Hub" },
       { name: "description", content: "Visão geral do seu negócio" },
     ],

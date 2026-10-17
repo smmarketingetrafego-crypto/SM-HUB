@@ -39,6 +39,10 @@ export const Route = createFileRoute("/portal/$id")({
   },
   head: () => ({
     meta: [
+      { property: 'og:title', content: 'Portal do Cliente — SM Hub' },
+      { property: 'og:description', content: 'Acompanhe seus projetos, contratos, entregas e faturas em tempo real.' },
+      { property: 'og:type', content: 'website' },
+      { name: 'twitter:card', content: 'summary_large_image' },
       { title: "Portal do Cliente — SM Hub" },
       { name: "description", content: "Acompanhe seus projetos, contratos, entregas e faturas em tempo real." },
     ],

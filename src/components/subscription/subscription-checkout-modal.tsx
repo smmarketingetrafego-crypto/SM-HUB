@@ -139,7 +139,7 @@ export function SubscriptionCheckoutModal({ open, onOpenChange, defaultPlanId, u
                   {p.description && <p className="text-xs text-muted-foreground">{p.description}</p>}
                 </button>
               ))}
-              {plans.length === 0 && <p className="text-sm text-muted-foreground">Nenhum plano disponível.</p>}
+              {plans.length === 0 && <p className="text-sm text-muted-foreground">Cobranças indisponíveis. O fundador precisa definir nomes, preços e recursos reais dos planos.</p>}
             </div>
             <div className="grid grid-cols-3 gap-2">
               {(["PIX", "BOLETO", "CREDIT_CARD"] as const).map((b) => (

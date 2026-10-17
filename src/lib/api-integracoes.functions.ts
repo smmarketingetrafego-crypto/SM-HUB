@@ -104,86 +104,18 @@ export const DEFAULT_INTEGRATIONS: IntegrationsData = {
 };
 
 export const getIntegrations = createServerFn({ method: "GET" }).handler(async () => {
-  try {
-    const db = await readDb();
-    if (!db.integrations || typeof db.integrations !== "object" || Object.keys(db.integrations).length === 0) {
-      db.integrations = DEFAULT_INTEGRATIONS;
-      await writeDb(db);
-    }
-    return { ...DEFAULT_INTEGRATIONS, ...db.integrations } as IntegrationsData;
-  } catch (e: any) {
-    console.error("Failed to read integrations:", e);
-    return DEFAULT_INTEGRATIONS;
-  }
+  await readDb();
+  return structuredClone(DEFAULT_INTEGRATIONS);
 });
-
-export const saveIntegration = createServerFn({ method: "POST" })
-  .inputValidator((payload: { service: string; data: any }) => payload)
-  .handler(async ({ data }) => {
-    try {
-      const db = await readDb();
-      if (!db.integrations) db.integrations = { ...DEFAULT_INTEGRATIONS };
-
-      db.integrations[data.service] = {
-        ...(db.integrations[data.service] || {}),
-        ...data.data,
-        connected: true,
-        updatedAt: new Date().toISOString()
-      };
-
-      await writeDb(db);
-      return { success: true, integrations: db.integrations };
-    } catch (e: any) {
-      return { success: false, error: e.message };
-    }
-  });
-
-export const disconnectIntegration = createServerFn({ method: "POST" })
-  .inputValidator((service: string) => service)
-  .handler(async ({ data: service }) => {
-    try {
-      const db = await readDb();
-      if (!db.integrations) db.integrations = { ...DEFAULT_INTEGRATIONS };
-
-      db.integrations[service] = {
-        connected: false,
-        updatedAt: new Date().toISOString()
-      };
-
-      await writeDb(db);
-      return { success: true, integrations: db.integrations };
-    } catch (e: any) {
-      return { success: false, error: e.message };
-    }
-  });
-
-export const generateWhatsAppSession = createServerFn({ method: "POST" }).handler(async () => {
-  const sessionId = `smhub-wpp-${Date.now()}`;
-  const qrString = `2@smhub-session-${Math.random().toString(36).substring(2, 15)},${Date.now()},1B8F55C9`;
-  return {
-    success: true,
-    sessionId,
-    qrString,
-    expiresInSeconds: 60
-  };
+export const getExternalStatus = createServerFn({ method: "GET" }).handler(async () => {
+  await readDb();
+  return { asaasConfigured: !!process.env['ASAAS_API_KEY'], webhookConfigured: !!process.env['ASAAS_WEBHOOK_TOKEN'], emailConfigured: !!process.env['RESEND_API_KEY'], aiConfigured: !!process.env['LOVABLE_API_KEY'], driveConnected: false };
 });
-
-export const pairWhatsAppWithPhone = createServerFn({ method: "POST" })
-  .inputValidator((phone: string) => phone)
-  .handler(async ({ data: phone }) => {
-    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-    let codePart1 = "";
-    let codePart2 = "";
-    for (let i = 0; i < 4; i++) {
-      codePart1 += chars.charAt(Math.floor(Math.random() * chars.length));
-      codePart2 += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    const pairingCode = `${codePart1}-${codePart2}`;
-
-    return {
-      success: true,
-      phone,
-      pairingCode,
-      instructions: "No seu celular, toque em Aparelhos Conectados > Conectar com número de telefone e digite o código acima."
-    };
-  });
+export const saveIntegration = createServerFn({ method: "POST" }).inputValidator((p: { service: string; data: unknown }) => p).handler(async () => {
+  await readDb(); return { success: false, error: 'Conexão indisponível. Configure uma autorização real por formulário seguro.' };
+});
+export const disconnectIntegration = createServerFn({ method: "POST" }).inputValidator((p: string) => p).handler(async ({ data }) => {
+  const db = await readDb(); if (db.integrations) delete db.integrations[data]; await writeDb(db); return { success: true, integrations: DEFAULT_INTEGRATIONS };
+});
+export const generateWhatsAppSession = createServerFn({ method: "POST" }).handler(async () => { await readDb(); return { success: false, error: 'WhatsApp oficial não configurado.' }; });
+export const pairWhatsAppWithPhone = createServerFn({ method: "POST" }).inputValidator((p: string) => p).handler(async () => { await readDb(); return { success: false, error: 'Pareamento não disponível. WhatsApp oficial não configurado.' }; });

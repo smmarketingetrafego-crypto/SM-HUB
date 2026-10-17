@@ -36,6 +36,9 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { getPlatformIdentity } from "@/lib/api-admin.functions";
 
 type NavItem = {
   title: string;
@@ -80,6 +83,8 @@ const navigation: NavSection[] = [
     title: "Atendimento",
     items: [
       { title: "WhatsApp", href: "/whatsapp", icon: MessageCircle },
+      { title: "Central de suporte", href: "/suporte", icon: MessageCircle },
+      { title: "Integrações", href: "/integracoes", icon: Settings },
     ],
   },
   {
@@ -114,6 +119,9 @@ export function AppSidebar({ collapsed, onToggle }: { collapsed: boolean; onTogg
   const location = useLocation();
   const navigate = useNavigate();
   const pathname = location.pathname;
+  const identityFn = useServerFn(getPlatformIdentity);
+  const { data: identity } = useQuery({ queryKey: ["platform-identity"], queryFn: () => identityFn() });
+  const sections = identity?.isFounder ? [...navigation, { title: "Founder Master", items: [{ title: "Contas e planos", href: "/fundador", icon: Shield }] }] : navigation;
 
   const authUser = useAuthUser();
   const currentUser = {
@@ -170,7 +178,7 @@ export function AppSidebar({ collapsed, onToggle }: { collapsed: boolean; onTogg
 
       <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/10 p-4">
         <nav className="flex flex-col gap-6">
-          {navigation.map((section, idx) => (
+          {sections.map((section, idx) => (
             <div key={idx} className="flex flex-col gap-1">
               {!collapsed && (
                 <div className="mb-2 px-2 text-xs font-semibold uppercase tracking-wider text-neutral-500">

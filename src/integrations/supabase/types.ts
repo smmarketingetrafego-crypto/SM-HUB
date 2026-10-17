@@ -14,6 +14,41 @@ export type Database = {
   }
   public: {
     Tables: {
+      account_drive_files: {
+        Row: {
+          account_id: string
+          created_at: string
+          file_id: string
+          id: string
+          mime_type: string
+          name: string
+        }
+        Insert: {
+          account_id: string
+          created_at?: string
+          file_id: string
+          id?: string
+          mime_type: string
+          name: string
+        }
+        Update: {
+          account_id?: string
+          created_at?: string
+          file_id?: string
+          id?: string
+          mime_type?: string
+          name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "account_drive_files_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       account_drive_folders: {
         Row: {
           account_id: string
@@ -187,6 +222,7 @@ export type Database = {
       plans: {
         Row: {
           active: boolean
+          billing_ready: boolean
           created_at: string
           cycle: string
           description: string
@@ -198,6 +234,7 @@ export type Database = {
         }
         Insert: {
           active?: boolean
+          billing_ready?: boolean
           created_at?: string
           cycle?: string
           description?: string
@@ -209,6 +246,7 @@ export type Database = {
         }
         Update: {
           active?: boolean
+          billing_ready?: boolean
           created_at?: string
           cycle?: string
           description?: string
@@ -235,6 +273,24 @@ export type Database = {
           created_at?: string
           label?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      platform_settings: {
+        Row: {
+          drive_root_id: string | null
+          id: boolean
+          updated_at: string
+        }
+        Insert: {
+          drive_root_id?: string | null
+          id?: boolean
+          updated_at?: string
+        }
+        Update: {
+          drive_root_id?: string | null
+          id?: boolean
+          updated_at?: string
         }
         Relationships: []
       }

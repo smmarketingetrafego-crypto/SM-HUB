@@ -1,0 +1,10 @@
+ALTER TABLE public.plans ADD COLUMN billing_ready boolean NOT NULL DEFAULT false;
+COMMENT ON COLUMN public.plans.billing_ready IS 'Founder confirms real plan name, price and features before charges are permitted.';
+CREATE OR REPLACE FUNCTION public.guard_subscription_price() RETURNS trigger LANGUAGE plpgsql SET search_path = public AS $$ BEGIN IF NEW.kind = 'subscription' AND NOT EXISTS (SELECT 1 FROM public.plans WHERE id = NEW.reference AND active AND billing_ready AND price > 0) THEN RAISE EXCEPTION 'Plano ainda não liberado para cobrança pelo fundador.'; END IF; RETURN NEW; END $$;
+CREATE TRIGGER require_confirmed_subscription_plan BEFORE INSERT ON public.payments FOR EACH ROW EXECUTE FUNCTION public.guard_subscription_price();
+CREATE TABLE public.platform_settings (id boolean PRIMARY KEY DEFAULT true CHECK (id), drive_root_id text, updated_at timestamptz NOT NULL DEFAULT now());
+GRANT ALL ON public.platform_settings TO service_role;
+ALTER TABLE public.platform_settings ENABLE ROW LEVEL SECURITY;
+CREATE TABLE public.account_drive_files (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), account_id uuid NOT NULL REFERENCES public.accounts(id), file_id text NOT NULL UNIQUE, name text NOT NULL, mime_type text NOT NULL, created_at timestamptz NOT NULL DEFAULT now());
+GRANT ALL ON public.account_drive_files TO service_role;
+ALTER TABLE public.account_drive_files ENABLE ROW LEVEL SECURITY;
