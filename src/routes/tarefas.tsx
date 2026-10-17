@@ -44,6 +44,10 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/tarefas")({
   head: () => ({
     meta: [
+      { property: 'og:title', content: 'Quadro de Tarefas & Equipe — SM Hub' },
+      { property: 'og:description', content: 'Gerencie tarefas, atribua responsáveis e acompanhe prazos da equipe.' },
+      { property: 'og:type', content: 'website' },
+      { name: 'twitter:card', content: 'summary_large_image' },
       { title: "Quadro de Tarefas & Equipe — SM Hub" },
       { name: "description", content: "Gerencie tarefas, atribua responsáveis e acompanhe prazos da equipe." },
     ],

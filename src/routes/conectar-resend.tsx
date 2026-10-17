@@ -36,6 +36,10 @@ import { Label } from "@/components/ui/label";
 export const Route = createFileRoute("/conectar-resend")({
   head: () => ({
     meta: [
+      { property: 'og:title', content: 'Conectar Resend — SM Hub' },
+      { property: 'og:description', content: 'Assistente rápido para conectar o envio de e-mails via Resend ao SM Hub.' },
+      { property: 'og:type', content: 'website' },
+      { name: 'twitter:card', content: 'summary_large_image' },
       { title: "Conectar Resend — SM Hub" },
       { name: "description", content: "Assistente rápido para conectar o envio de e-mails via Resend ao SM Hub." },
     ],

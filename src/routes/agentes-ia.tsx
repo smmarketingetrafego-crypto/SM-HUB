@@ -28,6 +28,10 @@ import { getIntegrations, type IntegrationsData } from "@/lib/api-integracoes.fu
 export const Route = createFileRoute("/agentes-ia")({
   head: () => ({
     meta: [
+      { property: 'og:title', content: 'Agentes IA & Automação Inteligente — SM Hub' },
+      { property: 'og:description', content: 'Agentes de inteligência artificial autônomos para vendas, suporte e marketing.' },
+      { property: 'og:type', content: 'website' },
+      { name: 'twitter:card', content: 'summary_large_image' },
       { title: "Agentes IA & Automação Inteligente — SM Hub" },
       { name: "description", content: "Agentes de inteligência artificial autônomos para vendas, suporte e marketing." },
     ],

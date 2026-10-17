@@ -60,6 +60,10 @@ import { ptBR } from "date-fns/locale";
 export const Route = createFileRoute("/calendario-conteudo")({
   head: () => ({
     meta: [
+      { property: 'og:title', content: 'Calendário de Conteúdo & Redes Sociais — SM Hub' },
+      { property: 'og:description', content: 'Planeje, visualize e agende publicações nas redes sociais dos seus clientes.' },
+      { property: 'og:type', content: 'website' },
+      { name: 'twitter:card', content: 'summary_large_image' },
       { title: "Calendário de Conteúdo & Redes Sociais — SM Hub" },
       { name: "description", content: "Planeje, visualize e agende publicações nas redes sociais dos seus clientes." },
     ],

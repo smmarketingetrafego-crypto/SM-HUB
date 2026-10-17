@@ -24,6 +24,10 @@ import { triggerFunnelAutomation } from "@/lib/api-automacoes.functions";
 export const Route = createFileRoute("/pipelines")({
   head: () => ({
     meta: [
+      { property: 'og:title', content: 'Leads & Pipelines — SM Hub' },
+      { property: 'og:description', content: 'Gerencie seu funil de vendas' },
+      { property: 'og:type', content: 'website' },
+      { name: 'twitter:card', content: 'summary_large_image' },
       { title: "Leads & Pipelines — SM Hub" },
       { name: "description", content: "Gerencie seu funil de vendas" },
     ],

@@ -115,4 +115,4 @@ export const sendWhatsAppMessage = createServerFn({ method: "POST" })
 .handler(async () => { await readDb(); return { success: false, error: 'WhatsApp oficial não configurado. Nenhuma mensagem enviada.' }; });
 export const triggerFunnelAutomation = createServerFn({ method: "POST" })
 .inputValidator((data: { clientName: string; stageName: string; dealValue?: number }) => data)
-.handler(async () => { await readDb(); return { triggered: false, error: 'Integração externa não configurada.' }; });
+.handler(async () => { await readDb(); return { triggered: false, ruleName: undefined as string | undefined, error: 'Integração externa não configurada.' }; });

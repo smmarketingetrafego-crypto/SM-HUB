@@ -32,6 +32,10 @@ import { getClients, addClient, updateClient, archiveClient, deleteClient, addCl
 
 export const Route = createFileRoute("/clientes")({
   head: () => ({ meta: [
+      { property: 'og:title', content: 'Clientes — SM Hub' },
+      { property: 'og:description', content: 'Cadastre e gerencie seus clientes.' },
+      { property: 'og:type', content: 'website' },
+      { name: 'twitter:card', content: 'summary_large_image' },
     { title: "Clientes — SM Hub" },
     { name: "description", content: "Cadastre e gerencie seus clientes." },
   ] }),

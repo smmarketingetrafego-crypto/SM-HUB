@@ -1,3 +1,4 @@
+import { pageMeta } from '@/lib/page-meta';
 // @ts-nocheck
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { PageHeader } from "@/components/layout/page-header";
@@ -51,6 +52,7 @@ import { getMetas } from "@/lib/api-metas.functions";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/financeiro")({
+  head: () => pageMeta('Financeiro', 'Área de financeiro do SM Hub.'),
   component: FinanceiroPage,
 });
 

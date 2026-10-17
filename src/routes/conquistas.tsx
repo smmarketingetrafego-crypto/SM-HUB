@@ -10,6 +10,10 @@ import { brl } from "@/lib/format";
 export const Route = createFileRoute("/conquistas")({
   head: () => ({
     meta: [
+      { property: 'og:title', content: 'Conquistas — SM Hub' },
+      { property: 'og:description', content: 'Suas conquistas e metas de faturamento' },
+      { property: 'og:type', content: 'website' },
+      { name: 'twitter:card', content: 'summary_large_image' },
       { title: "Conquistas — SM Hub" },
       { name: "description", content: "Suas conquistas e metas de faturamento" },
     ],

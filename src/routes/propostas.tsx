@@ -46,6 +46,10 @@ import { ContractDocumentModal } from "@/components/propostas/contract-document-
 export const Route = createFileRoute("/propostas")({
   head: () => ({
     meta: [
+      { property: 'og:title', content: 'Gestão de Orçamentos & Propostas — SM Hub' },
+      { property: 'og:description', content: 'Gerencie orçamentos, propostas comerciais e contratos com integração financeira automática.' },
+      { property: 'og:type', content: 'website' },
+      { name: 'twitter:card', content: 'summary_large_image' },
       { title: "Gestão de Orçamentos & Propostas — SM Hub" },
       { name: "description", content: "Gerencie orçamentos, propostas comerciais e contratos com integração financeira automática." },
     ],

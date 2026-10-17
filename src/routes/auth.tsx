@@ -31,6 +31,10 @@ import {
 export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
+      { property: 'og:title', content: 'SM Hub — Plataforma de Gestão para Agências & Criativos' },
+      { property: 'og:description', content: 'Acesse sua conta no SM Hub ou cadastre-se para gerenciar clientes, projetos, propostas, contratos e finanças.' },
+      { property: 'og:type', content: 'website' },
+      { name: 'twitter:card', content: 'summary_large_image' },
       { title: "SM Hub — Plataforma de Gestão para Agências & Criativos" },
       {
         name: "description",

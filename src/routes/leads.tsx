@@ -15,6 +15,10 @@ import { brl } from "@/lib/format";
 export const Route = createFileRoute("/leads")({
   head: () => ({
     meta: [
+      { property: 'og:title', content: 'Leads — SM Hub' },
+      { property: 'og:description', content: 'Todos os contatos da base, com filtros e histórico de cada um.' },
+      { property: 'og:type', content: 'website' },
+      { name: 'twitter:card', content: 'summary_large_image' },
       { title: "Leads — SM Hub" },
       { name: "description", content: "Todos os contatos da base, com filtros e histórico de cada um." },
     ],

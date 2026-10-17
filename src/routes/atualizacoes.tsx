@@ -8,6 +8,10 @@ import { Button } from "@/components/ui/button";
 export const Route = createFileRoute("/atualizacoes")({
   head: () => ({
     meta: [
+      { property: 'og:title', content: 'Últimas Atualizações — SM Hub' },
+      { property: 'og:description', content: 'Changelog e novidades do sistema SM Hub' },
+      { property: 'og:type', content: 'website' },
+      { name: 'twitter:card', content: 'summary_large_image' },
       { title: "Últimas Atualizações — SM Hub" },
       { name: "description", content: "Changelog e novidades do sistema SM Hub" },
     ],

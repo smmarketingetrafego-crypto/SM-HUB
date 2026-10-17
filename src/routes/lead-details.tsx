@@ -1,8 +1,10 @@
+import { pageMeta } from '@/lib/page-meta';
 import { createFileRoute } from '@tanstack/react-router'
 import { Link } from "@tanstack/react-router";
 import { ArrowLeft, ExternalLink, Calendar as CalendarIcon, Mail, Activity, UserPlus, Handshake, FileText, CalendarDays, CreditCard } from "lucide-react";
 
 export const Route = createFileRoute("/lead-details")({
+  head: () => pageMeta('Lead details', 'Área de lead details do SM Hub.'),
   component: LeadDetailsPage,
 });
 

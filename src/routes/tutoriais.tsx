@@ -15,6 +15,10 @@ import { getTutorials, saveTutorialItem, deleteTutorialItem, type TutorialItem }
 export const Route = createFileRoute("/tutoriais")({
   head: () => ({
     meta: [
+      { property: 'og:title', content: 'Tutoriais — SM Hub' },
+      { property: 'og:description', content: 'Aprenda a extrair o máximo da plataforma com aulas práticas e passo a passo.' },
+      { property: 'og:type', content: 'website' },
+      { name: 'twitter:card', content: 'summary_large_image' },
       { title: "Tutoriais — SM Hub" },
       { name: "description", content: "Aprenda a extrair o máximo da plataforma com aulas práticas e passo a passo." },
     ],

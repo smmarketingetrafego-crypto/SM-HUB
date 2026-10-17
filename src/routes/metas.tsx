@@ -69,6 +69,10 @@ import { TutorialBanner } from "@/components/layout/tutorial-banner";
 export const Route = createFileRoute("/metas")({
   head: () => ({
     meta: [
+      { property: 'og:title', content: 'Metas & OKRs Estratégicos — SM Hub' },
+      { property: 'og:description', content: 'Gerencie e acompanhe metas de receita, clientes, vendas e equipe da agência.' },
+      { property: 'og:type', content: 'website' },
+      { name: 'twitter:card', content: 'summary_large_image' },
       { title: "Metas & OKRs Estratégicos — SM Hub" },
       { name: "description", content: "Gerencie e acompanhe metas de receita, clientes, vendas e equipe da agência." },
     ],
