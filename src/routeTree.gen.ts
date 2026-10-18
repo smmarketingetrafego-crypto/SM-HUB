@@ -41,7 +41,7 @@ import { Route as WhatsappRouteImport } from './routes/whatsapp'
 import { Route as BriefingIdRouteImport } from './routes/briefing.$id'
 import { Route as PortalIdRouteImport } from './routes/portal.$id'
 import { Route as PropostaIdRouteImport } from './routes/proposta.$id'
-import { Route as SuporteIdRouteImport } from './routes/suporte.$id'
+import { Route as SuporteIdRouteImport } from './routes/suporte_.$id'
 import { Route as AuthenticatedMetaAdsConexaoRouteImport } from './routes/_authenticated/meta-ads/conexao'
 import { Route as ApiPublicWebhookPaymentRouteImport } from './routes/api/public/webhook.payment'
 
@@ -205,9 +205,9 @@ const PropostaIdRoute = PropostaIdRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const SuporteIdRoute = SuporteIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => SuporteRoute,
+  id: '/suporte_/$id',
+  path: '/suporte/$id',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedMetaAdsConexaoRoute =
   AuthenticatedMetaAdsConexaoRouteImport.update({
@@ -246,7 +246,7 @@ export interface FileRoutesByFullPath {
   '/projetos': typeof ProjetosRoute
   '/propostas': typeof PropostasRoute
   '/relatorios': typeof RelatoriosRoute
-  '/suporte': typeof SuporteRouteWithChildren
+  '/suporte': typeof SuporteRoute
   '/tarefas': typeof TarefasRoute
   '/tutoriais': typeof TutoriaisRoute
   '/whatsapp': typeof WhatsappRoute
@@ -282,7 +282,7 @@ export interface FileRoutesByTo {
   '/projetos': typeof ProjetosRoute
   '/propostas': typeof PropostasRoute
   '/relatorios': typeof RelatoriosRoute
-  '/suporte': typeof SuporteRouteWithChildren
+  '/suporte': typeof SuporteRoute
   '/tarefas': typeof TarefasRoute
   '/tutoriais': typeof TutoriaisRoute
   '/whatsapp': typeof WhatsappRoute
@@ -320,14 +320,14 @@ export interface FileRoutesById {
   '/projetos': typeof ProjetosRoute
   '/propostas': typeof PropostasRoute
   '/relatorios': typeof RelatoriosRoute
-  '/suporte': typeof SuporteRouteWithChildren
+  '/suporte': typeof SuporteRoute
   '/tarefas': typeof TarefasRoute
   '/tutoriais': typeof TutoriaisRoute
   '/whatsapp': typeof WhatsappRoute
   '/briefing/$id': typeof BriefingIdRoute
   '/portal/$id': typeof PortalIdRoute
   '/proposta/$id': typeof PropostaIdRoute
-  '/suporte/$id': typeof SuporteIdRoute
+  '/suporte_/$id': typeof SuporteIdRoute
   '/_authenticated/meta-ads/conexao': typeof AuthenticatedMetaAdsConexaoRoute
   '/api/public/webhook/payment': typeof ApiPublicWebhookPaymentRoute
 }
@@ -438,7 +438,7 @@ export interface FileRouteTypes {
     | '/briefing/$id'
     | '/portal/$id'
     | '/proposta/$id'
-    | '/suporte/$id'
+    | '/suporte_/$id'
     | '/_authenticated/meta-ads/conexao'
     | '/api/public/webhook/payment'
   fileRoutesById: FileRoutesById
@@ -469,13 +469,14 @@ export interface RootRouteChildren {
   ProjetosRoute: typeof ProjetosRoute
   PropostasRoute: typeof PropostasRoute
   RelatoriosRoute: typeof RelatoriosRoute
-  SuporteRoute: typeof SuporteRouteWithChildren
+  SuporteRoute: typeof SuporteRoute
   TarefasRoute: typeof TarefasRoute
   TutoriaisRoute: typeof TutoriaisRoute
   WhatsappRoute: typeof WhatsappRoute
   BriefingIdRoute: typeof BriefingIdRoute
   PortalIdRoute: typeof PortalIdRoute
   PropostaIdRoute: typeof PropostaIdRoute
+  SuporteIdRoute: typeof SuporteIdRoute
   ApiPublicWebhookPaymentRoute: typeof ApiPublicWebhookPaymentRoute
 }
 
@@ -705,12 +706,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PropostaIdRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/suporte/$id': {
-      id: '/suporte/$id'
-      path: '/$id'
+    '/suporte_/$id': {
+      id: '/suporte_/$id'
+      path: '/suporte/$id'
       fullPath: '/suporte/$id'
       preLoaderRoute: typeof SuporteIdRouteImport
-      parentRoute: typeof SuporteRoute
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/meta-ads/conexao': {
       id: '/_authenticated/meta-ads/conexao'
@@ -740,17 +741,6 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
-interface SuporteRouteChildren {
-  SuporteIdRoute: typeof SuporteIdRoute
-}
-
-const SuporteRouteChildren: SuporteRouteChildren = {
-  SuporteIdRoute: SuporteIdRoute,
-}
-
-const SuporteRouteWithChildren =
-  SuporteRoute._addFileChildren(SuporteRouteChildren)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
@@ -777,13 +767,14 @@ const rootRouteChildren: RootRouteChildren = {
   ProjetosRoute: ProjetosRoute,
   PropostasRoute: PropostasRoute,
   RelatoriosRoute: RelatoriosRoute,
-  SuporteRoute: SuporteRouteWithChildren,
+  SuporteRoute: SuporteRoute,
   TarefasRoute: TarefasRoute,
   TutoriaisRoute: TutoriaisRoute,
   WhatsappRoute: WhatsappRoute,
   BriefingIdRoute: BriefingIdRoute,
   PortalIdRoute: PortalIdRoute,
   PropostaIdRoute: PropostaIdRoute,
+  SuporteIdRoute: SuporteIdRoute,
   ApiPublicWebhookPaymentRoute: ApiPublicWebhookPaymentRoute,
 }
 export const routeTree = rootRouteImport
