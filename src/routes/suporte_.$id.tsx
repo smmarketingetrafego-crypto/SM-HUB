@@ -10,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 import { pageMeta } from '@/lib/page-meta';
 import { toast } from 'sonner';
-export const Route = createFileRoute('/suporte/$id')({ validateSearch: (p: Record<string, unknown>) => ({ initial: p.initial === true || p.initial === 'true' }), head: () => pageMeta('Ticket de suporte', 'Acompanhe o atendimento e as respostas do suporte SM Hub.'), component: TicketPage });
+export const Route = createFileRoute('/suporte_/$id')({ validateSearch: (p: Record<string, unknown>) => ({ initial: p.initial === true || p.initial === 'true' }), head: () => pageMeta('Ticket de suporte', 'Acompanhe o atendimento e as respostas do suporte SM Hub.'), component: TicketPage });
 const labels: Record<string,string> = { open: 'Aberto', in_progress: 'Em andamento', resolved: 'Resolvido' };
 function TicketPage() {
  const { id } = Route.useParams(); const { initial } = Route.useSearch(); const qc = useQueryClient(); const get = useServerFn(getSupportTicket); const identity = useServerFn(getPlatformIdentity); const update = useServerFn(updateSupportTicket); const answer = useServerFn(initialSupportAnswer);
