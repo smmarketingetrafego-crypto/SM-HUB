@@ -1,8 +1,10 @@
+import { pageMeta } from '@/lib/page-meta';
 import { createFileRoute } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
 import { startMetaOAuth, getMetaConnection, listMetaAdAccounts, disconnectMeta } from '../../../lib/meta-ads.functions';
 
 export const Route = createFileRoute('/_authenticated/meta-ads/conexao')({
+ head: () => pageMeta('Conexao', 'Área de conexao do SM Hub.'),
   component: MetaAdsConnectionPage,
 });
 

@@ -496,7 +496,7 @@ Silas Maroto Hub`;
                 mode="range"
                 selected={dateRange}
                 onSelect={setDateRange}
-                initialFocus
+                autoFocus
                 locale={ptBR}
                 className="text-white bg-[#111]"
               />
@@ -1063,7 +1063,7 @@ Silas Maroto Hub`;
                       mode="single"
                       selected={formData.date ? new Date(formData.date + 'T12:00:00') : undefined}
                       onSelect={(date) => date && setFormData({...formData, date: date.toISOString().split('T')[0]})}
-                      initialFocus
+                      autoFocus
                       locale={ptBR}
                       className="text-white bg-[#111]"
                     />
