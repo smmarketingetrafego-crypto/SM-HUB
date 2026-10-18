@@ -2,9 +2,11 @@
 - [x] Per-account data + founder role
 - [x] Remove sample data (proposals, goals, team, messages)
 - [x] Asaas plan checkout + webhook (needs ASAAS_API_KEY, ASAAS_WEBHOOK_TOKEN)
-- [ ] Founder admin panel: accounts, configurable plans, payments, account access, free period, suspension/reactivation
-- [ ] Block checkout until founder supplies real plan names, prices and features
-- [ ] Support center: saved tickets, initial AI response, human escalation, founder inbox and resolution
-- [ ] Prepare central Google Drive: isolated account folders and permission-aware file access (connection pending)
-- [ ] Honest integration status screens; remove fake WhatsApp QR and pairing
-- [ ] Verify account administration, support and integration status flows
+- [x] Founder admin panel: accounts, configurable plans, payments, account access, free period, suspension/reactivation
+- [x] Block checkout until founder supplies real plan names, prices and features
+- [x] Support center: saved tickets, initial AI response, human escalation, founder inbox and resolution
+- [x] Central Google Drive: connected, private account folder, upload and download verified
+- [x] Honest integration status screens; remove fake WhatsApp QR and pairing
+- [x] Verified Founder identity, AI ticket response, human reply, resolution/reload, Drive upload/download; nine rule tests passed
+- [ ] Activate Asaas payments: awaits secure credentials and founder's real plan names, prices and resources
+- [ ] Cross-account live verification: awaits another real account (only founder account exists)
