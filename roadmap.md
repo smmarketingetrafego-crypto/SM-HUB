@@ -1,4 +1,5 @@
 # SM Hub roadmap
+- [x] Complete Founder account settings and access overview with direct account configuration entry; authenticated save and navigation verified
 - [x] Per-account data + founder role
 - [x] Remove sample data (proposals, goals, team, messages)
 - [x] Asaas plan checkout + webhook (needs ASAAS_API_KEY, ASAAS_WEBHOOK_TOKEN)
@@ -8,5 +9,5 @@
 - [x] Central Google Drive: connected, private account folder, upload and download verified
 - [x] Honest integration status screens; remove fake WhatsApp QR and pairing
 - [x] Verified Founder identity, AI ticket response, human reply, resolution/reload, Drive upload/download; nine rule tests passed
-- [ ] Activate Asaas payments: awaits secure credentials and founder's real plan names, prices and resources
+- [ ] Activate Asaas payments: credentials saved securely; awaits founder's real plan names, prices and resources, plus live payment verification
 - [ ] Cross-account live verification: awaits another real account (only founder account exists)
