@@ -3,6 +3,7 @@ import { requireSupabaseAuth } from '@/integrations/supabase/auth-middleware';
 import { z } from 'zod';
 import { accountPatch, canChargePlan, freeUntil } from './platform-rules';
 import { founderAccess, isFounder } from './platform-access.server';
+import { accountSettingsSchema } from './account-settings';
 export const getPlatformIdentity = createServerFn({ method: 'GET' }).middleware([requireSupabaseAuth]).handler(async ({ context }) => ({ isFounder: await isFounder(context), userId: context.userId }));
 export const getAdminOverview = createServerFn({ method: 'GET' }).middleware([requireSupabaseAuth]).handler(async ({ context }) => {
   const admin = await founderAccess(context);
@@ -42,4 +43,23 @@ export const selectFounderAccount = createServerFn({ method: 'POST' }).middlewar
   const { data: account, error } = await admin.from('accounts').select('id,name,email').eq('id', data).single();
   if (error || !account) throw new Error('Conta não encontrada.');
   return account;
+});
+
+export const getFounderAccountAccess = createServerFn({ method: 'GET' }).middleware([requireSupabaseAuth]).inputValidator((p: unknown) => z.string().uuid().parse(p)).handler(async ({ data, context }) => {
+  const admin = await founderAccess(context);
+  const { data: account, error } = await admin.from('accounts').select('id,owner_id,email').eq('id', data).single();
+  if (error || !account) throw new Error('Conta não encontrada.');
+  const { data: members, error: memberError } = await admin.from('account_members').select('user_id,role,created_at').eq('account_id', data).order('created_at');
+  if (memberError) throw new Error(memberError.message);
+  const ids = [...new Set([account.owner_id, ...(members ?? []).map(m => m.user_id)])];
+  const { data: profiles, error: profileError } = await admin.from('profiles').select('id,full_name').in('id', ids);
+  if (profileError) throw new Error(profileError.message);
+  return [{ userId: account.owner_id, name: profiles?.find(p => p.id === account.owner_id)?.full_name || account.email, role: 'Proprietário' }, ...(members ?? []).filter(m => m.user_id !== account.owner_id).map(m => ({ userId: m.user_id, name: profiles?.find(p => p.id === m.user_id)?.full_name || 'Membro da equipe', role: m.role }))];
+});
+
+export const saveFounderAccountSettings = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth]).inputValidator((p: unknown) => accountSettingsSchema.parse(p)).handler(async ({ data, context }) => {
+  const admin = await founderAccess(context);
+  const { data: account, error } = await admin.from('accounts').update({ name: data.name, notes: data.notes, updated_at: new Date().toISOString() }).eq('id', data.accountId).select('id').single();
+  if (error || !account) throw new Error(error?.message ?? 'Conta não encontrada.');
+  return { success: true };
 });

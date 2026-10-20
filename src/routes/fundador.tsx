@@ -14,6 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { getAdminOverview, savePlatformPlan, manageAccount, selectFounderAccount } from '@/lib/api-admin.functions';
 import { pageMeta } from '@/lib/page-meta';
 import { toast } from 'sonner';
+import { AccountSettingsPanel } from '@/components/account-settings-panel';
 export const Route = createFileRoute('/fundador')({ head: () => pageMeta('Founder Master', 'Administração de contas, planos e assinaturas do SM Hub.'), component: FounderPage });
 const money = (n: number) => Number(n).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 const date = (s: string | null) => s ? new Date(s).toLocaleDateString('pt-BR') : '—';
