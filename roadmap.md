@@ -1,5 +1,5 @@
 # SM Hub roadmap
-- [ ] Complete Founder account settings and access overview with direct account configuration entry
+- [x] Complete Founder account settings and access overview with direct account configuration entry; authenticated save and navigation verified
 - [x] Per-account data + founder role
 - [x] Remove sample data (proposals, goals, team, messages)
 - [x] Asaas plan checkout + webhook (needs ASAAS_API_KEY, ASAAS_WEBHOOK_TOKEN)
