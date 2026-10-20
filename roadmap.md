@@ -8,5 +8,5 @@
 - [x] Central Google Drive: connected, private account folder, upload and download verified
 - [x] Honest integration status screens; remove fake WhatsApp QR and pairing
 - [x] Verified Founder identity, AI ticket response, human reply, resolution/reload, Drive upload/download; nine rule tests passed
-- [ ] Activate Asaas payments: awaits secure credentials and founder's real plan names, prices and resources
+- [ ] Activate Asaas payments: credentials saved securely; awaits founder's real plan names, prices and resources, plus live payment verification
 - [ ] Cross-account live verification: awaits another real account (only founder account exists)
