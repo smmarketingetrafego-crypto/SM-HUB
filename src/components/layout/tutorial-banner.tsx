@@ -1,16 +1,34 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { PlayCircle, TrendingUp, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useStore, setStore } from "@/lib/store";
+import {
+  getHiddenTutorials, hideAllTutorials, hideTutorial, isAllTutorialsHidden, TUTORIAL_VISIBILITY_EVENT,
+} from "@/lib/tutorial-visibility";
 
 export function TutorialBanner({ location }: { location: string }) {
   const { tutorials } = useStore();
-  const [showBanner, setShowBanner] = useState(true);
+  // Hidden until storage is read, so dismissed banners never flash.
+  const [visibility, setVisibility] = useState<{ ready: boolean; all: boolean; hidden: string[] }>({ ready: false, all: true, hidden: [] });
 
-  if (!showBanner) return null;
+  useEffect(() => {
+    const sync = () => setVisibility({ ready: true, all: isAllTutorialsHidden(), hidden: getHiddenTutorials() });
+    sync();
+    window.addEventListener(TUTORIAL_VISIBILITY_EVENT, sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener(TUTORIAL_VISIBILITY_EVENT, sync);
+      window.removeEventListener("storage", sync);
+    };
+  }, []);
+
+  if (!visibility.ready || visibility.all) return null;
 
   const video = tutorials?.find((t: any) => (t.locations || []).includes(location));
   if (!video) return null;
+  const hiddenKey = `${location}:${video.id}`;
+  if (visibility.hidden.includes(hiddenKey)) return null;
+  const setShowBanner = (_: boolean) => hideTutorial(hiddenKey);
 
   return (
     <div className="relative overflow-hidden rounded-2xl border border-brand/20 bg-gradient-to-r from-[#1A1500] to-[#0A0A0A] p-1 mb-8 animate-in fade-in slide-in-from-top-4">
@@ -61,6 +79,13 @@ export function TutorialBanner({ location }: { location: string }) {
               onClick={() => setShowBanner(false)}
             >
               Ocultar aviso
+            </Button>
+            <Button
+              variant="ghost"
+              className="h-10 px-4 rounded-xl text-gray-400 hover:text-white hover:bg-white/5"
+              onClick={() => hideAllTutorials()}
+            >
+              Ocultar todos os tutoriais
             </Button>
           </div>
         </div>

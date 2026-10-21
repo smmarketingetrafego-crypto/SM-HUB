@@ -92,6 +92,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { getAgencyProfile, saveAgencyProfile, type AgencyProfile, DEFAULT_AGENCY_PROFILE } from "@/lib/api-propostas.functions";
 import { AddressFormFields } from "@/components/common/address-form-fields";
 import { TutorialBanner } from "@/components/layout/tutorial-banner";
+import { resetTutorialVisibility } from "@/lib/tutorial-visibility";
 import React, { Component, useEffect, useState, type ErrorInfo, type ReactNode } from "react";
 import { toast } from "sonner";
 
@@ -565,7 +566,10 @@ function TutorialsTab() {
           <h2 className="text-2xl font-bold text-white mb-2">Gerenciar Tutoriais</h2>
           <p className="text-sm text-gray-400">Adicione e remova conteúdos da aba de tutoriais do sistema.</p>
         </div>
-        <Button onClick={() => setEditing({})} className="bg-brand text-black font-bold"><PlusIcon className="size-4 mr-2" /> Novo Tutorial</Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => { resetTutorialVisibility(); toast.success("Tutoriais voltarão a aparecer nas telas."); }}>Mostrar tutoriais novamente</Button>
+          <Button onClick={() => setEditing({})} className="bg-brand text-black font-bold"><PlusIcon className="size-4 mr-2" /> Novo Tutorial</Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
