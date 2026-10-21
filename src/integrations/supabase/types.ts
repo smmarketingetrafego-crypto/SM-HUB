@@ -160,6 +160,126 @@ export type Database = {
           },
         ]
       }
+      onboarding_content: {
+        Row: {
+          account_id: string
+          data: Json
+          id: string
+          kind: string
+          sort: number
+          updated_at: string
+        }
+        Insert: {
+          account_id: string
+          data?: Json
+          id?: string
+          kind: string
+          sort?: number
+          updated_at?: string
+        }
+        Update: {
+          account_id?: string
+          data?: Json
+          id?: string
+          kind?: string
+          sort?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "onboarding_content_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      onboarding_journeys: {
+        Row: {
+          account_id: string
+          collaborator_ref: string
+          completed_at: string | null
+          created_at: string
+          email: string
+          id: string
+          invited_at: string
+          name: string
+          role: string
+          status: string
+          user_id: string | null
+        }
+        Insert: {
+          account_id: string
+          collaborator_ref?: string
+          completed_at?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          invited_at?: string
+          name?: string
+          role?: string
+          status?: string
+          user_id?: string | null
+        }
+        Update: {
+          account_id?: string
+          collaborator_ref?: string
+          completed_at?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          invited_at?: string
+          name?: string
+          role?: string
+          status?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "onboarding_journeys_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      onboarding_progress: {
+        Row: {
+          feedback: string
+          item_id: string
+          journey_id: string
+          status: string
+          submission: string
+          updated_at: string
+        }
+        Insert: {
+          feedback?: string
+          item_id: string
+          journey_id: string
+          status?: string
+          submission?: string
+          updated_at?: string
+        }
+        Update: {
+          feedback?: string
+          item_id?: string
+          journey_id?: string
+          status?: string
+          submission?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "onboarding_progress_journey_id_fkey"
+            columns: ["journey_id"]
+            isOneToOne: false
+            referencedRelation: "onboarding_journeys"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payments: {
         Row: {
           account_id: string
