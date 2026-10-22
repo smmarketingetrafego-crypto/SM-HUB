@@ -9,7 +9,10 @@ export async function ensureOnboardingContent(admin: Admin, accountId: string) {
   const known = new Set((have ?? []).map((r: any) => `${r.kind}:${r.data?.id}`));
   const rows = (seed as any[]).filter((s) => !known.has(`${s.kind}:${s.data?.id}`)).map((s) => ({ account_id: accountId, kind: s.kind, sort: s.sort, data: s.data }));
   if (!rows.length) return;
-  const { error: insertError } = await admin.from("onboarding_content").insert(rows);
+  const { error: insertError } = await admin.from("onboarding_content").upsert(
+    rows.map((r) => ({ ...r, item_key: String(r.data?.id ?? "") })),
+    { onConflict: "account_id,kind,item_key", ignoreDuplicates: true },
+  );
   if (insertError) throw new Error(insertError.message);
 }
 
