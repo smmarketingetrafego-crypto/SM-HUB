@@ -18,3 +18,4 @@
 - Support uses persisted tickets and ordered messages with dedicated ticket URLs; initial AI is a one-shot guidance response, not an autonomous agent; why: human escalation and reload history must stay attached to the ticket.
 - New subscription inserts require a confirmed billing catalog in both the server action and a database trigger; why: old published clients must also fail closed on unapproved prices.
 - Drive configuration and file records are server-only and keyed by account; central Drive calls use the linked App connector and files are downloaded only after account-scoped lookup; why: no shared credentials or unrestricted folder access reach account users.
+- Collaborator onboarding uses onboarding_* tables written only by server functions (`src/lib/api-onboarding.functions.ts`); a journey links to a user on first visit by verified e-mail; why: invites happen before the collaborator has an account.

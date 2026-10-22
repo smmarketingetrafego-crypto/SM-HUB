@@ -17,6 +17,7 @@ import {
   Settings,
   Shield,
   Users,
+  GraduationCap,
   Video,
   Wand2,
   LogOut,
@@ -109,6 +110,7 @@ const navigation: NavSection[] = [
     title: "Administração",
     items: [
       { title: "Colaboradores", href: "/colaboradores", icon: Users },
+      { title: "Integração da Equipe", href: "/integracao-equipe", icon: GraduationCap },
       { title: "Tutoriais", href: "/tutoriais", icon: Video },
       { title: "Configurações", href: "/configuracoes", icon: Settings },
     ],

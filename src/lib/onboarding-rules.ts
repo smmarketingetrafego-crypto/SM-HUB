@@ -20,3 +20,27 @@ export function canReviewStep(current: string | undefined) {
 export function quizScore(correct: number[], answers: number[]) {
   return correct.reduce((n, c, i) => n + (answers[i] === c ? 1 : 0), 0);
 }
+
+export const TRACKS = [
+  { id: "filmmaker", label: "Filmmaker", keys: ["film", "cinegraf", "câmera", "camera", "video maker", "videomaker"] },
+  { id: "editor_video", label: "Editor de Vídeo", keys: ["editor", "edição", "edicao", "motion"] },
+  { id: "fotografo", label: "Fotógrafo", keys: ["fot"] },
+  { id: "social_media", label: "Social Media", keys: ["social"] },
+  { id: "copywriter", label: "Copywriter", keys: ["copy", "roteir", "redat", "conteúdo"] },
+  { id: "storymaker", label: "Storymaker", keys: ["story"] },
+  { id: "designer", label: "Designer", keys: ["design", "arte"] },
+  { id: "gestor_trafego", label: "Gestor de Tráfego", keys: ["tráfego", "trafego", "ads", "performance"] },
+  { id: "atendimento", label: "Atendimento", keys: ["atendimento", "suporte", "comercial"] },
+  { id: "financeiro", label: "Financeiro", keys: ["financ"] },
+] as const;
+
+/** Guesses the track from a free-text role; "" means common steps only. */
+export function trackFromRole(role: string) {
+  const r = (role || "").toLowerCase();
+  return TRACKS.find((t) => t.keys.some((k) => r.includes(k)))?.id ?? "";
+}
+
+/** Items without tracks are for everyone; tagged items only for their tracks. */
+export function forTrack<T extends { tracks?: string[] }>(items: T[], track: string) {
+  return items.filter((i) => !i.tracks?.length || i.tracks.includes(track));
+}

@@ -21,3 +21,16 @@ describe("onboarding rules", () => {
     expect(quizScore([1, 2, 0], [1, 0, 0])).toBe(2);
   });
 });
+
+import { forTrack, trackFromRole } from "./onboarding-rules";
+describe("trilhas por função", () => {
+  it("shows common items plus only the collaborator's track", () => {
+    const items = [{ id: "a" }, { id: "b", tracks: ["designer"] }, { id: "c", tracks: ["filmmaker"] }];
+    expect(forTrack(items, "designer").map((i) => i.id)).toEqual(["a", "b"]);
+  });
+  it("infers the track from the role text", () => {
+    expect(trackFromRole("Designer & Direção de Arte")).toBe("designer");
+    expect(trackFromRole("Gestor de Tráfego & Performance")).toBe("gestor_trafego");
+    expect(trackFromRole("Diretor Geral")).toBe("");
+  });
+});

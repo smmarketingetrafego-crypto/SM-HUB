@@ -15,7 +15,7 @@ export const navConfig = {
   agentes_ia: ['/agentes-ia', '/analista', '/copywriter', '/designer', '/estudio'],
   financeiro: ['/financeiro', '/financeiro/receber', '/assinaturas', '/relatorios', '/gateways'],
   treinamentos: ['/treinamentos'],
-  administracao: ['/colaboradores', '/equipe', '/acessos', '/avisos', '/auditoria', '/marca', '/tutoriais', '/metas', '/configuracoes']
+  administracao: ['/colaboradores', '/integracao-equipe', '/equipe', '/acessos', '/avisos', '/auditoria', '/marca', '/tutoriais', '/metas', '/configuracoes']
 };
 
 export const allNavItems: NavItem[] = [
@@ -30,6 +30,7 @@ export const allNavItems: NavItem[] = [
   { id: "conteudos", label: "Conteúdos", href: "/calendario-conteudo", section: "Operacional" },
   { id: "relatorios", label: "Relatórios", href: "/relatorios", section: "Operacional" },
   { id: "colaboradores", label: "Colaboradores", href: "/colaboradores", section: "Administração" },
+  { id: "integracao-equipe", label: "Integração da Equipe", href: "/integracao-equipe", section: "Administração" },
   { id: "tutoriais", label: "Tutoriais", href: "/tutoriais", section: "Administração" },
   { id: "configuracoes", label: "Configurações", href: "/configuracoes", section: "Administração" },
 ];

@@ -185,15 +185,6 @@ function RootComponent() {
   const [collapsed, setCollapsed] = useState(false);
   useStoreHydration();
 
-  useEffect(() => {
-    if (typeof window !== "undefined" && "serviceWorker" in navigator) {
-      window.addEventListener("load", () => {
-        navigator.serviceWorker.register("/sw.js").catch((err) => {
-          console.debug("PWA service worker registration notice:", err);
-        });
-      });
-    }
-  }, []);
 
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const clientView =
@@ -201,7 +192,8 @@ function RootComponent() {
     pathname.startsWith("/cadastro-cliente/") ||
     pathname.startsWith("/auth") ||
     pathname.startsWith("/proposta/") ||
-    pathname.startsWith("/portal");
+    pathname.startsWith("/portal") ||
+    pathname === "/integracao";
   const authState = useAuthState();
 
   if (clientView) {
@@ -247,7 +239,7 @@ function RootComponent() {
               <div className="flex min-w-0 flex-1 flex-col">
                 <Topbar />
                 <FounderAccountBanner />
-                <main className="flex-1 space-y-6 px-5 py-6 md:px-8 md:py-8">
+                <main className="flex-1 space-y-6 px-5 pt-6 pb-28 md:px-8 md:py-8">
                   {/* Required: nested routes render here. */}
                   <Outlet />
                 </main>
