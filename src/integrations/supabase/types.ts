@@ -165,6 +165,7 @@ export type Database = {
           account_id: string
           data: Json
           id: string
+          item_key: string
           kind: string
           sort: number
           updated_at: string
@@ -173,6 +174,7 @@ export type Database = {
           account_id: string
           data?: Json
           id?: string
+          item_key?: string
           kind: string
           sort?: number
           updated_at?: string
@@ -181,6 +183,7 @@ export type Database = {
           account_id?: string
           data?: Json
           id?: string
+          item_key?: string
           kind?: string
           sort?: number
           updated_at?: string
