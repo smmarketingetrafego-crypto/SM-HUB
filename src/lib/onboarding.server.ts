@@ -4,26 +4,31 @@ type Admin = any;
 
 /** Copies the default onboarding content into an account the first time it is needed. */
 export async function ensureOnboardingContent(admin: Admin, accountId: string) {
-  const { count, error } = await admin.from("onboarding_content").select("id", { count: "exact", head: true }).eq("account_id", accountId);
+  const { data: have, error } = await admin.from("onboarding_content").select("kind,data").eq("account_id", accountId);
   if (error) throw new Error(error.message);
-  if ((count ?? 0) > 0) return;
-  const rows = (seed as any[]).map((s) => ({ account_id: accountId, kind: s.kind, sort: s.sort, data: s.data }));
-  const { error: insertError } = await admin.from("onboarding_content").insert(rows);
+  const known = new Set((have ?? []).map((r: any) => `${r.kind}:${r.data?.id}`));
+  const rows = (seed as any[]).filter((s) => !known.has(`${s.kind}:${s.data?.id}`)).map((s) => ({ account_id: accountId, kind: s.kind, sort: s.sort, data: s.data }));
+  if (!rows.length) return;
+  const { error: insertError } = await admin.from("onboarding_content").upsert(
+    rows.map((r) => ({ ...r, item_key: String(r.data?.id ?? "") })),
+    { onConflict: "account_id,kind,item_key", ignoreDuplicates: true },
+  );
   if (insertError) throw new Error(insertError.message);
 }
 
 /** Creates (or reuses) a journey for a collaborator and sends the invitation e-mail. */
 export async function startJourney(
   admin: Admin,
-  input: { accountId: string; email: string; name: string; role: string; collaboratorRef?: string; origin: string },
+  input: { accountId: string; email: string; name: string; role: string; collaboratorRef?: string; track: string; origin: string },
 ) {
   const email = input.email.trim().toLowerCase();
   await ensureOnboardingContent(admin, input.accountId);
   const { data: existing } = await admin.from("onboarding_journeys").select("id").eq("account_id", input.accountId).ilike("email", email).maybeSingle();
   let journeyId = existing?.id as string | undefined;
+  if (journeyId) await admin.from("onboarding_journeys").update({ track: input.track, role: input.role }).eq("id", journeyId);
   if (!journeyId) {
     const { data, error } = await admin.from("onboarding_journeys").insert({
-      account_id: input.accountId, email, name: input.name, role: input.role, collaborator_ref: input.collaboratorRef ?? "",
+      account_id: input.accountId, email, name: input.name, role: input.role, collaborator_ref: input.collaboratorRef ?? "", track: input.track,
     }).select("id").single();
     if (error) throw new Error(error.message);
     journeyId = data.id;

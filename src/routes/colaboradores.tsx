@@ -23,7 +23,8 @@ import {
   Sparkles,
   Building2,
   KeyRound,
-  Copy
+  Copy,
+  Send
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -54,6 +55,7 @@ import {
 } from "@/components/ui/select";
 import { brl } from "@/lib/format";
 import { toast } from "sonner";
+import { inviteToOnboarding } from "@/lib/api-onboarding.functions";
 import { 
   getCollaborators, 
   addCollaborator, 
@@ -455,6 +457,16 @@ function ColaboradoresPage() {
                           <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
                             <MessageCircle className="size-3.5 mr-2 text-emerald-400" /> Abrir no WhatsApp
                           </a>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() =>
+                            inviteToOnboarding({ data: { email: colab.email, name: colab.name, role: colab.role, collaboratorRef: colab.id } })
+                              .then((r) => toast.success(r.alreadyUser ? `Integração criada. ${colab.name} já tem acesso e pode entrar em /integracao.` : `Convite de integração enviado para ${colab.email}.`))
+                              .catch((e) => toast.error(e.message))
+                          }
+                          className="cursor-pointer text-xs text-neutral-300 hover:text-white focus:bg-white/10 rounded-lg px-2.5 py-2"
+                        >
+                          <Send className="size-3.5 mr-2 text-brand" /> Iniciar Integração
                         </DropdownMenuItem>
                         <DropdownMenuSeparator className="bg-white/10 my-1" />
                         <DropdownMenuItem

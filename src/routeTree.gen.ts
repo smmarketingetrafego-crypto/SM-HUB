@@ -25,6 +25,8 @@ import { Route as ConteudoRouteImport } from './routes/conteudo'
 import { Route as ConteudosRouteImport } from './routes/conteudos'
 import { Route as FinanceiroRouteImport } from './routes/financeiro'
 import { Route as FundadorRouteImport } from './routes/fundador'
+import { Route as IntegracaoRouteImport } from './routes/integracao'
+import { Route as IntegracaoEquipeRouteImport } from './routes/integracao-equipe'
 import { Route as IntegracoesRouteImport } from './routes/integracoes'
 import { Route as LeadDetailsRouteImport } from './routes/lead-details'
 import { Route as LeadsRouteImport } from './routes/leads'
@@ -122,6 +124,16 @@ const FinanceiroRoute = FinanceiroRouteImport.update({
 const FundadorRoute = FundadorRouteImport.update({
   id: '/fundador',
   path: '/fundador',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IntegracaoRoute = IntegracaoRouteImport.update({
+  id: '/integracao',
+  path: '/integracao',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IntegracaoEquipeRoute = IntegracaoEquipeRouteImport.update({
+  id: '/integracao-equipe',
+  path: '/integracao-equipe',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IntegracoesRoute = IntegracoesRouteImport.update({
@@ -237,6 +249,8 @@ export interface FileRoutesByFullPath {
   '/conteudos': typeof ConteudosRoute
   '/financeiro': typeof FinanceiroRoute
   '/fundador': typeof FundadorRoute
+  '/integracao': typeof IntegracaoRoute
+  '/integracao-equipe': typeof IntegracaoEquipeRoute
   '/integracoes': typeof IntegracoesRoute
   '/lead-details': typeof LeadDetailsRoute
   '/leads': typeof LeadsRoute
@@ -273,6 +287,8 @@ export interface FileRoutesByTo {
   '/conteudos': typeof ConteudosRoute
   '/financeiro': typeof FinanceiroRoute
   '/fundador': typeof FundadorRoute
+  '/integracao': typeof IntegracaoRoute
+  '/integracao-equipe': typeof IntegracaoEquipeRoute
   '/integracoes': typeof IntegracoesRoute
   '/lead-details': typeof LeadDetailsRoute
   '/leads': typeof LeadsRoute
@@ -311,6 +327,8 @@ export interface FileRoutesById {
   '/conteudos': typeof ConteudosRoute
   '/financeiro': typeof FinanceiroRoute
   '/fundador': typeof FundadorRoute
+  '/integracao': typeof IntegracaoRoute
+  '/integracao-equipe': typeof IntegracaoEquipeRoute
   '/integracoes': typeof IntegracoesRoute
   '/lead-details': typeof LeadDetailsRoute
   '/leads': typeof LeadsRoute
@@ -349,6 +367,8 @@ export interface FileRouteTypes {
     | '/conteudos'
     | '/financeiro'
     | '/fundador'
+    | '/integracao'
+    | '/integracao-equipe'
     | '/integracoes'
     | '/lead-details'
     | '/leads'
@@ -385,6 +405,8 @@ export interface FileRouteTypes {
     | '/conteudos'
     | '/financeiro'
     | '/fundador'
+    | '/integracao'
+    | '/integracao-equipe'
     | '/integracoes'
     | '/lead-details'
     | '/leads'
@@ -422,6 +444,8 @@ export interface FileRouteTypes {
     | '/conteudos'
     | '/financeiro'
     | '/fundador'
+    | '/integracao'
+    | '/integracao-equipe'
     | '/integracoes'
     | '/lead-details'
     | '/leads'
@@ -460,6 +484,8 @@ export interface RootRouteChildren {
   ConteudosRoute: typeof ConteudosRoute
   FinanceiroRoute: typeof FinanceiroRoute
   FundadorRoute: typeof FundadorRoute
+  IntegracaoRoute: typeof IntegracaoRoute
+  IntegracaoEquipeRoute: typeof IntegracaoEquipeRoute
   IntegracoesRoute: typeof IntegracoesRoute
   LeadDetailsRoute: typeof LeadDetailsRoute
   LeadsRoute: typeof LeadsRoute
@@ -592,6 +618,20 @@ declare module '@tanstack/react-router' {
       path: '/fundador'
       fullPath: '/fundador'
       preLoaderRoute: typeof FundadorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/integracao': {
+      id: '/integracao'
+      path: '/integracao'
+      fullPath: '/integracao'
+      preLoaderRoute: typeof IntegracaoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/integracao-equipe': {
+      id: '/integracao-equipe'
+      path: '/integracao-equipe'
+      fullPath: '/integracao-equipe'
+      preLoaderRoute: typeof IntegracaoEquipeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/integracoes': {
@@ -758,6 +798,8 @@ const rootRouteChildren: RootRouteChildren = {
   ConteudosRoute: ConteudosRoute,
   FinanceiroRoute: FinanceiroRoute,
   FundadorRoute: FundadorRoute,
+  IntegracaoRoute: IntegracaoRoute,
+  IntegracaoEquipeRoute: IntegracaoEquipeRoute,
   IntegracoesRoute: IntegracoesRoute,
   LeadDetailsRoute: LeadDetailsRoute,
   LeadsRoute: LeadsRoute,

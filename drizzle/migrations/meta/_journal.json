@@ -29,6 +29,20 @@
       "when": 1792595311398,
       "tag": "0003_collaborator_onboarding",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1792697033609,
+      "tag": "0004_onboarding_track",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1792697135408,
+      "tag": "0005_onboarding_content_unique_item",
+      "breakpoints": true
     }
   ]
 }

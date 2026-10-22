@@ -1,0 +1,1 @@
+ALTER TABLE public.onboarding_journeys ADD COLUMN IF NOT EXISTS track text NOT NULL DEFAULT '';
