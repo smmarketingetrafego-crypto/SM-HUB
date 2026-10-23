@@ -57,6 +57,7 @@ const navigation: NavSection[] = [
     title: "Geral",
     items: [
       { title: "Dashboard", href: "/", icon: LayoutDashboard },
+      { title: "Painel de Vendas (TV)", href: "/painel-tv", icon: Monitor },
       { title: "Metas & OKRs", href: "/metas", icon: Target },
       { title: "Atualizações", href: "/atualizacoes", icon: Megaphone },
     ],
