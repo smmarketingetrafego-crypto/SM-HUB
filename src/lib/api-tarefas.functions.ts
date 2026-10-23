@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { readDb, writeDb } from "./db-drive";
-import { notifyAccount, accountOf } from "./notifications.server";
+import { notifyAccount, notifyAssignee, taskSummary, accountOf } from "./notifications.server";
 
 export interface TaskAssignee {
   name: string;
@@ -99,7 +99,14 @@ export const addTask = createServerFn({ method: "POST" })
       };
       db.tasks.unshift(newTask);
       await writeDb(db);
-      await notifyAccount(accountOf(db), { kind: "task", title: "Nova tarefa criada", body: newTask.title || "", link: "/tarefas" });
+      const summary = taskSummary(newTask);
+      await notifyAccount(accountOf(db), { kind: "task", title: `Nova tarefa: ${newTask.title || "sem título"}`, body: summary, link: "/tarefas" });
+      await notifyAssignee(db, newTask.assignee?.name, {
+        kind: "task",
+        title: `Tarefa para você: ${newTask.title || "sem título"}`,
+        body: [summary, newTask.desc].filter(Boolean).join(" — "),
+        link: "/tarefas",
+      });
       return { success: true, task: newTask };
     } catch (e: any) {
       return { success: false, error: e.message };
@@ -114,8 +121,18 @@ export const updateTask = createServerFn({ method: "POST" })
       if (!db.tasks) return { success: false, error: "No tasks found" };
       const index = db.tasks.findIndex((p: any) => p.id === data.id);
       if (index === -1) return { success: false, error: "Task not found" };
+      const before = db.tasks[index]?.assignee?.name ?? "";
       db.tasks[index] = { ...db.tasks[index], ...data };
       await writeDb(db);
+      const t = db.tasks[index];
+      if (t.assignee?.name && t.assignee.name !== before) {
+        await notifyAssignee(db, t.assignee.name, {
+          kind: "task",
+          title: `Tarefa atribuída a você: ${t.title || "sem título"}`,
+          body: [taskSummary(t), t.desc].filter(Boolean).join(" — "),
+          link: "/tarefas",
+        });
+      }
       return { success: true, task: db.tasks[index] };
     } catch (e: any) {
       return { success: false, error: e.message };
