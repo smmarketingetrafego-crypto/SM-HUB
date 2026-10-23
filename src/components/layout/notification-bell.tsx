@@ -3,7 +3,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { Bell, CheckCheck, Smartphone } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { registerPushToken } from "@/lib/push.functions";
+import { registerPushToken, sendTestPush } from "@/lib/push.functions";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { supabase } from "@/integrations/supabase/client";
@@ -53,6 +53,7 @@ export function NotificationBell() {
   const unread = items.filter((n) => !n.read_at).length;
   const [pushBusy, setPushBusy] = useState(false);
   const register = useServerFn(registerPushToken);
+  const testPush = useServerFn(sendTestPush);
 
   const activatePush = async () => {
     setPushBusy(true);
@@ -61,7 +62,8 @@ export function NotificationBell() {
       const r = await enablePush();
       if (r.status === "registered") {
         await register({ data: { token: r.token, userAgent: navigator.userAgent.slice(0, 300) } });
-        toast.success("Pronto! Este aparelho vai receber os avisos mesmo com o app fechado.");
+        await testPush();
+        toast.success("Pronto! Enviamos um aviso de teste para este aparelho.");
       } else if (r.status === "open-in-new-tab") toast.error("Abra o SM Hub em uma aba própria (ou no app instalado) e tente de novo.");
       else if (r.status === "denied") toast.error("Permissão negada. Libere as notificações nas configurações do navegador para este site.");
       else if (r.status === "unsupported") toast.error("Este navegador não aceita notificações. No iPhone, instale o app na tela inicial primeiro.");
