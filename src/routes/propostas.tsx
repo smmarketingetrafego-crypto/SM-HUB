@@ -341,7 +341,7 @@ function OrcamentosPage() {
 
   const statusMutation = useMutation({
     mutationFn: async (payload: { id: string; status: OrcStatus }) => updateOrcamentoStatus({ data: payload }),
-    onSuccess: (res) => {
+    onSuccess: (res: any) => {
       if (res.success) {
         if (res.createdTransaction) {
           toast.success(`🎉 Orçamento Aprovado!`, {
