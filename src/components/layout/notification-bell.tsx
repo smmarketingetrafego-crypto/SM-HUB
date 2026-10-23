@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { Bell, CheckCheck } from "lucide-react";
+import { Bell, CheckCheck, Smartphone } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { toast } from "sonner";
+import { registerPushToken } from "@/lib/push.functions";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { supabase } from "@/integrations/supabase/client";
@@ -48,6 +51,28 @@ export function NotificationBell() {
   }, [userId]);
 
   const unread = items.filter((n) => !n.read_at).length;
+  const [pushBusy, setPushBusy] = useState(false);
+  const register = useServerFn(registerPushToken);
+
+  const activatePush = async () => {
+    setPushBusy(true);
+    try {
+      const { enablePush } = await import("@/lib/push-client");
+      const r = await enablePush();
+      if (r.status === "registered") {
+        await register({ data: { token: r.token, userAgent: navigator.userAgent.slice(0, 300) } });
+        toast.success("Pronto! Este aparelho vai receber os avisos mesmo com o app fechado.");
+      } else if (r.status === "open-in-new-tab") toast.error("Abra o SM Hub em uma aba própria (ou no app instalado) e tente de novo.");
+      else if (r.status === "denied") toast.error("Permissão negada. Libere as notificações nas configurações do navegador para este site.");
+      else if (r.status === "unsupported") toast.error("Este navegador não aceita notificações. No iPhone, instale o app na tela inicial primeiro.");
+      else toast.error("As notificações ainda não estão configuradas.");
+    } catch (e) {
+      console.error(e);
+      toast.error("Não foi possível ativar as notificações neste aparelho.");
+    } finally {
+      setPushBusy(false);
+    }
+  };
 
   const markAll = async () => {
     const ids = items.filter((n) => !n.read_at).map((n) => n.id);
@@ -102,6 +127,11 @@ export function NotificationBell() {
               </button>
             ))
           )}
+        </div>
+        <div className="border-t border-border p-3">
+          <Button size="sm" variant="outline" className="w-full gap-2" onClick={activatePush} disabled={pushBusy}>
+            <Smartphone className="size-4" /> {pushBusy ? "Ativando..." : "Receber avisos neste aparelho"}
+          </Button>
         </div>
       </PopoverContent>
     </Popover>

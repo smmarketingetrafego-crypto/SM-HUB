@@ -33,6 +33,8 @@ export const notifyAccount = createServerOnlyFn(async (accountId: string | null 
         link: notice.link ?? "",
       })),
     );
+    const { sendPush } = await import("./push.server");
+    await sendPush(recipients, notice);
   } catch (e) {
     console.error("notifyAccount failed:", e);
   }
