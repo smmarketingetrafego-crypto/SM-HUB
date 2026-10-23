@@ -23,6 +23,7 @@ import {
   LogOut,
   ExternalLink,
   Target,
+  Monitor,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useAuthUser, openAuthPopup } from "@/lib/auth-popup";
