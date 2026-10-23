@@ -1,3 +1,4 @@
+import { getCollaborators } from "@/lib/api-colaboradores.functions";
 import { createFileRoute, Link } from '@tanstack/react-router'
 import {
   Plus, TrendingUp, Search, CalendarClock, MoreHorizontal,
@@ -35,9 +36,11 @@ export const Route = createFileRoute("/pipelines")({
   component: PipelinesPage,
 });
 
-type NewLeadForm = { name: string; email: string; phone: string; value: string; stage: string };
+type NewLeadForm = { name: string; email: string; phone: string; value: string; stage: string; owner?: string };
 
 function PipelinesPage() {
+  const { data: colabs = [] } = useQuery({ queryKey: ["collaborators"], queryFn: () => getCollaborators() });
+  const sellers = (colabs as any[]).map((c) => c.name).filter(Boolean) as string[];
   const queryClient = useQueryClient();
   const { data: pipelines = [] } = useQuery({
     queryKey: ['pipelines'],
@@ -141,6 +144,7 @@ function PipelinesPage() {
         value: dealVal,
         email: newLead.email.trim(),
         phone: newLead.phone.trim(),
+        owner: (newLead.owner ?? "").trim(),
       }
     });
 
@@ -568,6 +572,12 @@ function PipelinesPage() {
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-sm text-gray-300">Responsável (vendedor)</Label>
+              <Input value={newLead.owner ?? ""} onChange={(e) => setNewLead((p) => ({ ...p, owner: e.target.value }))}
+                placeholder="Quem cuida deste lead" list="sellers-list" className="bg-[#1A1A1A] border-white/10 text-white" />
+              <datalist id="sellers-list">{sellers.map((n) => <option key={n} value={n} />)}</datalist>
             </div>
           </div>
           <DialogFooter>

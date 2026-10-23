@@ -31,7 +31,7 @@ export const getPipelines = createServerFn({ method: "GET" }).handler(async () =
 });
 
 export const addLeadDeal = createServerFn({ method: "POST" })
-  .inputValidator((data: { pipelineId?: string; stageName: string; deal: { client: string; value: number; email?: string; phone?: string } }) => data)
+  .inputValidator((data: { pipelineId?: string; stageName: string; deal: { client: string; value: number; email?: string; phone?: string; owner?: string } }) => data)
   .handler(async ({ data }) => {
     try {
       const db = await readDb();
@@ -82,6 +82,7 @@ export const moveLeadDeal = createServerFn({ method: "POST" })
 
       const [deal] = fromStage.deals.splice(dealIdx, 1);
       deal.stage = toStage.name;
+      if (toStage.name.toLowerCase().includes("ganho") && !deal.wonAt) deal.wonAt = new Date().toISOString();
       toStage.deals.push(deal);
 
       await writeDb(db);
