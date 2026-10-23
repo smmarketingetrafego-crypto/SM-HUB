@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { readDb, writeDb } from "./db-drive";
+import { notifyAccount, accountOf } from "./notifications.server";
 
 export interface TaskAssignee {
   name: string;
@@ -77,14 +78,10 @@ export const getTasks = createServerFn({ method: "GET" })
   .handler(async () => {
     try {
       const db = await readDb();
-      if (!db.tasks || db.tasks.length === 0) {
-        db.tasks = [...INITIAL_TASKS];
-        await writeDb(db);
-      }
-      return db.tasks as TaskRecord[];
+      return (db.tasks || []) as TaskRecord[];
     } catch (e: any) {
       console.error(e);
-      return INITIAL_TASKS;
+      return [] as TaskRecord[];
     }
   });
 
@@ -102,6 +99,7 @@ export const addTask = createServerFn({ method: "POST" })
       };
       db.tasks.unshift(newTask);
       await writeDb(db);
+      await notifyAccount(accountOf(db), { kind: "task", title: "Nova tarefa criada", body: newTask.title || "", link: "/tarefas" });
       return { success: true, task: newTask };
     } catch (e: any) {
       return { success: false, error: e.message };

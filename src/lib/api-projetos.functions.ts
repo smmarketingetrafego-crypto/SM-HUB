@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { readDb, writeDb } from "./db-drive";
+import { notifyAccount, accountOf } from "./notifications.server";
 
 export const getProjects = createServerFn({ method: "GET" })
   .handler(async () => {
@@ -21,6 +22,7 @@ export const addProject = createServerFn({ method: "POST" })
       const newProject = { ...data, id: Date.now().toString(), progress: 0, status: "Na Fila" };
       db.projects.push(newProject);
       await writeDb(db);
+      await notifyAccount(accountOf(db), { kind: "project", title: "Novo projeto criado", body: String(newProject.name || newProject.title || ""), link: "/projetos" });
       return { success: true, project: newProject };
     } catch (e: any) {
       return { success: false, error: e.message };

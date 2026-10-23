@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { readDb, writeDb } from "./db-drive";
+import { notifyAccount, accountOf } from "./notifications.server";
 
 export const getClients = createServerFn({ method: "GET" }).handler(async () => {
   try {
@@ -29,6 +30,7 @@ export const addClient = createServerFn({ method: "POST" })
       };
       db.clients.push(newClient);
       await writeDb(db);
+      await notifyAccount(accountOf(db), { kind: "client", title: "Novo cliente cadastrado", body: String(newClient.name || ""), link: "/clientes" });
       return { success: true, client: newClient };
     } catch (e: any) {
       console.error("Failed to add client:", e);

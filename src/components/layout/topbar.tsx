@@ -27,6 +27,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { supabase } from "@/integrations/supabase/client";
+import { NotificationBell } from "./notification-bell";
 import { toast } from "sonner";
 import { useAuthUser, openAuthPopup } from "@/lib/auth-popup";
 import { useQuery } from "@tanstack/react-query";
@@ -137,9 +138,7 @@ export function Topbar() {
         ) : null}
 
         {/* Notificações */}
-        <Button variant="ghost" size="icon" className="text-neutral-400 hover:text-white rounded-full">
-          <Bell className="size-5" />
-        </Button>
+        <NotificationBell />
 
         {/* Atalho Direto para Configurações */}
         <Button 

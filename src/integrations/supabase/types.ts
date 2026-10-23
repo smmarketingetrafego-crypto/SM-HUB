@@ -160,6 +160,42 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          account_id: string | null
+          body: string
+          created_at: string
+          id: string
+          kind: string
+          link: string
+          read_at: string | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          account_id?: string | null
+          body?: string
+          created_at?: string
+          id?: string
+          kind?: string
+          link?: string
+          read_at?: string | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          account_id?: string | null
+          body?: string
+          created_at?: string
+          id?: string
+          kind?: string
+          link?: string
+          read_at?: string | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       onboarding_content: {
         Row: {
           account_id: string

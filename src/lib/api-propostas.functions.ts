@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { createServerFn } from "@tanstack/react-start";
 import { readDb, writeDb } from "./db-drive";
+import { notifyAccount, accountOf } from "./notifications.server";
 
 export type OrcStatus = "rascunho" | "enviado" | "aprovado" | "recusado";
 export type TipoContrato = "pontual" | "freelancer" | "recorrente";
@@ -150,6 +151,9 @@ export const saveOrcamento = createServerFn({ method: "POST" })
           prazoEntrega: data.prazoEntrega || "15 dias",
         };
         db.orcamentos.unshift(newOrc);
+        await writeDb(db);
+        await notifyAccount(accountOf(db), { kind: "proposal", title: "Nova proposta criada", body: `${newOrc.titulo} — ${newOrc.cliente}`, link: "/propostas" });
+        return { success: true, orcamentos: db.orcamentos };
       }
 
       await writeDb(db);

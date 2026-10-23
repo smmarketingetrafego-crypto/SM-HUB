@@ -103,8 +103,8 @@ function TarefasPage() {
     tags: '',
     status: 'A Fazer',
     priority: 'Média',
-    assigneeName: DEFAULT_TEAM_MEMBERS[0].name,
-    assigneeRole: DEFAULT_TEAM_MEMBERS[0].role,
+    assigneeName: "",
+    assigneeRole: "",
     project: ''
   });
 
@@ -172,7 +172,7 @@ function TarefasPage() {
   };
 
   const handleOpenNew = (status = 'A Fazer') => {
-    const defaultMember = teamMembers[0] || DEFAULT_TEAM_MEMBERS[0];
+    const defaultMember = teamMembers[0] || { name: "", role: "" };
     setFormData({
       id: '',
       title: '',
@@ -189,7 +189,7 @@ function TarefasPage() {
   };
 
   const handleOpenEdit = (task: TaskRecord) => {
-    const defaultMember = teamMembers[0] || DEFAULT_TEAM_MEMBERS[0];
+    const defaultMember = teamMembers[0] || { name: "", role: "" };
     setFormData({
       id: task.id,
       title: task.title,
