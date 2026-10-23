@@ -6,7 +6,7 @@ export interface NavItem {
 }
 
 export const navConfig = {
-  comercial: ['/clientes', '/pipelines', '/leads', '/propostas', '/briefings'],
+  comercial: ['/painel-tv', '/clientes', '/pipelines', '/leads', '/propostas', '/briefings'],
   operacional: ['/kanban', '/calendario-conteudo', '/conteudos', '/agendamentos', '/relatorios', '/meta-ads', '/agenda', '/projetos', '/tarefas', '/minhas-metas'],
   atendimento: ['/whatsapp', '/atendentes', '/automacoes', '/monitor-de-grupos'],
   servicos: ['/servicos', '/produtos', '/planos', '/checkout'],
@@ -20,6 +20,7 @@ export const navConfig = {
 
 export const allNavItems: NavItem[] = [
   { id: "dashboard", label: "Dashboard", href: "/", section: "Geral" },
+  { id: "painel-tv", label: "Painel de Vendas (TV)", href: "/painel-tv", section: "Geral" },
   { id: "metas", label: "Metas & OKRs", href: "/metas", section: "Geral" },
   { id: "atualizacoes", label: "Atualizações", href: "/atualizacoes", section: "Geral" },
   { id: "clientes", label: "Clientes", href: "/clientes", section: "Comercial" },

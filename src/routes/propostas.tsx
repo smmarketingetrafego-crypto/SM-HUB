@@ -317,6 +317,7 @@ function OrcamentosPage() {
         setDraft({
           titulo: "",
           cliente: "",
+          responsavel: "",
           valor: "",
           descricao: "",
           tipoContrato: "pontual",

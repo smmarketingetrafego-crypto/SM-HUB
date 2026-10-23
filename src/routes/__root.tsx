@@ -16,6 +16,7 @@ import { AccessGate } from "@/components/layout/access-gate";
 import { AppSidebar } from "@/components/layout/app-sidebar";
 import { MobileBar } from "@/components/layout/mobile-bar";
 import { Topbar } from "@/components/layout/topbar";
+import { PopoutButton } from "@/components/layout/popout-button";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthSplash, useAuthState } from "@/lib/auth-gate";
 import { useStoreHydration } from "@/lib/store";
@@ -195,6 +196,7 @@ function RootComponent() {
     pathname.startsWith("/portal") ||
     pathname === "/integracao";
   const authState = useAuthState();
+  const windowMode = useRouterState({ select: (s) => (s.location.search as any)?.janela === "1" || (s.location.search as any)?.janela === 1 }) || pathname === "/painel-tv";
 
   if (clientView) {
     return (
@@ -232,6 +234,11 @@ function RootComponent() {
       <GoogleOAuthProvider clientId="dummy_ui_client_id">
         <ThemeProvider>
           <AccessGate>
+            {windowMode ? (
+              <main className="min-h-dvh w-full bg-background p-4 md:p-6">
+                <Outlet />
+              </main>
+            ) : (
             <div className="flex min-h-dvh w-full bg-background">
               <div className="sticky top-0 hidden h-dvh md:block">
                 <AppSidebar collapsed={collapsed} onToggle={() => setCollapsed((c) => !c)} />
@@ -245,7 +252,9 @@ function RootComponent() {
                 </main>
                 <MobileBar />
               </div>
+              <PopoutButton pathname={pathname} />
             </div>
+            )}
           </AccessGate>
           <Toaster />
           <GlobalVideoModal />
