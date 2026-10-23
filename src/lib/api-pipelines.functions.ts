@@ -54,6 +54,7 @@ export const addLeadDeal = createServerFn({ method: "POST" })
       stage.deals.push(newDeal);
 
       await writeDb(db);
+      await notifyAccount(accountOf(db), { kind: "lead", title: "Novo lead", body: String(newDeal.client || ""), link: "/pipelines" });
       return { success: true, deal: newDeal, pipelines: db.pipelines };
     } catch (e: any) {
       console.error("Failed to add deal:", e);

@@ -27,6 +27,8 @@ export const createSupportTicket = createServerFn({ method: 'POST' }).middleware
   if (error || !ticket) throw new Error(error?.message ?? 'Não foi possível criar o ticket.');
   const { error: messageError } = await admin.from('support_messages').insert({ ticket_id: ticket.id, sender: 'user', body: data.body });
   if (messageError) throw new Error(messageError.message);
+  const { notifyAccount } = await import('./notifications.server');
+  await notifyAccount(ticket.account_id, { kind: 'support', title: 'Novo ticket de suporte', body: data.subject, link: `/suporte/${ticket.id}` }, context.userId);
   return { id: ticket.id };
 });
 export const initialSupportAnswer = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth]).inputValidator((p: unknown) => z.string().uuid().parse(p)).handler(async ({ data, context }) => {

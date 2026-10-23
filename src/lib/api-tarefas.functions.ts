@@ -102,6 +102,7 @@ export const addTask = createServerFn({ method: "POST" })
       };
       db.tasks.unshift(newTask);
       await writeDb(db);
+      await notifyAccount(accountOf(db), { kind: "task", title: "Nova tarefa criada", body: newTask.title || "", link: "/tarefas" });
       return { success: true, task: newTask };
     } catch (e: any) {
       return { success: false, error: e.message };

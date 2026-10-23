@@ -29,6 +29,7 @@ export const addClient = createServerFn({ method: "POST" })
       };
       db.clients.push(newClient);
       await writeDb(db);
+      await notifyAccount(accountOf(db), { kind: "client", title: "Novo cliente cadastrado", body: String(newClient.name || ""), link: "/clientes" });
       return { success: true, client: newClient };
     } catch (e: any) {
       console.error("Failed to add client:", e);

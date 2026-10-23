@@ -38,6 +38,8 @@ export async function handleAsaasEvent(body: any) {
         updated_at: new Date().toISOString(),
       })
       .eq("id", row.account_id);
+    const { notifyAccount } = await import("./notifications.server");
+    await notifyAccount(row.account_id, { kind: "subscription", title: "Assinatura confirmada", body: `Plano ${row.reference} — pagamento recebido`, link: "/fundador" }, null);
   }
   return { success: true };
 }
