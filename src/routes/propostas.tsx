@@ -1,3 +1,4 @@
+import { getCollaborators } from "@/lib/api-colaboradores.functions";
 // @ts-nocheck
 import { createFileRoute } from '@tanstack/react-router';
 import {
@@ -256,12 +257,15 @@ function OrcamentosPage() {
   });
 
   const clients = clientsData.clients || [];
+  const { data: colabs = [] } = useQuery({ queryKey: ["collaborators"], queryFn: () => getCollaborators() });
+  const sellerNames = (colabs as any[]).map((c) => c.name).filter(Boolean) as string[];
 
   const [selectedContractType, setSelectedContractType] = useState<TipoContrato>("pontual");
 
   const [draft, setDraft] = useState({
     titulo: "",
     cliente: "",
+    responsavel: "",
     valor: "",
     descricao: "",
     tipoContrato: "pontual" as TipoContrato,
@@ -313,6 +317,7 @@ function OrcamentosPage() {
         setDraft({
           titulo: "",
           cliente: "",
+          responsavel: "",
           valor: "",
           descricao: "",
           tipoContrato: "pontual",
@@ -336,7 +341,7 @@ function OrcamentosPage() {
 
   const statusMutation = useMutation({
     mutationFn: async (payload: { id: string; status: OrcStatus }) => updateOrcamentoStatus({ data: payload }),
-    onSuccess: (res) => {
+    onSuccess: (res: any) => {
       if (res.success) {
         if (res.createdTransaction) {
           toast.success(`🎉 Orçamento Aprovado!`, {
@@ -382,6 +387,7 @@ function OrcamentosPage() {
     saveMutation.mutate({
       titulo: draft.titulo.trim(),
       cliente: draft.cliente.trim() || "Cliente Direto",
+      responsavel: draft.responsavel.trim(),
       valor: parseFloat(draft.valor.replace(",", ".")) || 0,
       descricao: draft.descricao.trim(),
       tipoContrato: draft.tipoContrato,
@@ -1794,6 +1800,20 @@ function OrcamentosPage() {
                 />
                 <datalist id="clients-list">
                   {clients.map((c: any) => <option key={c.id} value={c.name} />)}
+                </datalist>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-gray-300 text-xs uppercase font-bold tracking-wider">Responsável (vendedor)</Label>
+                <Input
+                  value={draft.responsavel}
+                  onChange={(e) => setDraft((d) => ({ ...d, responsavel: e.target.value }))}
+                  placeholder="Quem recebe o crédito da venda"
+                  className="bg-[#1A1A1A] border-white/10 text-white h-11 rounded-xl"
+                  list="sellers-list"
+                />
+                <datalist id="sellers-list">
+                  {sellerNames.map((n) => <option key={n} value={n} />)}
                 </datalist>
               </div>
 

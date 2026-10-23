@@ -74,6 +74,7 @@ export interface Orcamento {
   titulo: string;
   cliente: string;
   clienteId?: string;
+  responsavel?: string;
   valor: number;
   status: OrcStatus;
   tipoContrato?: TipoContrato;
@@ -139,6 +140,7 @@ export const saveOrcamento = createServerFn({ method: "POST" })
           titulo: data.titulo || "Novo Orçamento",
           cliente: data.cliente || "Cliente",
           clienteId: data.clienteId,
+          responsavel: (data.responsavel || "").trim() || undefined,
           valor: Number(data.valor) || 0,
           status: data.status || "rascunho",
           criadoEm,

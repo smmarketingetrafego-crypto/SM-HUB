@@ -23,6 +23,7 @@ import {
   LogOut,
   ExternalLink,
   Target,
+  Monitor,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useAuthUser, openAuthPopup } from "@/lib/auth-popup";
@@ -57,6 +58,7 @@ const navigation: NavSection[] = [
     title: "Geral",
     items: [
       { title: "Dashboard", href: "/", icon: LayoutDashboard },
+      { title: "Painel de Vendas (TV)", href: "/painel-tv", icon: Monitor },
       { title: "Metas & OKRs", href: "/metas", icon: Target },
       { title: "Atualizações", href: "/atualizacoes", icon: Megaphone },
     ],
