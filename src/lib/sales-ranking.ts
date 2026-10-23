@@ -42,3 +42,12 @@ export function salesRanking(sales: Sale[]): { seller: string; total: number; co
   }
   return [...map.values()].sort((a, b) => b.total - a.total);
 }
+
+export type GoalType = "valor" | "quantidade";
+
+// Goal progress (0-100) measured by money sold or by number of sales, per the board setting.
+export function goalProgress(goalType: GoalType, goal: number, total: number, count: number): number {
+  if (!(goal > 0)) return 0;
+  const done = goalType === "quantidade" ? count : total;
+  return Math.min(100, (done / goal) * 100);
+}
