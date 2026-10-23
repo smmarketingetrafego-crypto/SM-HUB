@@ -18,3 +18,13 @@ describe("sales ranking", () => {
     expect(salesInMonth(sales, "2026-10").map((s) => s.value)).toEqual([2]);
   });
 });
+
+import { goalProgress } from "./sales-ranking";
+describe("goal progress", () => {
+  it("counts sales when the goal is a number of sales", () => {
+    expect(goalProgress("quantidade", 10, 99999, 5)).toBe(50);
+  });
+  it("uses value when the goal is money", () => {
+    expect(goalProgress("valor", 1000, 250, 9)).toBe(25);
+  });
+});
