@@ -78,14 +78,10 @@ export const getTasks = createServerFn({ method: "GET" })
   .handler(async () => {
     try {
       const db = await readDb();
-      if (!db.tasks || db.tasks.length === 0) {
-        db.tasks = [...INITIAL_TASKS];
-        await writeDb(db);
-      }
-      return db.tasks as TaskRecord[];
+      return (db.tasks || []) as TaskRecord[];
     } catch (e: any) {
       console.error(e);
-      return INITIAL_TASKS;
+      return [] as TaskRecord[];
     }
   });
 
