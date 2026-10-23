@@ -72,7 +72,7 @@ export function Topbar() {
   };
 
   return (
-    <header className="sticky top-0 z-40 flex h-16 w-full items-center justify-between border-b border-white/5 bg-[#0a0a0a]/80 px-6 backdrop-blur-md">
+    <header className="sticky top-0 z-40 flex h-[calc(4rem+env(safe-area-inset-top))] pt-[env(safe-area-inset-top)] w-full items-center justify-between border-b border-white/5 bg-[#0a0a0a]/80 px-6 backdrop-blur-md">
       <div className="flex flex-1 items-center gap-4">
         {/* Mobile Brand Logo */}
         <Link to="/" className="md:hidden flex items-center shrink-0">

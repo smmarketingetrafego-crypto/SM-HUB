@@ -16,3 +16,11 @@ export const registerPushToken = createServerFn({ method: "POST" })
     if (error) throw new Error("Não foi possível registrar este aparelho.");
     return { ok: true };
   });
+
+export const sendTestPush = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { sendPush } = await import("./push.server");
+    await sendPush([context.userId], { title: "SM Hub", body: "Teste: os avisos estão chegando neste aparelho.", link: "/" });
+    return { ok: true };
+  });
