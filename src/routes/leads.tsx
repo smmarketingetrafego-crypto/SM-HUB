@@ -1,14 +1,14 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { Download, Search, Tag, Settings2, ExternalLink, X, Filter } from "lucide-react";
+import { Download, Search, ExternalLink, X } from "lucide-react";
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getClients } from "@/lib/api-clientes.functions";
-import { getPipelines } from "@/lib/api-pipelines.functions";
+import { getPipelines, moveLeadDeal } from "@/lib/api-pipelines.functions";
 import { TutorialBanner } from "@/components/layout/tutorial-banner";
 import { brl } from "@/lib/format";
 
@@ -27,6 +27,19 @@ export const Route = createFileRoute("/leads")({
 });
 
 function LeadsPage() {
+  const queryClient = useQueryClient();
+  const moveMutation = useMutation({
+    mutationFn: async (payload: { pipelineId: string; fromStage: string; toStage: string; clientName: string }) => {
+      const result = await moveLeadDeal({ data: payload });
+      if (!result.success) throw new Error(result.error || "Não foi possível alterar a etapa.");
+      return result;
+    },
+    onSuccess: async (_result, payload) => {
+      await queryClient.invalidateQueries({ queryKey: ['pipelines'] });
+      toast.success(`Lead movido para ${payload.toStage}.`);
+    },
+    onError: (error) => toast.error(error.message),
+  });
   const { data: clientsData = { clients: [] } } = useQuery({
     queryKey: ['clients-data'],
     queryFn: () => getClients(),
@@ -37,7 +50,6 @@ function LeadsPage() {
   });
 
   const clients = clientsData.clients || [];
-  const allDeals = pipelines.flatMap((p: any) => p.stages.flatMap((s: any) => s.deals));
 
   const [search, setSearch] = useState("");
   const [tipoFilter, setTipoFilter] = useState("todos");
@@ -46,17 +58,24 @@ function LeadsPage() {
 
   // Combine leads from pipelines + clients
   const allContacts = useMemo(() => {
-    const fromDeals = allDeals.map((d, i) => ({
-      id: `deal-${i}`,
+    const fromDeals = pipelines.flatMap((pipeline) => pipeline.stages.flatMap((stage) => stage.deals.map((deal, index) => {
+      const d = deal as typeof deal & { id?: string; email?: string; phone?: string; createdAt?: string };
+      return {
+      id: `${pipeline.id}:${stage.name}:${d.id ?? index}`,
       name: d.client,
-      email: "",
-      phone: "",
+      email: d.email || "",
+      phone: d.phone || "",
       tipo: "lead" as const,
       comprou: false,
       receita: d.value ?? 0,
       origem: "pipeline",
-      criadoEm: new Date().toISOString(),
-    }));
+      criadoEm: d.createdAt || "",
+      pipelineId: pipeline.id,
+      pipelineName: pipeline.name,
+      stageName: stage.name,
+      stages: pipeline.stages.map((s) => s.name),
+    };
+    })));
     const fromClients = clients.filter((c) => !c.archived).map((c) => ({
       id: c.id,
       name: c.name,
@@ -67,9 +86,13 @@ function LeadsPage() {
       receita: c.monthlyValue ?? 0,
       origem: c.source || "manual",
       criadoEm: c.createdAt,
+      pipelineId: "",
+      pipelineName: "",
+      stageName: "",
+      stages: [] as string[],
     }));
     return [...fromClients, ...fromDeals];
-  }, [clients, allDeals]);
+  }, [clients, pipelines]);
 
   const filtered = useMemo(() => {
     return allContacts.filter((c) => {
@@ -194,13 +217,14 @@ function LeadsPage() {
               <TableHead className="text-xs font-semibold text-gray-500 uppercase py-4 text-center">Tipo</TableHead>
               <TableHead className="text-xs font-semibold text-gray-500 uppercase py-4 text-center">Receita</TableHead>
               <TableHead className="text-xs font-semibold text-gray-500 uppercase py-4 text-center">Origem</TableHead>
+              <TableHead className="text-xs font-semibold text-muted-foreground uppercase py-4">Fluxo / Etapa</TableHead>
               <TableHead className="text-xs font-semibold text-gray-500 uppercase py-4 text-right" />
             </TableRow>
           </TableHeader>
           <TableBody>
             {filtered.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center py-16 text-gray-500">
+                <TableCell colSpan={6} className="text-center py-16 text-gray-500">
                   {search || tipoFilter !== "todos" ? "Nenhum resultado com esses filtros." : "Nenhum contato ainda. Cadastre clientes ou adicione leads no pipeline."}
                 </TableCell>
               </TableRow>
@@ -232,8 +256,27 @@ function LeadsPage() {
                     {c.receita > 0 ? brl(c.receita) : "—"}
                   </TableCell>
                   <TableCell className="py-4 text-center text-gray-500 text-sm capitalize">{c.origem}</TableCell>
+                  <TableCell className="py-4">
+                    {c.tipo === "lead" ? (
+                      <div className="min-w-48 space-y-1.5">
+                        <p className="text-xs text-muted-foreground">{c.pipelineName}</p>
+                        <Select value={c.stageName} disabled={moveMutation.isPending}
+                          onValueChange={(toStage) => {
+                            if (toStage === c.stageName) return;
+                            moveMutation.mutate({ pipelineId: c.pipelineId, fromStage: c.stageName, toStage, clientName: c.name });
+                          }}>
+                          <SelectTrigger aria-label={`Etapa de ${c.name}`} className="h-9 w-52 max-w-full bg-background text-foreground border-border">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {c.stages.map((stage) => <SelectItem key={stage} value={stage}>{stage}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    ) : <span className="text-muted-foreground">—</span>}
+                  </TableCell>
                   <TableCell className="py-4 text-right">
-                    <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex items-center justify-end gap-2">
                       {c.tipo === "cliente" && (
                         <Link to="/clientes">
                           <Button variant="ghost" size="icon" className="size-8 text-gray-400 hover:text-white rounded-lg hover:bg-white/10" title="Ver cliente">
