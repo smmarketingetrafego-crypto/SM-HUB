@@ -4,7 +4,8 @@ import {
   Plus, TrendingUp, Search, CalendarClock, MoreHorizontal,
   RefreshCw, Users, Trophy, XCircle, DollarSign, CheckSquare,
   Tag, Shrink, ChevronDown, UserPlus, Filter, Settings,
-  List, LayoutGrid, X, Check, ChevronRight,
+  List, LayoutGrid, X, Check, ChevronRight, ArrowRight, ArrowLeft,
+  ExternalLink, Trash2, User
 } from "lucide-react";
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
@@ -200,6 +201,18 @@ function PipelinesPage() {
     }
   };
 
+  const handleMoveStage = (fromStageName: string, direction: "next" | "prev", clientName: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const stages = pipeline?.stages || [];
+    const currentIndex = stages.findIndex((s: any) => s.name === fromStageName);
+    if (currentIndex === -1) return;
+    const newIndex = direction === "next" ? currentIndex + 1 : currentIndex - 1;
+    if (newIndex >= 0 && newIndex < stages.length) {
+      const toStage = stages[newIndex].name;
+      moveDeal(fromStageName, toStage, clientName);
+    }
+  };
+
   const toggleSelect = (key: string) => {
     setSelected((prev) => prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]);
   };
@@ -364,10 +377,10 @@ function PipelinesPage() {
         <div className="flex gap-4 overflow-x-auto pb-6" style={{ minHeight: "420px" }}>
           {filteredStages
             .filter((s) => tagFilter === "todas" || s.name === tagFilter)
-            .map((stage) => {
+            .map((stage, colIdx, allCols) => {
               const stageTotal = stage.deals.reduce((s, d) => s + (d.value ?? 0), 0);
               return (
-                <div key={stage.name} className={`min-w-[270px] w-[270px] flex-none rounded-2xl bg-[#0a0a0a] border-t-2 border border-white/5 ${stageColors[stage.name] ?? "border-t-brand"} flex flex-col`}>
+                <div key={stage.name} className={`min-w-[280px] w-[280px] flex-none rounded-2xl bg-[#0a0a0a] border-t-2 border border-white/5 ${stageColors[stage.name] ?? "border-t-brand"} flex flex-col`}>
                   <div className="p-4 border-b border-white/5 bg-[#111] rounded-t-2xl">
                     <div className="flex items-center justify-between mb-1">
                       <p className="text-sm font-bold text-white">{stage.name}</p>
@@ -383,58 +396,120 @@ function PipelinesPage() {
                     </div>
                     {!collapsed && <p className="text-xs text-gray-500">{brl(stageTotal)}</p>}
                   </div>
-                  <div className="p-3 flex-1 overflow-y-auto space-y-2">
+                  <div className="p-3 flex-1 overflow-y-auto space-y-3">
                     {stage.deals.map((deal, i) => {
                       const key = `${stage.name}::${deal.client}`;
                       const isSelected = selected.includes(key);
+                      const initials = (deal.client || "LD").slice(0, 2).toUpperCase();
                       return (
                         <div
                           key={`${deal.client}-${i}`}
                           onClick={() => selectMode && toggleSelect(key)}
                           className={cn(
-                            "rounded-xl bg-[#141414] border hover:border-brand/30 transition-all group",
-                            collapsed ? "py-2 px-3" : "p-3",
+                            "rounded-2xl bg-[#111318] border border-white/10 hover:border-brand/40 transition-all group shadow-md space-y-2.5",
+                            collapsed ? "py-2 px-3" : "p-3.5",
                             selectMode && "cursor-pointer",
                             isSelected && "border-brand/60 bg-brand/5",
-                            !isSelected && "border-white/5"
+                            !isSelected && "border-white/10"
                           )}
                         >
+                          {/* Top: Tag / Valor & Ações */}
                           <div className="flex items-center justify-between gap-2">
-                            <div className="flex items-center gap-2 min-w-0">
+                            <div className="flex items-center gap-1.5 min-w-0">
                               {selectMode && (
                                 <div className={cn("size-4 rounded border flex items-center justify-center shrink-0", isSelected ? "bg-brand border-brand" : "border-white/20")}>
                                   {isSelected && <Check className="size-2.5 text-black" />}
                                 </div>
                               )}
-                              <img
-                                src={`https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(deal.client)}&backgroundColor=1a1a1a&textColor=C9A227`}
-                                alt={deal.client} className="size-7 rounded-full bg-[#222] shrink-0"
-                              />
-                              <p className="text-sm font-semibold text-white truncate">{deal.client}</p>
+                              <span className="text-[10px] font-bold px-2 py-0.5 rounded-md border border-brand/30 bg-brand/10 text-brand truncate">
+                                {deal.value > 0 ? brl(deal.value) : "Novo Lead"}
+                              </span>
                             </div>
+
                             {!selectMode && (
-                              <Select onValueChange={(v) => v === "__remove__" ? removeDeal(stage.name, deal.client) : moveDeal(stage.name, v, deal.client)}>
-                                <SelectTrigger className="h-7 w-7 border-0 bg-transparent text-gray-500 hover:text-white p-0 [&>svg]:hidden opacity-0 group-hover:opacity-100 transition-opacity">
-                                  <MoreHorizontal className="size-4" />
-                                </SelectTrigger>
-                                <SelectContent className="bg-[#1A1A1A] border-white/10 text-white">
-                                  <div className="px-2 py-1 text-[10px] text-gray-500 font-semibold uppercase">Mover para</div>
-                                  {pipeline?.stages.filter((s) => s.name !== stage.name).map((s) => (
-                                    <SelectItem key={s.name} value={s.name}>{s.name}</SelectItem>
-                                  ))}
-                                  <SelectItem value="__remove__" className="text-red-400">Remover lead</SelectItem>
-                                </SelectContent>
-                              </Select>
+                              <div className="flex items-center gap-1">
+                                <Link
+                                  to="/lead-details"
+                                  search={{ name: deal.client }}
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="size-6 rounded-md hover:bg-white/10 text-gray-500 hover:text-white flex items-center justify-center transition-colors"
+                                  title="Ver jornada do lead"
+                                >
+                                  <ExternalLink className="size-3" />
+                                </Link>
+                                <Select onValueChange={(v) => v === "__remove__" ? removeDeal(stage.name, deal.client) : moveDeal(stage.name, v, deal.client)}>
+                                  <SelectTrigger className="size-6 border-0 bg-transparent text-gray-500 hover:text-white p-0 [&>svg]:hidden">
+                                    <MoreHorizontal className="size-3.5" />
+                                  </SelectTrigger>
+                                  <SelectContent className="bg-[#1A1A1A] border-white/10 text-white">
+                                    <div className="px-2 py-1 text-[10px] text-gray-500 font-semibold uppercase">Mover para</div>
+                                    {pipeline?.stages.filter((s) => s.name !== stage.name).map((s) => (
+                                      <SelectItem key={s.name} value={s.name}>{s.name}</SelectItem>
+                                    ))}
+                                    <SelectItem value="__remove__" className="text-red-400">Remover lead</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
                             )}
                           </div>
-                          {!collapsed && (
-                            <>
-                              {deal.value > 0 && <p className="text-xs font-bold text-brand mt-2">{brl(deal.value)}</p>}
-                              <p className="text-[10px] text-gray-500 flex items-center gap-1 mt-1.5">
-                                <CalendarClock className="size-3" /> Adicionado hoje
+
+                          {/* Nome do Lead */}
+                          <div>
+                            <Link
+                              to="/lead-details"
+                              search={{ name: deal.client }}
+                              onClick={(e) => e.stopPropagation()}
+                              className="text-sm font-bold text-white hover:text-brand transition-colors block truncate"
+                            >
+                              {deal.client}
+                            </Link>
+                            {!collapsed && (
+                              <p className="text-[10px] text-gray-400 flex items-center gap-1 mt-1">
+                                <CalendarClock className="size-3 text-brand/70" /> Adicionado hoje
                               </p>
-                            </>
-                          )}
+                            )}
+                          </div>
+
+                          {/* Rodapé: Responsável com Avatar e Botões de Avanço Rápido (Estilo Quadro de Tarefas) */}
+                          <div className="bg-black/40 border border-white/5 rounded-xl p-2.5 flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <div className="size-7 rounded-lg bg-brand/20 border border-brand/30 flex items-center justify-center text-xs font-bold text-brand shrink-0">
+                                {initials}
+                              </div>
+                              <div className="min-w-0">
+                                <div className="text-xs font-semibold text-white leading-tight truncate">
+                                  {deal.owner || "Equipe Comercial"}
+                                </div>
+                                <div className="text-[10px] text-gray-400 leading-tight truncate">
+                                  {stage.name}
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Botões de fluxo rápido (Voltar e Avançar Etapa) */}
+                            {!selectMode && (
+                              <div className="flex items-center gap-1 shrink-0">
+                                {colIdx > 0 && (
+                                  <button
+                                    onClick={(e) => handleMoveStage(stage.name, "prev", deal.client, e)}
+                                    className="size-6 rounded-md bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white flex items-center justify-center transition-colors"
+                                    title={`Voltar para ${allCols[colIdx - 1]?.name}`}
+                                  >
+                                    <ArrowLeft className="size-3" />
+                                  </button>
+                                )}
+                                {colIdx < allCols.length - 1 && (
+                                  <button
+                                    onClick={(e) => handleMoveStage(stage.name, "next", deal.client, e)}
+                                    className="size-6 rounded-md bg-brand/20 hover:bg-brand/30 text-brand flex items-center justify-center transition-colors font-bold shadow-sm"
+                                    title={`Avançar para ${allCols[colIdx + 1]?.name}`}
+                                  >
+                                    <ArrowRight className="size-3" />
+                                  </button>
+                                )}
+                              </div>
+                            )}
+                          </div>
                         </div>
                       );
                     })}
@@ -629,15 +704,5 @@ function PipelinesPage() {
         </DialogContent>
       </Dialog>
     </div>
-  );
-}
-
-// Missing import for Trash2 — add it inline
-function Trash2({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-      <polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
-      <path d="M10 11v6M14 11v6M9 6V4h6v2" />
-    </svg>
   );
 }
