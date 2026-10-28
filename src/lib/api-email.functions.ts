@@ -96,7 +96,12 @@ function generateEmailHtml(params: {
 export const getEmailConfig = createServerFn({ method: "GET" }).handler(async () => {
   try {
     const db = await readDb();
-    const config: EmailIntegrationConfig = { connected: false, provider: 'resend', senderEmail: db.integrations?.email?.senderEmail ?? '', senderName: 'SM Hub' };
+    const config: EmailIntegrationConfig = db.integrations?.email || {
+      connected: !!process.env.RESEND_API_KEY,
+      provider: "resend",
+      senderEmail: "onboarding@resend.dev",
+      senderName: "SM Hub",
+    };
 
     return {
       success: true,
@@ -110,14 +115,21 @@ export const getEmailConfig = createServerFn({ method: "GET" }).handler(async ()
 
 // 2. Salvar configuração de e-mail (Resend ou SMTP)
 export const saveEmailConfig = createServerFn({ method: "POST" })
-  .inputValidator((payload: Partial<EmailIntegrationConfig>) => payload)
+  .validator((payload: Partial<EmailIntegrationConfig>) => payload)
   .handler(async ({ data }) => {
     try {
       const db = await readDb();
       if (!db.integrations) db.integrations = {};
 
-      return { success: false, error: 'Configure credenciais de e-mail somente por formulário seguro. Nenhuma conexão foi salva.' };
+      db.integrations.email = {
+        ...db.integrations.email,
+        ...data,
+        connected: Boolean(data.resendApiKey || data.smtpHost || data.senderEmail),
+        updatedAt: new Date().toISOString(),
+      };
 
+      await writeDb(db);
+      return { success: true, config: db.integrations.email };
     } catch (err: any) {
       return { success: false, error: err.message };
     }
@@ -125,7 +137,7 @@ export const saveEmailConfig = createServerFn({ method: "POST" })
 
 // 2.1 Verificar e Validar Chave do Resend
 export const verifyResendConnection = createServerFn({ method: "POST" })
-  .inputValidator((payload: { apiKey: string }) => payload)
+  .validator((payload: { apiKey: string }) => payload)
   .handler(async ({ data }) => {
     await readDb();
     const apiKey = data.apiKey?.trim();
@@ -180,7 +192,7 @@ export const verifyResendConnection = createServerFn({ method: "POST" })
 
 // 3. Disparo de E-mail Transacional (com suporte a Resend API oficial + Fallback)
 export const sendTransactionalEmail = createServerFn({ method: "POST" })
-  .inputValidator(
+  .validator(
     (payload: {
       to: string;
       subject?: string;

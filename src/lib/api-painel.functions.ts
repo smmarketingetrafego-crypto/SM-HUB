@@ -58,7 +58,7 @@ export const getSalesBoard = createServerFn({ method: "GET" }).handler(async () 
 });
 
 export const saveSalesBoardSettings = createServerFn({ method: "POST" })
-  .inputValidator((d: { goal: number; goalType?: GoalType; logo?: string; rotate?: number }) => ({
+  .validator((d: { goal: number; goalType?: GoalType; logo?: string; rotate?: number }) => ({
     goal: Math.max(0, Number(d.goal) || 0),
     goalType: (d.goalType === "quantidade" ? "quantidade" : "valor") as GoalType,
     logo: String(d.logo ?? "").slice(0, 500),

@@ -31,7 +31,7 @@ export const getPipelines = createServerFn({ method: "GET" }).handler(async () =
 });
 
 export const addLeadDeal = createServerFn({ method: "POST" })
-  .inputValidator((data: { pipelineId?: string; stageName: string; deal: { client: string; value: number; email?: string; phone?: string; owner?: string } }) => data)
+  .validator((data: { pipelineId?: string; stageName: string; deal: { client: string; value: number; email?: string; phone?: string; owner?: string } }) => data)
   .handler(async ({ data }) => {
     try {
       const db = await readDb();
@@ -64,7 +64,7 @@ export const addLeadDeal = createServerFn({ method: "POST" })
   });
 
 export const moveLeadDeal = createServerFn({ method: "POST" })
-  .inputValidator((data: { pipelineId?: string; fromStage: string; toStage: string; clientName: string }) => data)
+  .validator((data: { pipelineId?: string; fromStage: string; toStage: string; clientName: string }) => data)
   .handler(async ({ data }) => {
     try {
       const db = await readDb();
@@ -94,7 +94,7 @@ export const moveLeadDeal = createServerFn({ method: "POST" })
   });
 
 export const removeLeadDeal = createServerFn({ method: "POST" })
-  .inputValidator((data: { pipelineId?: string; stageName: string; clientName: string }) => data)
+  .validator((data: { pipelineId?: string; stageName: string; clientName: string }) => data)
   .handler(async ({ data }) => {
     try {
       const db = await readDb();
@@ -116,7 +116,7 @@ export const removeLeadDeal = createServerFn({ method: "POST" })
   });
 
 export const removeBatchDeals = createServerFn({ method: "POST" })
-  .inputValidator((data: { pipelineId?: string; selectedKeys: string[] }) => data)
+  .validator((data: { pipelineId?: string; selectedKeys: string[] }) => data)
   .handler(async ({ data }) => {
     try {
       const db = await readDb();
@@ -137,7 +137,7 @@ export const removeBatchDeals = createServerFn({ method: "POST" })
   });
 
 export const addPipeline = createServerFn({ method: "POST" })
-  .inputValidator((data: { name: string }) => data)
+  .validator((data: { name: string }) => data)
   .handler(async ({ data }) => {
     try {
       const db = await readDb();

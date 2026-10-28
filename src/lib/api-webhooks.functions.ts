@@ -46,7 +46,7 @@ export async function handleAsaasEvent(body: any) {
 
 // Public proposal page polls whether the agency marked the proposal approved/paid.
 export const checkPaymentStatus = createServerFn({ method: "GET" })
-  .inputValidator((params: { type: "orcamento" | "subscription"; id: string }) => params)
+  .validator((params: { type: "orcamento" | "subscription"; id: string }) => params)
   .handler(async ({ data: { type, id } }) => {
     try {
       if (type !== "orcamento") return { success: false, isPaid: false };

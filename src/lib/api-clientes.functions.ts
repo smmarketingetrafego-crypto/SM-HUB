@@ -16,7 +16,7 @@ export const getClients = createServerFn({ method: "GET" }).handler(async () => 
 });
 
 export const addClient = createServerFn({ method: "POST" })
-  .inputValidator((data: any) => data)
+  .validator((data: any) => data)
   .handler(async ({ data }) => {
     try {
       const db = await readDb();
@@ -39,7 +39,7 @@ export const addClient = createServerFn({ method: "POST" })
   });
 
 export const updateClient = createServerFn({ method: "POST" })
-  .inputValidator((data: any) => data)
+  .validator((data: any) => data)
   .handler(async ({ data }) => {
     try {
       const db = await readDb();
@@ -56,7 +56,7 @@ export const updateClient = createServerFn({ method: "POST" })
   });
 
 export const archiveClient = createServerFn({ method: "POST" })
-  .inputValidator((data: { id: string; archived: boolean }) => data)
+  .validator((data: { id: string; archived: boolean }) => data)
   .handler(async ({ data }) => {
     try {
       const db = await readDb();
@@ -73,7 +73,7 @@ export const archiveClient = createServerFn({ method: "POST" })
   });
 
 export const deleteClient = createServerFn({ method: "POST" })
-  .inputValidator((id: string) => id)
+  .validator((id: string) => id)
   .handler(async ({ data: id }) => {
     try {
       const db = await readDb();
@@ -88,7 +88,7 @@ export const deleteClient = createServerFn({ method: "POST" })
   });
 
 export const addClientGroup = createServerFn({ method: "POST" })
-  .inputValidator((data: any) => data)
+  .validator((data: any) => data)
   .handler(async ({ data }) => {
     try {
       const db = await readDb();
@@ -109,7 +109,7 @@ export const addClientGroup = createServerFn({ method: "POST" })
   });
 
 export const deleteClientGroup = createServerFn({ method: "POST" })
-  .inputValidator((id: string) => id)
+  .validator((id: string) => id)
   .handler(async ({ data: id }) => {
     try {
       const db = await readDb();

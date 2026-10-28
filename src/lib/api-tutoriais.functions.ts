@@ -111,7 +111,7 @@ export const getTutorials = createServerFn({ method: "GET" }).handler(async () =
 });
 
 export const saveTutorialItem = createServerFn({ method: "POST" })
-  .inputValidator((item: Partial<TutorialItem>) => item)
+  .validator((item: Partial<TutorialItem>) => item)
   .handler(async ({ data: item }) => {
     try {
       const db = await readDb();
@@ -147,7 +147,7 @@ export const saveTutorialItem = createServerFn({ method: "POST" })
   });
 
 export const deleteTutorialItem = createServerFn({ method: "POST" })
-  .inputValidator((id: string) => id)
+  .validator((id: string) => id)
   .handler(async ({ data: id }) => {
     try {
       const db = await readDb();

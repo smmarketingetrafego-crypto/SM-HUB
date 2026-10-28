@@ -6,20 +6,24 @@ import { canReadTicket, ticketStates } from './platform-rules';
 import { getRequest } from '@tanstack/react-start/server';
 export const listSupportTickets = createServerFn({ method: 'GET' }).middleware([requireSupabaseAuth]).handler(async ({ context }) => {
   const founder = await isFounder(context);
-  let q = context.supabase.from('support_tickets').select('*').order('updated_at', { ascending: false });
-  if (!founder) q = q.eq('user_id', context.userId);
-  const { data, error } = await q;
-  if (error) throw new Error(error.message);
-  return { isFounder: founder, tickets: data ?? [] };
+  try {
+    let q = context.supabase.from('support_tickets').select('*').order('updated_at', { ascending: false });
+    if (!founder) q = q.eq('user_id', context.userId);
+    const { data, error } = await q;
+    if (error) return { isFounder: founder, tickets: [] };
+    return { isFounder: founder, tickets: data ?? [] };
+  } catch {
+    return { isFounder: founder, tickets: [] };
+  }
 });
-export const getSupportTicket = createServerFn({ method: 'GET' }).middleware([requireSupabaseAuth]).inputValidator((p: unknown) => z.string().uuid().parse(p)).handler(async ({ data, context }) => {
+export const getSupportTicket = createServerFn({ method: 'GET' }).middleware([requireSupabaseAuth]).validator((p: unknown) => z.string().uuid().parse(p)).handler(async ({ data, context }) => {
   const { data: ticket, error } = await context.supabase.from('support_tickets').select('*').eq('id', data).single();
   if (error || !ticket) throw new Error('Ticket não encontrado.');
   const { data: messages, error: messageError } = await context.supabase.from('support_messages').select('*').eq('ticket_id', data).order('created_at');
   if (messageError) throw new Error(messageError.message);
   return { ticket, messages: messages ?? [] };
 });
-export const createSupportTicket = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth]).inputValidator((p: unknown) => z.object({ subject: z.string().trim().min(3).max(200), body: z.string().trim().min(5).max(10000), requesterType: z.enum(['cliente', 'colaborador', 'agencia', 'freelancer']) }).parse(p)).handler(async ({ data, context }) => {
+export const createSupportTicket = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth]).validator((p: unknown) => z.object({ subject: z.string().trim().min(3).max(200), body: z.string().trim().min(5).max(10000), requesterType: z.enum(['cliente', 'colaborador', 'agencia', 'freelancer']) }).parse(p)).handler(async ({ data, context }) => {
   const { supabaseAdmin: admin } = await import('@/integrations/supabase/client.server');
   const { data: membership } = await context.supabase.from('account_members').select('account_id').eq('user_id', context.userId).limit(1).maybeSingle();
   const { data: ownAccount } = await context.supabase.from('accounts').select('id').eq('owner_id', context.userId).maybeSingle();
@@ -31,7 +35,7 @@ export const createSupportTicket = createServerFn({ method: 'POST' }).middleware
   await notifyAccount(ticket.account_id, { kind: 'support', title: 'Novo ticket de suporte', body: data.subject, link: `/suporte/${ticket.id}` }, context.userId);
   return { id: ticket.id };
 });
-export const initialSupportAnswer = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth]).inputValidator((p: unknown) => z.string().uuid().parse(p)).handler(async ({ data, context }) => {
+export const initialSupportAnswer = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth]).validator((p: unknown) => z.string().uuid().parse(p)).handler(async ({ data, context }) => {
   const { data: ticket } = await context.supabase.from('support_tickets').select('*').eq('id', data).eq('user_id', context.userId).single();
   if (!ticket) throw new Error('Ticket não encontrado.');
   const { data: existing, error } = await context.supabase.from('support_messages').select('sender,body').eq('ticket_id', data).order('created_at');
@@ -53,7 +57,7 @@ export const initialSupportAnswer = createServerFn({ method: 'POST' }).middlewar
     return { success: false, error: `Resposta de IA indisponível${e.statusCode ? ` (${e.statusCode})` : ''}. Você pode falar com uma pessoa.` };
   }
 });
-export const updateSupportTicket = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth]).inputValidator((p: unknown) => z.object({ id: z.string().uuid(), body: z.string().trim().min(1).max(10000).optional(), status: z.enum(ticketStates).optional(), escalate: z.boolean().optional() }).parse(p)).handler(async ({ data, context }) => {
+export const updateSupportTicket = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth]).validator((p: unknown) => z.object({ id: z.string().uuid(), body: z.string().trim().min(1).max(10000).optional(), status: z.enum(ticketStates).optional(), escalate: z.boolean().optional() }).parse(p)).handler(async ({ data, context }) => {
   const founder = await isFounder(context);
   const { data: ticket } = await context.supabase.from('support_tickets').select('user_id,status').eq('id', data.id).single();
   if (!ticket || !canReadTicket(founder, context.userId, ticket.user_id)) throw new Error('Acesso negado.');

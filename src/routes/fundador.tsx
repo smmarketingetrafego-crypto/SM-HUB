@@ -17,7 +17,7 @@ import { toast } from 'sonner';
 import { AccountSettingsPanel } from '@/components/account-settings-panel';
 export const Route = createFileRoute('/fundador')({ head: () => pageMeta('Founder Master', 'Administração de contas, planos e assinaturas do SM Hub.'), component: FounderPage });
 const money = (n: number) => Number(n).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-const date = (s: string | null) => s ? new Date(s).toLocaleDateString('pt-BR') : '—';
+const date = (s: string | null | undefined) => s ? new Date(s).toLocaleDateString('pt-BR') : '—';
 const emptyPlan = { id: '', name: '', price: 0, cycle: 'MONTHLY' as 'MONTHLY' | 'QUARTERLY' | 'YEARLY', description: '', features: [] as string[], active: false, billing_ready: false, sort: 0 };
 function FounderPage() {
   const qc = useQueryClient(); const overview = useServerFn(getAdminOverview);

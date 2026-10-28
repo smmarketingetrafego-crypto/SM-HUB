@@ -37,7 +37,7 @@ export const getCollaborators = createServerFn({ method: "GET" }).handler(async 
 });
 
 export const addCollaborator = createServerFn({ method: "POST" })
-  .inputValidator((data: Omit<Collaborator, "id" | "joinedAt">) => data)
+  .validator((data: Omit<Collaborator, "id" | "joinedAt">) => data)
   .handler(async ({ data }) => {
     try {
       const db = await readDb();
@@ -60,7 +60,7 @@ export const addCollaborator = createServerFn({ method: "POST" })
   });
 
 export const updateCollaborator = createServerFn({ method: "POST" })
-  .inputValidator((data: Collaborator) => data)
+  .validator((data: Collaborator) => data)
   .handler(async ({ data }) => {
     try {
       const db = await readDb();
@@ -84,7 +84,7 @@ export const updateCollaborator = createServerFn({ method: "POST" })
   });
 
 export const deleteCollaborator = createServerFn({ method: "POST" })
-  .inputValidator((id: string) => id)
+  .validator((id: string) => id)
   .handler(async ({ data: id }) => {
     try {
       const db = await readDb();

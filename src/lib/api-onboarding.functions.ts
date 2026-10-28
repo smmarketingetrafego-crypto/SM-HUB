@@ -60,7 +60,7 @@ export const listJourneys = createServerFn({ method: "GET" }).middleware([requir
 
 export const inviteToOnboarding = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((p: unknown) => z.object({ email: z.string().trim().email().max(255), name: z.string().trim().max(120), role: z.string().trim().max(120), collaboratorRef: z.string().max(80).optional(), track: z.string().max(40).optional() }).parse(p))
+  .validator((p: unknown) => z.object({ email: z.string().trim().email().max(255), name: z.string().trim().max(120), role: z.string().trim().max(120), collaboratorRef: z.string().max(80).optional(), track: z.string().max(40).optional() }).parse(p))
   .handler(async ({ data, context }) => {
     const accountId = await managedAccount(context);
     const { startJourney, requestOrigin } = await import("./onboarding.server");
@@ -70,7 +70,7 @@ export const inviteToOnboarding = createServerFn({ method: "POST" })
 
 export const reviewStep = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((p: unknown) => z.object({ journeyId: z.string().uuid(), stepId: z.string().max(80), decision: z.enum(["approved", "needs_changes"]), feedback: z.string().trim().max(2000) }).parse(p))
+  .validator((p: unknown) => z.object({ journeyId: z.string().uuid(), stepId: z.string().max(80), decision: z.enum(["approved", "needs_changes"]), feedback: z.string().trim().max(2000) }).parse(p))
   .handler(async ({ data, context }) => {
     const accountId = await managedAccount(context);
     const db = await admin();
@@ -87,7 +87,7 @@ export const reviewStep = createServerFn({ method: "POST" })
 
 export const removeJourney = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((p: unknown) => z.string().uuid().parse(p))
+  .validator((p: unknown) => z.string().uuid().parse(p))
   .handler(async ({ data, context }) => {
     const accountId = await managedAccount(context);
     const { error } = await (await admin()).from("onboarding_journeys").delete().eq("id", data).eq("account_id", accountId);
@@ -130,7 +130,7 @@ export const getMyJourney = createServerFn({ method: "GET" }).middleware([requir
 
 export const submitStep = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((p: unknown) => z.object({ stepId: z.string().max(80), submission: z.string().trim().min(3).max(4000) }).parse(p))
+  .validator((p: unknown) => z.object({ stepId: z.string().max(80), submission: z.string().trim().min(3).max(4000) }).parse(p))
   .handler(async ({ data, context }) => {
     const { db, journey } = await myJourney(context);
     if (!journey) throw new Error("Nenhuma integração encontrada para você.");
@@ -146,7 +146,7 @@ export const submitStep = createServerFn({ method: "POST" })
 
 export const submitQuiz = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((p: unknown) => z.object({ answers: z.array(z.number().int().min(-1).max(20)).max(50) }).parse(p))
+  .validator((p: unknown) => z.object({ answers: z.array(z.number().int().min(-1).max(20)).max(50) }).parse(p))
   .handler(async ({ data, context }) => {
     const { db, journey } = await myJourney(context);
     if (!journey) throw new Error("Nenhuma integração encontrada para você.");

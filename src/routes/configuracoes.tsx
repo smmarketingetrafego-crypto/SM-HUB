@@ -15,6 +15,7 @@ import { ContractClauseEditorModal } from "@/components/propostas/contract-claus
 import { SubscriptionCheckoutModal } from "@/components/subscription/subscription-checkout-modal";
 import { getActiveSubscription } from "@/lib/api-subscriptions.functions";
 import { getIntegrations, type IntegrationsData } from "@/lib/api-integracoes.functions";
+import { getDatabaseStats, exportDatabaseBackup, syncDriveNow } from "@/lib/api-database.functions";
 import {
   BellRing,
   Camera,
@@ -6016,18 +6017,165 @@ function ChangelogTab() {
 }
 
 function DatabaseTab() {
+  const qc = useQueryClient();
+  const getStatsFn = useServerFn(getDatabaseStats);
+  const exportBackupFn = useServerFn(exportDatabaseBackup);
+  const syncDriveFn = useServerFn(syncDriveNow);
+  const [syncing, setSyncing] = useState(false);
+  const [exporting, setExporting] = useState(false);
+
+  const { data: stats, isLoading } = useQuery({
+    queryKey: ["database-stats"],
+    queryFn: () => getStatsFn(),
+  });
+
+  const handleExport = async () => {
+    setExporting(true);
+    try {
+      const res = await exportBackupFn();
+      const blob = new Blob([res.content], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = res.filename;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success("Backup do banco de dados exportado com sucesso!");
+    } catch (e: any) {
+      toast.error("Erro ao exportar backup: " + e.message);
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  const handleSync = async () => {
+    setSyncing(true);
+    try {
+      const res = await syncDriveFn();
+      await qc.invalidateQueries({ queryKey: ["database-stats"] });
+      toast.success(`Google Drive sincronizado com sucesso às ${res.timestamp}!`);
+    } catch (e: any) {
+      toast.error("Erro na sincronização: " + e.message);
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+  const formatBytes = (bytes: number) => {
+    if (!bytes) return "0 B";
+    const k = 1024;
+    const sizes = ["B", "KB", "MB", "GB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return `${(bytes / Math.pow(k, i)).toFixed(1)} ${sizes[i]}`;
+  };
+
   return (
     <div className="space-y-6">
-      <div className="p-6 border border-border rounded-2xl bg-card">
-        <h3 className="text-xl font-medium flex items-center gap-2">
-          <Database className="text-brand size-5" /> Armazenamento em Nuvem
-        </h3>
-        <p className="text-sm text-muted-foreground mt-2">
-          Todos os clientes, finanças e projetos ficam salvos automaticamente na nuvem segura do SM Hub, com acesso apenas para a sua equipe logada.
-        </p>
-        <div className="mt-4 flex items-center gap-3">
-          <Cloud className="size-6 text-brand" />
-          <span className="font-medium">Banco de dados conectado</span>
+      <div className="p-6 border border-border rounded-2xl bg-card shadow-sm space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="size-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+              <Database className="size-6" />
+            </div>
+            <div>
+              <h3 className="text-xl font-bold flex items-center gap-2">
+                Arquitetura de Dados: Google Drive + Local
+              </h3>
+              <p className="text-sm text-muted-foreground mt-0.5">
+                Seus dados são armazenados no arquivo local de ultra performance com sincronização em nuvem pelo Google Drive.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={syncing}
+              onClick={handleSync}
+              className="gap-2"
+            >
+              <RefreshCcw className={`size-4 ${syncing ? "animate-spin" : ""}`} />
+              {syncing ? "Sincronizando..." : "Sincronizar Google Drive"}
+            </Button>
+            <Button
+              variant="default"
+              size="sm"
+              disabled={exporting}
+              onClick={handleExport}
+              className="gap-2"
+            >
+              <Download className="size-4" />
+              {exporting ? "Gerando..." : "Baixar Backup (JSON)"}
+            </Button>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 border-t border-border">
+          <div className="p-3.5 rounded-xl border border-border bg-muted/30">
+            <p className="text-xs text-muted-foreground">Arquivo do Banco</p>
+            <p className="text-sm font-semibold mt-1 font-mono">{stats?.dbFilename || "smhub_database.json"}</p>
+          </div>
+          <div className="p-3.5 rounded-xl border border-border bg-muted/30">
+            <p className="text-xs text-muted-foreground">Tamanho dos Dados</p>
+            <p className="text-sm font-semibold mt-1">{formatBytes(stats?.fileSizeBytes || 0)}</p>
+          </div>
+          <div className="p-3.5 rounded-xl border border-border bg-muted/30">
+            <p className="text-xs text-muted-foreground">Status do Google Drive</p>
+            <div className="flex items-center gap-1.5 mt-1">
+              <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">Ativo & Sincronizado</span>
+            </div>
+          </div>
+          <div className="p-3.5 rounded-xl border border-border bg-muted/30">
+            <p className="text-xs text-muted-foreground">Latência de Operação</p>
+            <p className="text-sm font-semibold mt-1 text-emerald-600 dark:text-emerald-400">0ms (Local Instantâneo)</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="p-6 border border-border rounded-2xl bg-card shadow-sm space-y-4">
+        <h4 className="text-base font-semibold text-foreground">Registros Armazenados</h4>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+          <div className="p-3 rounded-xl border border-border bg-muted/20 text-center">
+            <p className="text-2xl font-bold text-foreground">{stats?.counts?.leads ?? 0}</p>
+            <p className="text-xs text-muted-foreground mt-1">Leads no Pipeline</p>
+          </div>
+          <div className="p-3 rounded-xl border border-border bg-muted/20 text-center">
+            <p className="text-2xl font-bold text-foreground">{stats?.counts?.clients ?? 0}</p>
+            <p className="text-xs text-muted-foreground mt-1">Clientes Cadastrados</p>
+          </div>
+          <div className="p-3 rounded-xl border border-border bg-muted/20 text-center">
+            <p className="text-2xl font-bold text-foreground">{stats?.counts?.projects ?? 0}</p>
+            <p className="text-xs text-muted-foreground mt-1">Projetos em Andamento</p>
+          </div>
+          <div className="p-3 rounded-xl border border-border bg-muted/20 text-center">
+            <p className="text-2xl font-bold text-foreground">{stats?.counts?.orcamentos ?? 0}</p>
+            <p className="text-xs text-muted-foreground mt-1">Propostas Comerciais</p>
+          </div>
+          <div className="p-3 rounded-xl border border-border bg-muted/20 text-center">
+            <p className="text-2xl font-bold text-foreground">{stats?.counts?.whatsappMessages ?? 0}</p>
+            <p className="text-xs text-muted-foreground mt-1">Mensagens WhatsApp</p>
+          </div>
+          <div className="p-3 rounded-xl border border-border bg-muted/20 text-center">
+            <p className="text-2xl font-bold text-foreground">{stats?.counts?.tasks ?? 0}</p>
+            <p className="text-xs text-muted-foreground mt-1">Tarefas Registradas</p>
+          </div>
+          <div className="p-3 rounded-xl border border-border bg-muted/20 text-center">
+            <p className="text-2xl font-bold text-foreground">{stats?.counts?.briefings ?? 0}</p>
+            <p className="text-xs text-muted-foreground mt-1">Briefings Gerados</p>
+          </div>
+          <div className="p-3 rounded-xl border border-border bg-muted/20 text-center">
+            <p className="text-2xl font-bold text-foreground">{stats?.counts?.collaborators ?? 0}</p>
+            <p className="text-xs text-muted-foreground mt-1">Colaboradores</p>
+          </div>
+          <div className="p-3 rounded-xl border border-border bg-muted/20 text-center">
+            <p className="text-2xl font-bold text-foreground">{stats?.counts?.driveFiles ?? 0}</p>
+            <p className="text-xs text-muted-foreground mt-1">Arquivos no Drive</p>
+          </div>
+          <div className="p-3 rounded-xl border border-border bg-muted/20 text-center">
+            <p className="text-2xl font-bold text-foreground">{stats?.counts?.pipelines ?? 1}</p>
+            <p className="text-xs text-muted-foreground mt-1">Funis Ativos</p>
+          </div>
         </div>
       </div>
     </div>

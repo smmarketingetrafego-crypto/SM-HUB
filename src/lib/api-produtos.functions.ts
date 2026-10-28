@@ -76,7 +76,7 @@ export const getProducts = createServerFn({ method: "GET" })
   });
 
 export const addProduct = createServerFn({ method: "POST" })
-  .inputValidator((data: any) => data)
+  .validator((data: any) => data)
   .handler(async ({ data }) => {
     try {
       const db = await readDb();
@@ -91,7 +91,7 @@ export const addProduct = createServerFn({ method: "POST" })
   });
 
 export const updateProduct = createServerFn({ method: "POST" })
-  .inputValidator((data: any) => data)
+  .validator((data: any) => data)
   .handler(async ({ data }) => {
     try {
       const db = await readDb();
@@ -107,7 +107,7 @@ export const updateProduct = createServerFn({ method: "POST" })
   });
 
 export const deleteProduct = createServerFn({ method: "POST" })
-  .inputValidator((id: string) => id)
+  .validator((id: string) => id)
   .handler(async ({ data: id }) => {
     try {
       const db = await readDb();

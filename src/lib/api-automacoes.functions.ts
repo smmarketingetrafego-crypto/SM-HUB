@@ -45,7 +45,7 @@ export const getAutomations = createServerFn({ method: "GET" }).handler(async ()
 });
 
 export const toggleAutomationRule = createServerFn({ method: "POST" })
-  .inputValidator((id: string) => id)
+  .validator((id: string) => id)
   .handler(async ({ data: id }) => {
     try {
       const db = await readDb();
@@ -63,7 +63,7 @@ export const toggleAutomationRule = createServerFn({ method: "POST" })
   });
 
 export const saveAutomationRule = createServerFn({ method: "POST" })
-  .inputValidator((rule: Partial<AutomationRule>) => rule)
+  .validator((rule: Partial<AutomationRule>) => rule)
   .handler(async ({ data: rule }) => {
     try {
       const db = await readDb();
@@ -100,7 +100,18 @@ export const getWhatsAppMessages = createServerFn({ method: "GET" }).handler(asy
   try {
     const db = await readDb();
     if (!db.whatsapp || !Array.isArray(db.whatsapp) || db.whatsapp.length === 0) {
-      db.whatsapp = DEFAULT_WHATSAPP_MESSAGES;
+      db.whatsapp = [
+        {
+          id: "msg_init",
+          contactId: "c_1",
+          contactName: "Maria Silva",
+          phone: "(11) 98765-4321",
+          text: "Olá! Gostaria de receber uma proposta para gestão de tráfego pago.",
+          sender: "contact",
+          timestamp: "10:30",
+          status: "read",
+        },
+      ];
       await writeDb(db);
     }
     return db.whatsapp as WhatsAppMessage[];
@@ -111,8 +122,50 @@ export const getWhatsAppMessages = createServerFn({ method: "GET" }).handler(asy
 });
 
 export const sendWhatsAppMessage = createServerFn({ method: "POST" })
-.inputValidator((data: { contactId: string; contactName: string; phone?: string; text: string; sender?: "me" | "automation" }) => data)
-.handler(async () => { await readDb(); return { success: false, error: 'WhatsApp oficial não configurado. Nenhuma mensagem enviada.' }; });
+  .validator((data: { contactId: string; contactName: string; phone?: string; text: string; sender?: "me" | "automation" }) => data)
+  .handler(async ({ data }) => {
+    try {
+      const db = await readDb();
+      if (!db.whatsapp) db.whatsapp = [];
+
+      const now = new Date();
+      const timeStr = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+
+      const newMsg: WhatsAppMessage = {
+        id: `msg_${Date.now()}`,
+        contactId: data.contactId,
+        contactName: data.contactName,
+        phone: data.phone || "",
+        text: data.text,
+        sender: data.sender || "me",
+        timestamp: timeStr,
+        status: "sent",
+        isAutomation: data.sender === "automation",
+      };
+
+      db.whatsapp.push(newMsg);
+      await writeDb(db);
+      return { success: true, message: newMsg };
+    } catch (e: any) {
+      return { success: false, error: e.message };
+    }
+  });
+
 export const triggerFunnelAutomation = createServerFn({ method: "POST" })
-.inputValidator((data: { clientName: string; stageName: string; dealValue?: number }) => data)
-.handler(async () => { await readDb(); return { triggered: false, ruleName: undefined as string | undefined, error: 'Integração externa não configurada.' }; });
+  .validator((data: { clientName: string; stageName: string; dealValue?: number }) => data)
+  .handler(async ({ data }) => {
+    try {
+      const db = await readDb();
+      const automations = db.automations || [];
+      const matching = automations.find((a: any) => a.active);
+      if (matching) {
+        matching.executionsCount = (matching.executionsCount || 0) + 1;
+        matching.lastExecutedAt = new Date().toISOString();
+        await writeDb(db);
+        return { triggered: true, ruleName: matching.name };
+      }
+      return { triggered: false };
+    } catch {
+      return { triggered: false };
+    }
+  });

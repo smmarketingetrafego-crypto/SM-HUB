@@ -1,0 +1,511 @@
+{
+  "transactions": [],
+  "projects": [],
+  "products": [
+    {
+      "id": "prod-1",
+      "name": "Gestão de Tráfego Pago (Meta Ads & Google)",
+      "desc": "Criação de campanhas, otimização de ROAS, relatórios semanais e pixel tracking.",
+      "price": 2500,
+      "category": "Serviço",
+      "active": true
+    },
+    {
+      "id": "prod-2",
+      "name": "Identidade Visual & Branding Completo",
+      "desc": "Manual da marca, paleta de cores, tipografia e pacote de logos em alta resolução.",
+      "price": 4500,
+      "category": "Serviço",
+      "active": true
+    },
+    {
+      "id": "prod-3",
+      "name": "Desenvolvimento de Landing Page de Alta Conversão",
+      "desc": "Design responsivo, copy persuasiva e integração com CRM e WhatsApp.",
+      "price": 1800,
+      "category": "Serviço",
+      "active": true
+    },
+    {
+      "id": "prod-4",
+      "name": "Produção de Conteúdo & Vídeos Reels (12 vídeos/mês)",
+      "desc": "Roteirização, edição dinâmica com legendas e artes para feed/stories.",
+      "price": 3200,
+      "category": "Serviço",
+      "active": true
+    },
+    {
+      "id": "prod-5",
+      "name": "Consultoria Estratégica de Vendas & Processos",
+      "desc": "Diagnóstico completo, funil de prospecção e treinamento da equipe de vendas.",
+      "price": 5000,
+      "category": "Serviço",
+      "active": true
+    },
+    {
+      "id": "prod-6",
+      "name": "Licença de Agente de IA para Atendimento WhatsApp",
+      "desc": "Software de atendimento inteligente 24/7 integrado com banco de dados.",
+      "price": 997,
+      "category": "Produto",
+      "active": true
+    },
+    {
+      "id": "prod-7",
+      "name": "Kit de Contratos Jurídicos & Modelos de Briefing",
+      "desc": "Templates prontos em conformidade com o Art. 442-B da CLT para agências.",
+      "price": 397,
+      "category": "Produto",
+      "active": true
+    }
+  ],
+  "tasks": [
+    {
+      "id": "tsk-1793196061501",
+      "title": "teste",
+      "desc": "",
+      "date": "Esta semana",
+      "status": "A Fazer",
+      "priority": "Média",
+      "project": "",
+      "assignee": {
+        "name": "",
+        "role": ""
+      },
+      "tags": []
+    }
+  ],
+  "agents": [
+    {
+      "id": "agent-1",
+      "name": "IA de Qualificação & SDR",
+      "role": "Vendas",
+      "desc": "Aborda leads no WhatsApp, descobre orçamento, dores e agenda reuniões diretamente no seu calendário.",
+      "model": "GPT-4o (Comercial)",
+      "systemPrompt": "Você é um SDR consultivo de alta performance para a agência SM Hub. Seu objetivo é acolher o lead com simpatia, identificar se ele precisa de branding, tráfego ou landing page, entender o orçamento estimado e direcioná-lo para uma call com o especialista.",
+      "active": true,
+      "chats": 145,
+      "history": [
+        {
+          "id": "h1",
+          "sender": "user",
+          "text": "Olá! Gostaria de saber mais sobre os serviços de vocês.",
+          "timestamp": "10:00"
+        },
+        {
+          "id": "h2",
+          "sender": "agent",
+          "text": "Olá! Seja muito bem-vindo à SM Hub! 🚀 Eu sou o assistente virtual comercial. Ajudamos empresas a escalarem através de Branding, Tráfego Pago e Landing Pages de alta conversão. Qual é o seu principal objetivo hoje?",
+          "timestamp": "10:00"
+        }
+      ]
+    },
+    {
+      "id": "agent-2",
+      "name": "Suporte Técnico N1 & Dúvidas",
+      "role": "Atendimento",
+      "desc": "Responde dúvidas frequentes de clientes sobre prazos de entrega, status de projetos e links de aprovação.",
+      "model": "Claude 3.5 Sonnet",
+      "systemPrompt": "Você é o assistente de suporte técnico da SM Hub. Ajude o cliente a encontrar informações sobre seus entregáveis, prazos e manutenções com objetividade e clareza.",
+      "active": true,
+      "chats": 890,
+      "history": [
+        {
+          "id": "h1",
+          "sender": "user",
+          "text": "Onde consigo ver o link do meu projeto?",
+          "timestamp": "14:20"
+        },
+        {
+          "id": "h2",
+          "sender": "agent",
+          "text": "Você pode acessar o menu 'Projetos' na barra lateral ou conferir a pasta sincronizada do seu Google Drive enviada no seu e-mail de onboarding!",
+          "timestamp": "14:20"
+        }
+      ]
+    },
+    {
+      "id": "agent-3",
+      "name": "Copywriter Pro & Estrategista",
+      "role": "Marketing",
+      "desc": "Cria roteiros para Reels, carrosséis educativos para Instagram e copies persuasivas de alta conversão.",
+      "model": "DeepSeek V3",
+      "systemPrompt": "Você é um Copywriter especialista em marketing digital e retenção. Crie ganchos magnéticos, desenvolvimento envolvente e chamadas para ação (CTA) claras para designers e gestores de tráfego.",
+      "active": false,
+      "chats": 38,
+      "history": []
+    },
+    {
+      "id": "agent-4",
+      "name": "Assistente de Cobrança Amigável",
+      "role": "Financeiro",
+      "desc": "Notifica clientes sobre vencimento de boletos e chaves Pix com cordialidade e tom humanizado.",
+      "model": "GPT-4o Mini",
+      "systemPrompt": "Você é o assistente financeiro da SM Hub. Seu trabalho é enviar lembretes cordiais de faturas a vencer ou pendentes, facilitando o pagamento por código Pix copia-e-cola.",
+      "active": false,
+      "chats": 12,
+      "history": []
+    }
+  ],
+  "whatsapp": [
+    {
+      "id": "msg_init",
+      "contactId": "c_1",
+      "contactName": "Maria Silva",
+      "phone": "(11) 98765-4321",
+      "text": "Olá! Gostaria de receber uma proposta para gestão de tráfego pago.",
+      "sender": "contact",
+      "timestamp": "10:30",
+      "status": "read"
+    },
+    {
+      "id": "msg_1793196111206",
+      "contactId": "c_1",
+      "contactName": "Maria Silva",
+      "phone": "(11) 98765-4321",
+      "text": "Olá Maria Silva! Seu contrato foi gerado e está pronto para assinatura digital: http://localhost:8080/propostas",
+      "sender": "automation",
+      "timestamp": "11:01",
+      "status": "sent",
+      "isAutomation": true
+    }
+  ],
+  "clients": [],
+  "clientGroups": [],
+  "pipelines": [
+    {
+      "id": "pipeline-principal",
+      "name": "Pipeline Principal",
+      "stages": [
+        {
+          "name": "Novo Lead",
+          "deals": []
+        },
+        {
+          "name": "Qualificação",
+          "deals": [
+            {
+              "client": "teste",
+              "value": 0,
+              "email": "",
+              "phone": "",
+              "owner": "",
+              "id": "deal_1793195910898",
+              "stage": "Qualificação",
+              "createdAt": "2026-10-28T13:58:30.898Z"
+            }
+          ]
+        },
+        {
+          "name": "Proposta Enviada",
+          "deals": []
+        },
+        {
+          "name": "Negociação",
+          "deals": []
+        },
+        {
+          "name": "Fechado - Ganho",
+          "deals": []
+        },
+        {
+          "name": "Fechado - Perdido",
+          "deals": []
+        }
+      ]
+    }
+  ],
+  "tutorials": [
+    {
+      "id": "tut-1",
+      "title": "BEM VINDO AO SM HUB",
+      "duration": "02:15",
+      "category": "Iniciante",
+      "thumbnail": "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=600",
+      "description": "Bem-vindo ao SM Hub! Assista a este vídeo introdutório para entender os conceitos básicos e a navegação da plataforma.",
+      "videoUrl": "/videos/BEM VINDO_1080p.mp4",
+      "locations": [
+        "Aba Tutoriais",
+        "Dashboard"
+      ]
+    },
+    {
+      "id": "tut-2",
+      "title": "Cadastro de Clientes — 3 Modos Práticos",
+      "duration": "05:30",
+      "category": "Gestão",
+      "thumbnail": "https://images.unsplash.com/photo-1553877522-43269d4ea984?auto=format&fit=crop&q=80&w=600",
+      "description": "Aprenda os 3 modos diferentes de cadastrar novos clientes no sistema: simples, avançado e link público.",
+      "videoUrl": "/videos/Cadastro de Clientes   3 Modos_1080p60.mp4",
+      "locations": [
+        "Aba Tutoriais",
+        "Clientes"
+      ]
+    },
+    {
+      "id": "tut-3",
+      "title": "Gestão Financeira & Controle de Caixa",
+      "duration": "10:45",
+      "category": "Gestão",
+      "thumbnail": "https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&q=80&w=600",
+      "description": "Visão geral completa sobre o painel Financeiro, metas de faturamento, gestão de despesas e controle de fluxo.",
+      "videoUrl": "/videos/Financeiro_1080p60.mp4",
+      "locations": [
+        "Aba Tutoriais",
+        "Financeiro"
+      ]
+    },
+    {
+      "id": "tut-4",
+      "title": "Funil de Vendas & Negociações (Pipelines)",
+      "duration": "08:20",
+      "category": "Vendas",
+      "thumbnail": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=600",
+      "description": "Domine o Kanban de leads e pipelines, aprenda a avançar estágios e fechar vendas de alto valor.",
+      "videoUrl": "/videos/Pipeline, como utilizar_1080p60.mp4",
+      "locations": [
+        "Aba Tutoriais",
+        "Pipeline"
+      ]
+    },
+    {
+      "id": "tut-5",
+      "title": "Produção de Conteúdo & Cronograma",
+      "duration": "06:12",
+      "category": "Marketing",
+      "thumbnail": "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?auto=format&fit=crop&q=80&w=600",
+      "description": "Como organizar seus posts, briefings e agendamentos no Calendário de Conteúdo da sua agência.",
+      "videoUrl": "/videos/Produção de Conteudo_1080p60.mp4",
+      "locations": [
+        "Aba Tutoriais",
+        "Calendário"
+      ]
+    },
+    {
+      "id": "tut-6",
+      "title": "Quadro de Tarefas Operacional",
+      "duration": "04:50",
+      "category": "Produtividade",
+      "thumbnail": "https://images.unsplash.com/photo-1507925922837-326f12d9348d?auto=format&fit=crop&q=80&w=600",
+      "description": "Organize as entregas do dia a dia da equipe com colunas inteligentes e prazos claros.",
+      "videoUrl": "/videos/Quadro de Tarefas_1080p60.mp4",
+      "locations": [
+        "Aba Tutoriais",
+        "Tarefas"
+      ]
+    },
+    {
+      "id": "tut-7",
+      "title": "Integração ASAAS + Emissão de Boletos",
+      "duration": "07:18",
+      "category": "Integrações",
+      "thumbnail": "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&q=80&w=600",
+      "description": "Aprenda a conectar a sua chave de API do ASAAS para emitir cobranças, Pix e boletos recorrentes.",
+      "videoUrl": "/videos/Tutorial Integração ASAAS + DG FLOW_1080p.mp4",
+      "locations": [
+        "Aba Tutoriais",
+        "Configurações"
+      ]
+    },
+    {
+      "id": "tut-8",
+      "title": "Integração com Google Drive para Backups",
+      "duration": "03:45",
+      "category": "Integrações",
+      "thumbnail": "https://images.unsplash.com/photo-1614064641913-6b7140414c71?auto=format&fit=crop&q=80&w=600",
+      "description": "Como conectar sua conta Google para salvar orçamentos, vídeos e banco de dados de forma 100% segura na nuvem.",
+      "videoUrl": "/videos/Tutorial Integração com Google Drive_1080p.mp4",
+      "locations": [
+        "Aba Tutoriais",
+        "Configurações"
+      ]
+    }
+  ],
+  "automations": [],
+  "orcamentos": [],
+  "briefings": [
+    {
+      "id": "brf-001",
+      "title": "Briefing — Identidade Visual & Branding",
+      "client": "Maria Silva",
+      "clientEmail": "maria@silvadesign.com",
+      "clientPhone": "11988887777",
+      "category": "Design & Marca",
+      "status": "concluído",
+      "createdAt": "10/10/2026",
+      "respondedAt": "11/10/2026 às 15:30",
+      "questions": [
+        {
+          "id": "q1",
+          "label": "Nome exato da marca ou empresa",
+          "type": "text",
+          "required": true
+        },
+        {
+          "id": "q2",
+          "label": "Qual é o nicho de mercado e principal produto/serviço oferecido?",
+          "type": "textarea",
+          "required": true
+        },
+        {
+          "id": "q3",
+          "label": "Quem é o cliente ideal (público-alvo) da sua empresa?",
+          "type": "textarea",
+          "required": true
+        },
+        {
+          "id": "q4",
+          "label": "Quais são os 3 a 5 adjetivos que definem o tom da sua marca?",
+          "description": "Ex: Moderno, Elegante, Minimalista, Jovem, Tradicional, Tecnológico",
+          "type": "text",
+          "required": true
+        },
+        {
+          "id": "q5",
+          "label": "Cores preferidas ou cores que devem ser evitadas a todo custo",
+          "type": "textarea"
+        },
+        {
+          "id": "q6",
+          "label": "Links de perfis, sites ou marcas que você admira visualmente (Referências)",
+          "type": "textarea"
+        }
+      ],
+      "answers": {
+        "q1": "Silva Cosméticos & Bem-Estar",
+        "q2": "Linha de cosméticos veganos e sustentáveis para cuidados diários.",
+        "q3": "Mulheres entre 25 e 45 anos que buscam autocuidado com produtos naturais.",
+        "q4": "Minimalista, Sofisticado, Natural, Transparente",
+        "q5": "Preferência por tons terrosos, verde oliva e bege. Evitar vermelho neon e preto pesado.",
+        "q6": "Instagram: @aesop, @simpleorganic"
+      },
+      "link": "/briefing/brf-001"
+    },
+    {
+      "id": "brf-002",
+      "title": "Briefing — Tráfego Pago & Performance Meta/Google",
+      "client": "João Pereira",
+      "clientEmail": "joao@pereira.com.br",
+      "clientPhone": "11977776666",
+      "category": "Marketing & Tráfego",
+      "status": "aguardando",
+      "createdAt": "14/10/2026",
+      "questions": [
+        {
+          "id": "q1",
+          "label": "Qual é o principal objetivo das campanhas?",
+          "description": "Ex: Geração de Leads no WhatsApp, Vendas no E-commerce, Reconhecimento Local",
+          "type": "select",
+          "options": [
+            "Leads para WhatsApp",
+            "Vendas E-commerce",
+            "Agendamentos de Consultório",
+            "Reconhecimento / Seguidores"
+          ],
+          "required": true
+        },
+        {
+          "id": "q2",
+          "label": "Qual é o produto ou serviço carro-chefe que mais gera margem de lucro?",
+          "type": "textarea",
+          "required": true
+        },
+        {
+          "id": "q3",
+          "label": "Qual é o ticket médio do seu produto/serviço?",
+          "type": "text",
+          "required": true
+        },
+        {
+          "id": "q4",
+          "label": "Qual é a verba mensal inicial planejada para investir nas plataformas de anúncios?",
+          "type": "text",
+          "required": true
+        },
+        {
+          "id": "q5",
+          "label": "Região geográfica de atendimento",
+          "description": "Ex: Apenas na cidade de São Paulo, raio de 15km, ou Brasil inteiro",
+          "type": "text",
+          "required": true
+        },
+        {
+          "id": "q6",
+          "label": "Quais são as principais dúvidas e objeções que seus clientes trazem antes de comprar?",
+          "type": "textarea"
+        }
+      ],
+      "answers": {},
+      "link": "/briefing/brf-002"
+    }
+  ],
+  "integrations": {},
+  "collaborators": [],
+  "agencyProfile": {
+    "razaoSocial": "SM Hub Agência",
+    "nomeFantasia": "SM Hub",
+    "cnpj": "",
+    "email": "smmarketingetrafego@gmail.com",
+    "telefone": "",
+    "endereco": ""
+  },
+  "metas": [],
+  "notifications": [],
+  "contentCalendar": [
+    {
+      "id": "post-1",
+      "title": "Reels: 3 Erros Fatais ao Anunciar no Meta Ads",
+      "date": "2026-10-16",
+      "time": "18:00",
+      "platform": "instagram",
+      "format": "reels",
+      "status": "agendado",
+      "caption": "Você ainda está usando o botão impulsionar? Assista até o final para entender por que você está queimando verba.",
+      "client": "João Pereira"
+    },
+    {
+      "id": "post-2",
+      "title": "Carrossel: Identidade Visual vs Logotipo",
+      "date": "2026-10-18",
+      "time": "12:00",
+      "platform": "instagram",
+      "format": "carrossel",
+      "status": "em_producao",
+      "caption": "Aprenda a diferença entre uma marca completa e apenas um símbolo solto.",
+      "client": "Maria Silva"
+    },
+    {
+      "id": "post-3",
+      "title": "Artigo: Tendências de Vendas B2B para 2027",
+      "date": "2026-10-20",
+      "time": "09:00",
+      "platform": "linkedin",
+      "format": "artigo",
+      "status": "planejado",
+      "caption": "Como as grandes consultorias estão estruturando seus times de SDR e automação comercial.",
+      "client": "Geral"
+    },
+    {
+      "id": "post-4",
+      "title": "Vídeo Longo: Como Estruturamos R$ 100k de Faturamento",
+      "date": "2026-10-22",
+      "time": "19:00",
+      "platform": "youtube",
+      "format": "video",
+      "status": "planejado",
+      "caption": "Estudo de caso completo com bastidores de campanhas e estratégias de aquisição.",
+      "client": "SM HUB"
+    },
+    {
+      "id": "post-5",
+      "title": "Post de Depoimento de Cliente Satisfeito",
+      "date": "2026-10-14",
+      "time": "17:30",
+      "platform": "instagram",
+      "format": "imagem",
+      "status": "publicado",
+      "caption": "Mais um resultado expressivo gerado este mês com ROAS de 6.4x!",
+      "client": "João Pereira"
+    }
+  ]
+}

@@ -117,7 +117,7 @@ export const getOrcamentos = createServerFn({ method: "GET" }).handler(async () 
 });
 
 export const saveOrcamento = createServerFn({ method: "POST" })
-  .inputValidator((item: Partial<Orcamento>) => item)
+  .validator((item: Partial<Orcamento>) => item)
   .handler(async ({ data }) => {
     try {
       const db = await readDb();
@@ -166,7 +166,7 @@ export const saveOrcamento = createServerFn({ method: "POST" })
   });
 
 export const deleteOrcamento = createServerFn({ method: "POST" })
-  .inputValidator((id: string) => id)
+  .validator((id: string) => id)
   .handler(async ({ data: id }) => {
     try {
       const db = await readDb();
@@ -180,7 +180,7 @@ export const deleteOrcamento = createServerFn({ method: "POST" })
   });
 
 export const updateOrcamentoStatus = createServerFn({ method: "POST" })
-  .inputValidator((payload: { id: string; status: OrcStatus }) => payload)
+  .validator((payload: { id: string; status: OrcStatus }) => payload)
   .handler(async ({ data }) => {
     try {
       const db = await readDb();
@@ -260,7 +260,7 @@ export const updateOrcamentoStatus = createServerFn({ method: "POST" })
   });
 
 export const sendOrcamentoWhatsApp = createServerFn({ method: "POST" })
-  .inputValidator((id: string) => id)
+  .validator((id: string) => id)
   .handler(async ({ data: id }) => {
     try {
       const db = await readDb();
@@ -306,7 +306,7 @@ export const getAgencyProfile = createServerFn({ method: "GET" }).handler(async 
 });
 
 export const saveAgencyProfile = createServerFn({ method: "POST" })
-  .inputValidator((profile: Partial<AgencyProfile>) => profile)
+  .validator((profile: Partial<AgencyProfile>) => profile)
   .handler(async ({ data }) => {
     try {
       const db = await readDb();
@@ -337,7 +337,7 @@ export const saveAgencyProfile = createServerFn({ method: "POST" })
   });
 
 export const getPublicOrcamento = createServerFn({ method: "GET" })
-  .inputValidator((id: string) => id)
+  .validator((id: string) => id)
   .handler(async ({ data: id }) => {
     try {
       const db = await readDb({ publicAccess: true, locate: { collection: "orcamentos", id } });
@@ -373,7 +373,7 @@ export const getPublicOrcamento = createServerFn({ method: "GET" })
   });
 
 export const clientApproveOrcamento = createServerFn({ method: "POST" })
-  .inputValidator((data: { id: string; clientName: string; clientDocument?: string; signature?: string }) => data)
+  .validator((data: { id: string; clientName: string; clientDocument?: string; signature?: string }) => data)
   .handler(async ({ data }) => {
     try {
       const db = await readDb({ publicAccess: true, locate: { collection: "orcamentos", id: data.id } });
@@ -449,7 +449,7 @@ export interface FollowUpRecord {
 }
 
 export const triggerProposalFollowUp = createServerFn({ method: "POST" })
-  .inputValidator((payload: { id: string; stage?: "24h" | "48h" | "72h" | "custom"; customText?: string }) => payload)
+  .validator((payload: { id: string; stage?: "24h" | "48h" | "72h" | "custom"; customText?: string }) => payload)
   .handler(async ({ data }) => {
     try {
       const db = await readDb();
@@ -568,7 +568,7 @@ export const autoRunPendingFollowUps = createServerFn({ method: "POST" }).handle
 
 // Telemetria de visualização de propostas em tempo real
 export const trackProposalView = createServerFn({ method: "POST" })
-  .inputValidator((params: { id: string; userAgent?: string }) => params)
+  .validator((params: { id: string; userAgent?: string }) => params)
   .handler(async ({ data: { id, userAgent } }) => {
     try {
       const db = await readDb({ publicAccess: true, locate: { collection: "orcamentos", id } });

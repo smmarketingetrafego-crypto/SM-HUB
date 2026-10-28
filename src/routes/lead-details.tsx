@@ -1,176 +1,231 @@
 import { pageMeta } from '@/lib/page-meta';
-import { createFileRoute } from '@tanstack/react-router'
-import { Link } from "@tanstack/react-router";
-import { ArrowLeft, ExternalLink, Calendar as CalendarIcon, Mail, Activity, UserPlus, Handshake, FileText, CalendarDays, CreditCard } from "lucide-react";
+import { createFileRoute, Link } from '@tanstack/react-router';
+import { 
+  ArrowLeft, ExternalLink, Calendar as CalendarIcon, Mail, Activity, 
+  UserPlus, Handshake, FileText, CalendarDays, CreditCard, DollarSign, 
+  MessageCircle, Phone, ArrowUpRight 
+} from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { getClients } from "@/lib/api-clientes.functions";
+import { getPipelines } from "@/lib/api-pipelines.functions";
+import { getOrcamentos } from "@/lib/api-propostas.functions";
+import { brl } from "@/lib/format";
+import { useMemo } from "react";
 
 export const Route = createFileRoute("/lead-details")({
-  head: () => pageMeta('Lead details', 'Área de lead details do SM Hub.'),
+  head: () => pageMeta('Detalhes do Lead', 'Acompanhamento e jornada do contato no SM Hub.'),
   component: LeadDetailsPage,
 });
 
 function LeadDetailsPage() {
+  const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : new URLSearchParams();
+  const contactName = urlParams.get('name') || 'Contato';
+
+  const { data: clientsData = { clients: [] } } = useQuery({
+    queryKey: ['clients-data'],
+    queryFn: () => getClients(),
+  });
+
+  const { data: pipelines = [] } = useQuery({
+    queryKey: ['pipelines'],
+    queryFn: () => getPipelines(),
+  });
+
+  const { data: orcamentos = [] } = useQuery({
+    queryKey: ['orcamentos'],
+    queryFn: () => getOrcamentos(),
+  });
+
+  const clientInfo = useMemo(() => {
+    const clients = clientsData.clients || [];
+    const direct = clients.find((c: any) => c.name.toLowerCase() === contactName.toLowerCase());
+    if (direct) return direct;
+
+    // Search in pipelines
+    for (const p of pipelines) {
+      for (const s of p.stages || []) {
+        const deal: any = (s.deals || []).find((d: any) => 
+          (d.name && d.name.toLowerCase() === contactName.toLowerCase()) || 
+          (d.client && d.client.toLowerCase() === contactName.toLowerCase()) ||
+          (d.clientName && d.clientName.toLowerCase() === contactName.toLowerCase())
+        );
+        if (deal) {
+          return {
+            name: deal.name || deal.client || deal.clientName || contactName,
+            email: deal.email || "contato@cliente.com",
+            phone: deal.phone || "",
+            status: s.name,
+            value: deal.value || 0,
+            pipeline: p.name,
+          };
+        }
+      }
+    }
+
+    return {
+      name: contactName,
+      email: "contato@cliente.com",
+      phone: "",
+      status: "Em Atendimento",
+      value: 0,
+    };
+  }, [clientsData, pipelines, contactName]);
+
+  const clientOrcamentos = useMemo(() => {
+    return (orcamentos || []).filter((o: any) => 
+      o.cliente?.toLowerCase() === contactName.toLowerCase() ||
+      o.cliente?.toLowerCase().includes(contactName.toLowerCase())
+    );
+  }, [orcamentos, contactName]);
+
+  const totalValue = clientOrcamentos.reduce((acc: number, o: any) => acc + (Number(o.valor) || 0), Number(clientInfo.value) || 0);
+
   return (
     <div className="max-w-5xl mx-auto space-y-6 pb-24 pt-4">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
         <div className="flex items-start gap-4">
-          <Link to="/pipelines" className="mt-1.5 text-gray-400 hover:text-white transition-colors">
+          <Link to="/leads" className="mt-1.5 text-muted-foreground hover:text-foreground transition-colors">
             <ArrowLeft className="size-5" />
           </Link>
           <div>
             <div className="flex items-center gap-3 mb-2">
-              <h1 className="text-3xl font-bold text-white">Cliente Exemplo</h1>
-              <span className="px-3 py-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-500 text-xs font-semibold">
-                Cliente
+              <h1 className="text-3xl font-bold text-foreground">{clientInfo.name}</h1>
+              <span className="px-3 py-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-semibold">
+                {clientInfo.status || 'Lead'}
               </span>
             </div>
-            <div className="flex flex-col sm:flex-row sm:items-center gap-x-6 gap-y-2 text-gray-400 text-sm">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-x-6 gap-y-2 text-muted-foreground text-sm">
               <div className="flex items-center gap-2">
-                <CalendarIcon className="size-4" /> Na base desde 18/09/2026 · via cadastro_cliente
+                <CalendarIcon className="size-4" /> Base SM Hub · Pipeline Ativo
               </div>
               <div className="flex items-center gap-2">
-                <Mail className="size-4" /> teste@gmail.com
+                <Mail className="size-4" /> {clientInfo.email}
               </div>
+              {clientInfo.phone && (
+                <div className="flex items-center gap-2">
+                  <Phone className="size-4" /> {clientInfo.phone}
+                </div>
+              )}
             </div>
           </div>
         </div>
         
-        <button className="flex items-center justify-center gap-2 px-4 py-2 bg-transparent border border-white/10 rounded-xl text-white hover:bg-white/5 transition-colors text-sm font-medium">
-          <ExternalLink className="size-4" /> Abrir no funil
-        </button>
+        <div className="flex items-center gap-2">
+          <Link 
+            to="/pipelines" 
+            className="flex items-center justify-center gap-2 px-4 py-2 bg-card border border-border rounded-xl text-foreground hover:bg-muted transition-colors text-sm font-medium"
+          >
+            <ExternalLink className="size-4" /> Abrir no Funil
+          </Link>
+          <Link 
+            to="/whatsapp" 
+            className="flex items-center justify-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl transition-colors text-sm font-medium"
+          >
+            <MessageCircle className="size-4" /> Conversar
+          </Link>
+        </div>
       </div>
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-[#111111] border border-white/5 rounded-2xl p-5">
-          <p className="text-xs text-gray-500 font-medium mb-1 flex items-center gap-2">
-            <CreditCard className="size-4" /> Compras
+        <div className="bg-card border border-border rounded-2xl p-5 shadow-sm">
+          <p className="text-xs text-muted-foreground font-medium mb-1 flex items-center gap-2">
+            <CreditCard className="size-4" /> Propostas Aprovadas
           </p>
-          <p className="text-2xl font-bold text-white mt-2">0</p>
-        </div>
-        <div className="bg-[#111111] border border-white/5 rounded-2xl p-5">
-          <p className="text-xs text-gray-500 font-medium mb-1 flex items-center gap-2">
-            <Activity className="size-4" /> Total pago
+          <p className="text-2xl font-bold text-foreground mt-2">
+            {clientOrcamentos.filter((o: any) => o.status === 'aprovado').length}
           </p>
-          <p className="text-2xl font-bold text-emerald-500 mt-2">R$ 0,00</p>
         </div>
-        <div className="bg-[#111111] border border-white/5 rounded-2xl p-5">
-          <p className="text-xs text-gray-500 font-medium mb-1 flex items-center gap-2">
-            <DollarSign className="size-4" /> Ticket médio
+        <div className="bg-card border border-border rounded-2xl p-5 shadow-sm">
+          <p className="text-xs text-muted-foreground font-medium mb-1 flex items-center gap-2">
+            <Activity className="size-4" /> Volume Negociado
           </p>
-          <p className="text-2xl font-bold text-white mt-2">R$ 0,00</p>
+          <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 mt-2">{brl(totalValue)}</p>
         </div>
-        <div className="bg-[#111111] border border-white/5 rounded-2xl p-5">
-          <p className="text-xs text-gray-500 font-medium mb-1 flex items-center gap-2">
-            <FileText className="size-4" /> Orçamentos
+        <div className="bg-card border border-border rounded-2xl p-5 shadow-sm">
+          <p className="text-xs text-muted-foreground font-medium mb-1 flex items-center gap-2">
+            <DollarSign className="size-4" /> Ticket Médio
           </p>
-          <p className="text-2xl font-bold text-white mt-2">0</p>
+          <p className="text-2xl font-bold text-foreground mt-2">
+            {clientOrcamentos.length ? brl(totalValue / clientOrcamentos.length) : brl(totalValue)}
+          </p>
         </div>
-      </div>
-
-      {/* Tags */}
-      <div className="flex items-center gap-2">
-        <span className="px-3 py-1.5 rounded-full border border-emerald-500/30 text-emerald-500 text-sm">Cliente</span>
-        <span className="px-3 py-1.5 rounded-full border border-white/10 text-gray-300 text-sm flex items-center gap-2 bg-[#111111]">
-          <CalendarIcon className="size-4" /> Na base desde 18/09/2026
-        </span>
+        <div className="bg-card border border-border rounded-2xl p-5 shadow-sm">
+          <p className="text-xs text-muted-foreground font-medium mb-1 flex items-center gap-2">
+            <FileText className="size-4" /> Total de Orçamentos
+          </p>
+          <p className="text-2xl font-bold text-foreground mt-2">{clientOrcamentos.length}</p>
+        </div>
       </div>
 
       {/* Jornada */}
-      <div className="bg-[#111111] border border-white/5 rounded-2xl p-6">
+      <div className="bg-card border border-border rounded-2xl p-6 shadow-sm">
         <div className="flex items-center gap-3 mb-6">
-          <Activity className="size-5 text-red-500" />
-          <h2 className="text-xl font-bold text-white">Jornada</h2>
-        </div>
-        
-        <div className="flex items-center gap-2 text-sm text-gray-400 mb-8">
-          <CalendarIcon className="size-4" /> Da entrada até aqui: <span className="text-white font-medium">na hora</span>
+          <Activity className="size-5 text-primary" />
+          <h2 className="text-xl font-bold text-foreground">Jornada no Funil Comercial</h2>
         </div>
 
-        <div className="flex items-center gap-2 overflow-x-auto pb-4 scrollbar-hide">
-          {/* Step 1 */}
-          <div className="flex-shrink-0 min-w-[200px] rounded-xl border-2 border-brand bg-[#1A1A1A] p-4 relative">
-            <div className="flex items-center gap-2 text-white font-semibold mb-2">
-              <UserPlus className="size-4 text-brand" /> Entrada: cadastro_...
+        <div className="flex items-center gap-3 overflow-x-auto pb-4">
+          <div className="flex-shrink-0 min-w-[200px] rounded-xl border border-primary/40 bg-primary/10 p-4">
+            <div className="flex items-center gap-2 text-foreground font-semibold mb-1 text-sm">
+              <UserPlus className="size-4 text-primary" /> Entrada de Lead
             </div>
-            <p className="text-xs text-gray-500">18/09/26, 14:49</p>
+            <p className="text-xs text-muted-foreground">Cadastrado no CRM</p>
           </div>
 
-          <div className="flex-shrink-0 w-16 flex items-center justify-center">
-            <div className="w-full h-px bg-white/10 relative">
-              <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-[10px] text-gray-500 bg-[#111111] px-1">na hora</span>
+          <div className="flex-shrink-0 w-8 h-px bg-border" />
+
+          <div className="flex-shrink-0 min-w-[200px] rounded-xl border border-border bg-muted/30 p-4">
+            <div className="flex items-center gap-2 text-foreground font-semibold mb-1 text-sm">
+              <Handshake className="size-4 text-amber-500" /> Qualificação
             </div>
+            <p className="text-xs text-muted-foreground">{clientInfo.status || 'Em andamento'}</p>
           </div>
 
-          {/* Step 2 */}
-          <div className="flex-shrink-0 min-w-[200px] rounded-xl border-2 border-emerald-500 bg-[#1A1A1A] p-4 relative">
-            <div className="flex items-center gap-2 text-white font-semibold mb-2">
-              <Handshake className="size-4 text-emerald-500" /> Virou cliente
+          <div className="flex-shrink-0 w-8 h-px bg-border" />
+
+          <div className="flex-shrink-0 min-w-[200px] rounded-xl border border-border bg-muted/30 p-4">
+            <div className="flex items-center gap-2 text-foreground font-semibold mb-1 text-sm">
+              <FileText className="size-4 text-blue-500" /> Proposta Comercial
             </div>
-            <p className="text-xs text-gray-500">18/09/26, 14:49</p>
+            <p className="text-xs text-muted-foreground">{clientOrcamentos.length} gerada(s)</p>
           </div>
 
-          <div className="flex-shrink-0 w-8 flex items-center justify-center">
-            <div className="w-full h-px bg-white/10" />
-          </div>
+          <div className="flex-shrink-0 w-8 h-px bg-border" />
 
-          {/* Step 3 */}
-          <div className="flex-shrink-0 min-w-[180px] rounded-xl border-2 border-dashed border-white/10 bg-transparent p-4 opacity-50">
-            <div className="flex items-center gap-2 text-gray-400 font-semibold mb-2">
-              <FileText className="size-4" /> Orçamento
+          <div className="flex-shrink-0 min-w-[200px] rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-4">
+            <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-semibold mb-1 text-sm">
+              <CreditCard className="size-4" /> Fechamento & Contrato
             </div>
-          </div>
-
-          <div className="flex-shrink-0 w-8 flex items-center justify-center">
-            <div className="w-full h-px bg-white/10" />
-          </div>
-
-          {/* Step 4 */}
-          <div className="flex-shrink-0 min-w-[180px] rounded-xl border-2 border-dashed border-white/10 bg-transparent p-4 opacity-50">
-            <div className="flex items-center gap-2 text-gray-400 font-semibold mb-2">
-              <CalendarDays className="size-4" /> Reunião
-            </div>
-          </div>
-
-          <div className="flex-shrink-0 w-8 flex items-center justify-center">
-            <div className="w-full h-px bg-white/10" />
-          </div>
-
-          {/* Step 5 */}
-          <div className="flex-shrink-0 min-w-[180px] rounded-xl border-2 border-dashed border-white/10 bg-transparent p-4 opacity-50">
-            <div className="flex items-center gap-2 text-gray-400 font-semibold mb-2">
-              <CreditCard className="size-4" /> Comprou
-            </div>
+            <p className="text-xs text-muted-foreground">Formalização Digital</p>
           </div>
         </div>
       </div>
 
-      {/* Histórico detalhado */}
-      <div className="bg-[#111111] border border-white/5 rounded-2xl p-6">
-        <div className="flex items-center gap-3 mb-8">
-          <Activity className="size-5 text-gray-400" />
-          <h2 className="text-xl font-bold text-white">Histórico detalhado</h2>
-        </div>
-
-        <div className="relative pl-6 border-l border-white/10 space-y-8">
-          <div className="relative">
-            <div className="absolute -left-[35px] top-0 size-8 rounded-full bg-brand/10 border border-brand/20 flex items-center justify-center z-10">
-              <UserPlus className="size-4 text-brand" />
-            </div>
-            <div>
-              <h3 className="text-white font-semibold text-lg mb-1">Entrou na base</h3>
-              <p className="text-gray-400 text-sm mb-1">18 de set. de 2026</p>
-              <p className="text-gray-500 text-sm">Origem: cadastro_cliente</p>
-            </div>
+      {/* Propostas do Lead */}
+      {clientOrcamentos.length > 0 && (
+        <div className="bg-card border border-border rounded-2xl p-6 shadow-sm">
+          <h2 className="text-xl font-bold text-foreground mb-4">Propostas Comerciais Vinculadas</h2>
+          <div className="divide-y divide-border">
+            {clientOrcamentos.map((orc: any) => (
+              <div key={orc.id} className="py-3 flex items-center justify-between gap-4">
+                <div>
+                  <p className="font-semibold text-sm text-foreground">{orc.numero} — {orc.titulo}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Valor: {brl(orc.valor)} • Status: {orc.status}</p>
+                </div>
+                <Link 
+                  to="/proposta/$id" 
+                  params={{ id: orc.id }}
+                  className="text-xs text-primary hover:underline flex items-center gap-1 font-medium"
+                >
+                  Abrir Proposta <ArrowUpRight className="size-3.5" />
+                </Link>
+              </div>
+            ))}
           </div>
         </div>
-      </div>
-
+      )}
     </div>
   );
-}
-
-// Minimal dummy for the dollar icon to avoid missing import
-function DollarSign(props: any) {
-  return <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
 }
