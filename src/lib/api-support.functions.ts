@@ -17,7 +17,7 @@ export const getSupportTicket = createServerFn({ method: 'GET' }).middleware([re
   if (error || !ticket) throw new Error('Ticket não encontrado.');
   const { data: messages, error: messageError } = await context.supabase.from('support_messages').select('*').eq('ticket_id', data).order('created_at');
   if (messageError) throw new Error(messageError.message);
-  return { ticket, messages: messages ?? [] };
+  return { ticket, messages: messages ?? [], isFounder: await isFounder(context) };
 });
 export const createSupportTicket = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth]).inputValidator((p: unknown) => z.object({ subject: z.string().trim().min(3).max(200), body: z.string().trim().min(5).max(10000), requesterType: z.enum(['cliente', 'colaborador', 'agencia', 'freelancer']) }).parse(p)).handler(async ({ data, context }) => {
   const { supabaseAdmin: admin } = await import('@/integrations/supabase/client.server');
@@ -31,21 +31,23 @@ export const createSupportTicket = createServerFn({ method: 'POST' }).middleware
   await notifyAccount(ticket.account_id, { kind: 'support', title: 'Novo ticket de suporte', body: data.subject, link: `/suporte/${ticket.id}` }, context.userId);
   return { id: ticket.id };
 });
-export const initialSupportAnswer = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth]).inputValidator((p: unknown) => z.string().uuid().parse(p)).handler(async ({ data, context }) => {
-  const { data: ticket } = await context.supabase.from('support_tickets').select('*').eq('id', data).eq('user_id', context.userId).single();
+export const initialSupportAnswer = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth]).inputValidator((p: unknown) => z.union([z.string().uuid(), z.object({ id: z.string().uuid(), followUp: z.boolean() })]).parse(p)).handler(async ({ data, context }) => {
+  const id = typeof data === 'string' ? data : data.id;
+  const followUp = typeof data !== 'string' && data.followUp;
+  const { data: ticket } = await context.supabase.from('support_tickets').select('*').eq('id', id).eq('user_id', context.userId).single();
   if (!ticket) throw new Error('Ticket não encontrado.');
-  const { data: existing, error } = await context.supabase.from('support_messages').select('sender,body').eq('ticket_id', data).order('created_at');
+  const { data: existing, error } = await context.supabase.from('support_messages').select('sender,body').eq('ticket_id', id).order('created_at');
   if (error) throw new Error(error.message);
-  if (existing?.some(m => m.sender === 'ai') || ticket.needs_human) return { success: true, error: null };
+  if ((!followUp && existing?.some(m => m.sender === 'ai')) || ticket.needs_human || existing?.at(-1)?.sender !== 'user') return { success: true, error: null };
   const key = process.env['LOVABLE_API_KEY'];
   if (!key) return { success: false, error: 'Resposta de IA indisponível. Você pode falar com uma pessoa.' };
   try {
     const { createResponsesCall } = await import('./ai-responses.server');
-    const { result } = createResponsesCall(getRequest(), { baseURL: 'https://ai.gateway.lovable.dev/v1', apiKey: key, model: 'openai/gpt-6-astra' }, [{ role: 'user', content: `${ticket.subject}\n${existing?.find(m => m.sender === 'user')?.body ?? ''}` }], 'Você é o suporte inicial do SM Hub. Responda em português com orientação breve e segura. Não invente operações realizadas, preços, configurações, permissões ou integrações ativas. Não solicite senhas nem chaves. Não tem acesso a dados nem ferramentas. Se necessário, indique a opção Falar com uma pessoa.');
+    const { result } = createResponsesCall(getRequest(), { baseURL: 'https://ai.gateway.lovable.dev/v1', apiKey: key, model: 'openai/gpt-6-astra' }, (existing ?? []).slice(-20).map(m => ({ role: m.sender === 'ai' ? 'assistant' as const : 'user' as const, content: m.body })), `Você é o suporte do SM Hub. Assunto: ${ticket.subject}. Responda em português com orientação breve e segura. Não invente operações realizadas, preços, configurações, permissões ou integrações ativas. Não solicite senhas nem chaves. Não tem acesso a dados nem ferramentas. Se necessário, indique a opção Falar com uma pessoa.`);
     const answer = await result.text;
     if (!answer.trim()) throw new Error('A IA não retornou uma resposta.');
     const { supabaseAdmin: admin } = await import('@/integrations/supabase/client.server');
-    const { error: saveError } = await admin.from('support_messages').insert({ ticket_id: data, sender: 'ai', body: answer });
+    const { error: saveError } = await admin.from('support_messages').insert({ ticket_id: id, sender: 'ai', body: answer });
     if (saveError) throw new Error(saveError.message);
     return { success: true, error: null };
   } catch (e: any) {
@@ -55,7 +57,8 @@ export const initialSupportAnswer = createServerFn({ method: 'POST' }).middlewar
 });
 export const updateSupportTicket = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth]).inputValidator((p: unknown) => z.object({ id: z.string().uuid(), body: z.string().trim().min(1).max(10000).optional(), status: z.enum(ticketStates).optional(), escalate: z.boolean().optional() }).parse(p)).handler(async ({ data, context }) => {
   const founder = await isFounder(context);
-  const { data: ticket } = await context.supabase.from('support_tickets').select('user_id,status').eq('id', data.id).single();
+  const { data: ticket, error: readError } = await context.supabase.from('support_tickets').select('user_id,status').eq('id', data.id).single();
+  if (readError) throw new Error('Não foi possível carregar o ticket para responder. Atualize a página.');
   if (!ticket || !canReadTicket(founder, context.userId, ticket.user_id)) throw new Error('Acesso negado.');
   if (data.status && !founder) throw new Error('Somente o fundador pode alterar o estado.');
   const { supabaseAdmin: admin } = await import('@/integrations/supabase/client.server');
@@ -63,7 +66,7 @@ export const updateSupportTicket = createServerFn({ method: 'POST' }).middleware
     const { error } = await admin.from('support_messages').insert({ ticket_id: data.id, sender: founder ? 'founder' : 'user', body: data.body });
     if (error) throw new Error(error.message);
   }
-  const { error } = await admin.from('support_tickets').update({ ...(data.status ? { status: data.status } : {}), ...(data.escalate ? { needs_human: true, status: 'open' } : {}), updated_at: new Date().toISOString() }).eq('id', data.id);
+  const { error } = await admin.from('support_tickets').update({ ...(data.status ? { status: data.status } : data.body && founder ? { status: 'in_progress', needs_human: true } : {}), ...(data.escalate ? { needs_human: true, status: 'open' } : {}), updated_at: new Date().toISOString() }).eq('id', data.id);
   if (error) throw new Error(error.message);
   return { success: true };
 });
