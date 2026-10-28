@@ -24,6 +24,7 @@ import { ThemeProvider } from "@/lib/theme";
 import { GlobalVideoModal } from "@/components/layout/video-modal";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { MandatoryOnboardingModal } from "@/components/auth/mandatory-onboarding-modal";
+import { SupportWidget } from "@/components/support/support-widget";
 
 function NotFoundComponent() {
   return (
@@ -208,6 +209,7 @@ function RootComponent() {
             </div>
             <Toaster />
             <GlobalVideoModal />
+            {authState === "authed" && <SupportWidget />}
           </ThemeProvider>
         </GoogleOAuthProvider>
       </QueryClientProvider>
@@ -259,6 +261,7 @@ function RootComponent() {
           <Toaster />
           <GlobalVideoModal />
           <MandatoryOnboardingModal />
+          <SupportWidget />
         </ThemeProvider>
       </GoogleOAuthProvider>
     </QueryClientProvider>
