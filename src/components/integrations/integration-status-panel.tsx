@@ -15,6 +15,7 @@ import { WhatsAppConnectModal } from './whatsapp-connect-modal';
 import { GatewayConnectModal } from './gateway-connect-modal';
 import { AIConnectModal } from './ai-connect-modal';
 import { GoogleDriveConnectModal } from './google-drive-connect-modal';
+import { ResendConnectModal } from './resend-connect-modal';
 import { toast } from 'sonner';
 
 export function IntegrationStatusPanel() {
@@ -128,7 +129,7 @@ export function IntegrationStatusPanel() {
     (integrations?.google?.connected && integrations?.google?.accountEmail)
   );
   const isAsaasConnected = Boolean(integrations?.asaas?.connected && (integrations?.asaas?.apiKey || integrations?.asaas?.accountEmail));
-  const isEmailConnected = Boolean(integrations?.email?.connected && integrations?.email?.apiKey);
+  const isEmailConnected = Boolean(integrations?.email?.connected && (integrations?.email?.apiKey || integrations?.email?.resendApiKey));
   const isAiConnected = Boolean(
     (integrations?.openai?.connected && integrations?.openai?.apiKey) ||
     (integrations?.claude?.connected && integrations?.claude?.apiKey) ||
@@ -200,8 +201,8 @@ export function IntegrationStatusPanel() {
       status: isEmailConnected ? 'Pronto para envios' : 'Desconectado',
       note: isEmailConnected
         ? 'Disparos de orçamentos, boas-vindas e faturas funcionando perfeitamente via Resend.'
-        : 'Adicione sua API Key do Resend ou SMTP para envio de notificações por e-mail.',
-      onConnect: () => toast.info('Configure a chave RESEND_API_KEY no painel de configurações.'),
+        : 'Adicione sua API Key do Resend para envio de notificações por e-mail.',
+      onConnect: () => setActiveModal('resend'),
     },
     {
       id: 'gateways',
@@ -372,6 +373,20 @@ export function IntegrationStatusPanel() {
           }}
           initialProvider="openai"
           integrations={integrations}
+        />
+      )}
+
+      {/* Modal Resend E-mail */}
+      {activeModal === 'resend' && (
+        <ResendConnectModal
+          open={true}
+          onOpenChange={(open) => {
+            if (!open) {
+              setActiveModal(null);
+              qc.invalidateQueries({ queryKey: ['integrations-data'] });
+              qc.invalidateQueries({ queryKey: ['external-status'] });
+            }
+          }}
         />
       )}
     </section>

@@ -135,6 +135,30 @@ export const sendWhatsAppMessage = createServerFn({ method: "POST" })
 
       db.whatsapp.push(newMsg);
       await writeDb(db);
+
+      // Se gateway Evolution API estiver configurado, despacha para a API real
+      if (db.integrations?.whatsapp?.connected && db.integrations?.whatsapp?.gatewayUrl && data.phone) {
+        try {
+          const cleanPhone = data.phone.replace(/\D/g, "");
+          const fullNumber = cleanPhone.startsWith("55") ? cleanPhone : `55${cleanPhone}`;
+          const url = db.integrations.whatsapp.gatewayUrl.replace(/\/+$/, "");
+          const instance = db.integrations.whatsapp.instanceName || "smhub";
+          await fetch(`${url}/message/sendText/${instance}`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...(db.integrations.whatsapp.apiKey ? { apikey: db.integrations.whatsapp.apiKey } : {}),
+            },
+            body: JSON.stringify({
+              number: fullNumber,
+              text: data.text,
+            }),
+          });
+        } catch (gwErr) {
+          console.warn("Gateway dispatch notice:", gwErr);
+        }
+      }
+
       return { success: true, message: newMsg };
     } catch (e: any) {
       return { success: false, error: e.message };

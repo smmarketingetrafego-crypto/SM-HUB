@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { 
-  MessageCircle, Smartphone, CheckCircle2, RefreshCw, PowerOff, 
+  MessageCircle, CheckCircle2, RefreshCw, PowerOff, 
   ShieldCheck, Server, Globe, ExternalLink, QrCode
 } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -14,6 +14,7 @@ import {
   saveIntegration, 
   disconnectIntegration, 
   testWhatsAppGateway,
+  fetchRealWhatsAppQrCode,
   type WhatsAppConnection 
 } from "@/lib/api-integracoes.functions";
 import { useServerFn } from "@tanstack/react-start";
@@ -29,11 +30,9 @@ export function WhatsAppConnectModal({ open, onOpenChange, connection }: WhatsAp
   const saveFn = useServerFn(saveIntegration);
   const disconnectFn = useServerFn(disconnectIntegration);
   const testGatewayFn = useServerFn(testWhatsAppGateway);
+  const fetchQrFn = useServerFn(fetchRealWhatsAppQrCode);
 
-  const [activeTab, setActiveTab] = useState<"direct" | "gateway" | "meta">("direct");
-  
-  // Direct Click-to-chat
-  const [directPhone, setDirectPhone] = useState(connection?.phone || "(99) 98550-1962");
+  const [activeTab, setActiveTab] = useState<"gateway" | "meta" | "web">("gateway");
   
   // Gateway (Evolution API, Z-API, WPPConnect)
   const [gatewayUrl, setGatewayUrl] = useState("");
@@ -56,7 +55,7 @@ export function WhatsAppConnectModal({ open, onOpenChange, connection }: WhatsAp
           data: {
             phone: payload.phone,
             deviceName: payload.deviceName || "WhatsApp Comercial",
-            connectedAt: new Date().toLocaleString('pt-BR'),
+            connectedAt: new Date().toLocaleString("pt-BR"),
             mode: payload.mode,
             connected: true,
             ...(payload.extra || {}),
@@ -66,25 +65,25 @@ export function WhatsAppConnectModal({ open, onOpenChange, connection }: WhatsAp
     },
     onSuccess: (res, vars) => {
       toast.success("WhatsApp conectado com sucesso!", {
-        description: `Disparos e atendimento vinculados ao número ${vars.phone}.`,
+        description: `Instância vinculada: ${vars.phone}.`,
       });
-      if (typeof window !== 'undefined') {
+      if (typeof window !== "undefined") {
         try {
-          const current = JSON.parse(localStorage.getItem('smhub_integrations') || '{}');
+          const current = JSON.parse(localStorage.getItem("smhub_integrations") || "{}");
           current.whatsapp = {
             connected: true,
             phone: vars.phone,
             deviceName: vars.deviceName || "WhatsApp Comercial",
-            connectedAt: new Date().toLocaleString('pt-BR'),
+            connectedAt: new Date().toLocaleString("pt-BR"),
             mode: vars.mode,
             ...(vars.extra || {}),
           };
-          localStorage.setItem('smhub_integrations', JSON.stringify(current));
+          localStorage.setItem("smhub_integrations", JSON.stringify(current));
         } catch {}
       }
-      queryClient.invalidateQueries({ queryKey: ['integrations-data'] });
-      queryClient.invalidateQueries({ queryKey: ['integrations'] });
-      queryClient.invalidateQueries({ queryKey: ['external-status'] });
+      queryClient.invalidateQueries({ queryKey: ["integrations-data"] });
+      queryClient.invalidateQueries({ queryKey: ["integrations"] });
+      queryClient.invalidateQueries({ queryKey: ["external-status"] });
       onOpenChange(false);
     },
     onError: (err: any) => {
@@ -98,16 +97,16 @@ export function WhatsAppConnectModal({ open, onOpenChange, connection }: WhatsAp
       toast.info("WhatsApp desconectado com sucesso.", {
         description: "Você pode conectar outro número ou instância a qualquer momento.",
       });
-      if (typeof window !== 'undefined') {
+      if (typeof window !== "undefined") {
         try {
-          const current = JSON.parse(localStorage.getItem('smhub_integrations') || '{}');
+          const current = JSON.parse(localStorage.getItem("smhub_integrations") || "{}");
           current.whatsapp = { connected: false, phone: "" };
-          localStorage.setItem('smhub_integrations', JSON.stringify(current));
+          localStorage.setItem("smhub_integrations", JSON.stringify(current));
         } catch {}
       }
-      queryClient.invalidateQueries({ queryKey: ['integrations-data'] });
-      queryClient.invalidateQueries({ queryKey: ['integrations'] });
-      queryClient.invalidateQueries({ queryKey: ['external-status'] });
+      queryClient.invalidateQueries({ queryKey: ["integrations-data"] });
+      queryClient.invalidateQueries({ queryKey: ["integrations"] });
+      queryClient.invalidateQueries({ queryKey: ["external-status"] });
       setRealQrCode(null);
       onOpenChange(false);
     },
@@ -116,22 +115,38 @@ export function WhatsAppConnectModal({ open, onOpenChange, connection }: WhatsAp
     }
   });
 
-  const handleConnectDirect = (e: React.FormEvent) => {
-    e.preventDefault();
-    const cleanPhone = directPhone.replace(/\D/g, "");
-    if (cleanPhone.length < 10) {
-      toast.error("Informe um número válido com DDD (ex: 99985501962).");
+  // Busca o QR Code real gerado pela Evolution API
+  const handleFetchRealQr = async () => {
+    if (!gatewayUrl.trim()) {
+      toast.error("Informe a URL da sua Evolution API (ex: https://api.meuzap.com.br).");
       return;
     }
     setLoading(true);
-    connectMutation.mutate({
-      phone: directPhone,
-      mode: "direct",
-      deviceName: "WhatsApp Web & Click-to-Chat",
-    }, { onSettled: () => setLoading(false) });
+    setRealQrCode(null);
+
+    try {
+      const res = await fetchQrFn({
+        data: {
+          gatewayUrl: gatewayUrl.trim(),
+          apiKey: gatewayKey.trim() || undefined,
+          instanceName: instanceName.trim() || "smhub",
+        }
+      });
+
+      if (res.success && res.qrCode) {
+        setRealQrCode(res.qrCode);
+        toast.success("QR Code gerado! Aponte a câmera do seu WhatsApp.");
+      } else {
+        toast.error(res.error || "Não foi possível obter o QR Code da instância.");
+      }
+    } catch (e: any) {
+      toast.error("Erro ao contatar o gateway da Evolution API.");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleTestGateway = async () => {
+  const handleTestAndSaveGateway = async () => {
     if (!gatewayUrl.trim()) {
       toast.error("Informe a URL da sua Evolution API ou Z-API.");
       return;
@@ -146,15 +161,15 @@ export function WhatsAppConnectModal({ open, onOpenChange, connection }: WhatsAp
         }
       });
       if (res.success) {
-        toast.success("Gateway online e respondendo!");
+        toast.success("Instância online e conectada!");
         connectMutation.mutate({
-          phone: "Instância Gateway Ativa",
+          phone: `Evolution API (${instanceName})`,
           mode: "gateway",
-          deviceName: `Gateway (${instanceName})`,
-          extra: { gatewayUrl, instanceName },
+          deviceName: `Instância ${instanceName}`,
+          extra: { gatewayUrl: gatewayUrl.trim(), apiKey: gatewayKey.trim(), instanceName: instanceName.trim() },
         });
       } else {
-        toast.error(res.error || "Não foi possível conectar à instância do gateway.");
+        toast.error(res.error || "Instância não respondeu ou credenciais inválidas.");
       }
     } catch (e: any) {
       toast.error("Erro ao contatar o gateway.");
@@ -174,33 +189,46 @@ export function WhatsAppConnectModal({ open, onOpenChange, connection }: WhatsAp
       phone: `Meta ID: ${metaPhoneId}`,
       mode: "meta_cloud",
       deviceName: "Meta Cloud API Oficial",
-      extra: { metaPhoneId, metaWabaId },
+      extra: { metaPhoneId, metaToken, metaWabaId },
     }, { onSettled: () => setLoading(false) });
+  };
+
+  const openDedicatedWhatsAppWeb = () => {
+    const width = 1100;
+    const height = 750;
+    const left = Math.max(0, window.screenX + (window.outerWidth - width) / 2);
+    const top = Math.max(0, window.screenY + (window.outerHeight - height) / 2);
+
+    window.open(
+      "https://web.whatsapp.com",
+      "SMHUB_WHATSAPP_WEB_STANDALONE",
+      `width=${width},height=${height},left=${left},top=${top},status=no,menubar=no,toolbar=no,location=no,resizable=yes,scrollbars=yes`
+    );
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg bg-card border-white/10">
-        <DialogHeader>
+      <DialogContent className="max-w-lg bg-[#0f0f12] border-white/10 text-white rounded-3xl p-6 shadow-2xl">
+        <DialogHeader className="space-y-1">
           <DialogTitle className="flex items-center gap-2 text-lg text-white">
             <MessageCircle className="size-5 text-emerald-400" />
-            Conexão WhatsApp & Disparos
+            Conexão WhatsApp & Atendimento Real
           </DialogTitle>
           <DialogDescription className="text-xs text-gray-400">
-            Configure a forma de comunicação via WhatsApp para envio de orçamentos, contratos e atendimento.
+            Conecte seu WhatsApp com escaneamento de QR Code oficial via Evolution API / Z-API ou Meta Cloud API.
           </DialogDescription>
         </DialogHeader>
 
         {connection?.connected ? (
           <div className="space-y-4 pt-2">
-            <div className="rounded-xl border border-emerald-500/30 bg-emerald-950/20 p-4 text-center">
+            <div className="rounded-2xl border border-emerald-500/30 bg-emerald-950/20 p-4 text-center">
               <CheckCircle2 className="size-8 text-emerald-400 mx-auto mb-2" />
               <h3 className="text-sm font-bold text-white">WhatsApp Conectado e Operacional</h3>
               <p className="text-xs text-emerald-300 mt-1">
-                Número / Dispositivo: <strong>{connection.phone || connection.deviceName}</strong>
+                Instância / Canal: <strong>{connection.phone || connection.deviceName}</strong>
               </p>
               <p className="text-[11px] text-gray-400 font-mono mt-1">
-                Modo: {connection.mode === "direct" ? "Click-to-Chat Direto" : connection.mode === "gateway" ? "Evolution / Z-API Gateway" : "Meta Cloud API"}
+                Modo: {connection.mode === "gateway" ? "Evolution / Z-API Gateway" : "Meta Cloud API Oficial"}
               </p>
             </div>
 
@@ -208,146 +236,131 @@ export function WhatsAppConnectModal({ open, onOpenChange, connection }: WhatsAp
               variant="destructive"
               size="sm"
               disabled={disconnectMutation.isPending}
-              className="w-full text-xs"
+              className="w-full text-xs h-10 rounded-xl"
               onClick={() => disconnectMutation.mutate()}
             >
-              <PowerOff className="mr-1.5 size-3.5" /> Desconectar Este WhatsApp / Trocar Número
+              <PowerOff className="mr-1.5 size-3.5" /> Desconectar Este WhatsApp / Trocar Instância
             </Button>
           </div>
         ) : (
           <Tabs value={activeTab} onValueChange={(v: any) => setActiveTab(v)} className="w-full pt-1">
             <TabsList className="grid grid-cols-3 bg-black/40 p-1 rounded-xl border border-white/5 mb-4">
-              <TabsTrigger value="direct" className="text-xs font-semibold">
-                <Smartphone className="size-3.5 mr-1" /> Direto / Web
-              </TabsTrigger>
               <TabsTrigger value="gateway" className="text-xs font-semibold">
-                <Server className="size-3.5 mr-1" /> Gateway API
+                <Server className="size-3.5 mr-1" /> QR Code / Gateway
               </TabsTrigger>
               <TabsTrigger value="meta" className="text-xs font-semibold">
-                <Globe className="size-3.5 mr-1" /> Meta Oficial
+                <Globe className="size-3.5 mr-1" /> Meta Cloud API
+              </TabsTrigger>
+              <TabsTrigger value="web" className="text-xs font-semibold">
+                <ExternalLink className="size-3.5 mr-1" /> WhatsApp Web
               </TabsTrigger>
             </TabsList>
 
-            {/* Tab 1: Click-to-chat Direto (Recomendado para uso imediato sem servidor extra) */}
-            <TabsContent value="direct" className="space-y-4 focus-visible:outline-none">
-              <form onSubmit={handleConnectDirect} className="space-y-3.5">
-                <div className="p-3 bg-emerald-950/20 border border-emerald-500/20 rounded-xl text-xs text-emerald-300 space-y-1">
-                  <div className="flex items-center gap-1.5 font-bold">
-                    <ShieldCheck className="size-3.5" /> Conexão Nativa 100% Segura
-                  </div>
-                  <p className="text-[11px] text-gray-300 leading-relaxed">
-                    Não requer escaneamento de robô nem corre risco de bloqueio. Ao disparar propostas ou mensagens, o SM Hub abre diretamente no seu WhatsApp Web ou aplicativo com o texto preenchido.
-                  </p>
-                </div>
-
-                <div className="space-y-1.5">
-                  <Label className="text-xs text-gray-300">Número do WhatsApp Comercial (com DDD)</Label>
-                  <Input
-                    placeholder="(99) 98550-1962"
-                    value={directPhone}
-                    onChange={(e) => setDirectPhone(e.target.value)}
-                    className="bg-black/40 border-white/10 text-white font-medium"
-                    required
-                  />
-                  <p className="text-[11px] text-gray-400">
-                    Ex: (99) 98550-1962 ou 5599985501962.
-                  </p>
-                </div>
-
-                <Button
-                  type="submit"
-                  disabled={loading || connectMutation.isPending}
-                  className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs"
-                >
-                  <CheckCircle2 className="mr-1.5 size-3.5" /> Vincular Número Comercial
-                </Button>
-              </form>
-            </TabsContent>
-
-            {/* Tab 2: Evolution API / Z-API Gateway */}
+            {/* Tab 1: Evolution API / Z-API Gateway (QR Code Real escaneável pelo celular) */}
             <TabsContent value="gateway" className="space-y-4 focus-visible:outline-none">
-              <div className="space-y-3">
-                <p className="text-xs text-gray-400">
-                  Para conexão com QR Code real multi-aparelho, conecte sua instância da <strong>Evolution API</strong>, <strong>Z-API</strong> ou <strong>WPPConnect</strong>.
+              <div className="p-3 bg-emerald-950/20 border border-emerald-500/20 rounded-2xl text-xs text-emerald-300 space-y-1">
+                <div className="flex items-center gap-1.5 font-bold">
+                  <ShieldCheck className="size-3.5" /> Conexão Real com Escaneamento de Celular
+                </div>
+                <p className="text-[11px] text-gray-400 leading-relaxed">
+                  Para sincronização bidirecional onde você atende diretamente pelo sistema, conecte sua instância da <strong>Evolution API</strong> ou <strong>Z-API</strong> e escaneie o QR Code com o aplicativo do WhatsApp.
                 </p>
+              </div>
 
-                <div className="space-y-1.5">
-                  <Label className="text-xs text-gray-300">URL do Gateway / Instância</Label>
+              <div className="space-y-3">
+                <div className="space-y-1">
+                  <Label className="text-xs text-gray-300">URL do Gateway (Evolution API / Z-API)</Label>
                   <Input
                     placeholder="https://api.meuzap.com.br"
                     value={gatewayUrl}
                     onChange={(e) => setGatewayUrl(e.target.value)}
-                    className="bg-black/40 border-white/10 text-white text-xs font-mono"
+                    className="bg-black/60 border-white/10 text-white text-xs font-mono h-10 rounded-xl"
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-2">
-                  <div className="space-y-1.5">
+                  <div className="space-y-1">
                     <Label className="text-xs text-gray-300">API Key / Token</Label>
                     <Input
                       type="password"
                       placeholder="Chave secreta"
                       value={gatewayKey}
                       onChange={(e) => setGatewayKey(e.target.value)}
-                      className="bg-black/40 border-white/10 text-white text-xs font-mono"
+                      className="bg-black/60 border-white/10 text-white text-xs font-mono h-10 rounded-xl"
                     />
                   </div>
-                  <div className="space-y-1.5">
+                  <div className="space-y-1">
                     <Label className="text-xs text-gray-300">Nome da Instância</Label>
                     <Input
                       placeholder="smhub"
                       value={instanceName}
                       onChange={(e) => setInstanceName(e.target.value)}
-                      className="bg-black/40 border-white/10 text-white text-xs font-mono"
+                      className="bg-black/60 border-white/10 text-white text-xs font-mono h-10 rounded-xl"
                     />
                   </div>
                 </div>
 
-                <Button
-                  type="button"
-                  onClick={handleTestGateway}
-                  disabled={loading}
-                  className="w-full bg-brand text-black font-bold text-xs hover:bg-brand/90"
-                >
-                  {loading ? (
-                    <>
-                      <RefreshCw className="mr-1.5 size-3.5 animate-spin" /> Verificando Instância...
-                    </>
-                  ) : (
-                    <>
-                      <Server className="mr-1.5 size-3.5" /> Testar & Conectar Gateway
-                    </>
-                  )}
-                </Button>
+                {realQrCode && (
+                  <div className="p-4 bg-white rounded-2xl flex flex-col items-center justify-center space-y-2">
+                    <img 
+                      src={realQrCode.startsWith("data:") ? realQrCode : `data:image/png;base64,${realQrCode}`} 
+                      alt="QR Code WhatsApp" 
+                      className="size-48 object-contain"
+                    />
+                    <p className="text-black text-xs font-bold text-center">
+                      Abra o WhatsApp no celular &gt; Aparelhos Conectados &gt; Conectar um Aparelho
+                    </p>
+                  </div>
+                )}
+
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    onClick={handleFetchRealQr}
+                    disabled={loading || !gatewayUrl.trim()}
+                    className="flex-1 bg-zinc-800 hover:bg-zinc-700 text-white font-bold text-xs h-10 rounded-xl"
+                  >
+                    {loading ? <RefreshCw className="size-3.5 animate-spin mr-1" /> : <QrCode className="size-3.5 mr-1" />}
+                    Gerar QR Code da Instância
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={handleTestAndSaveGateway}
+                    disabled={loading || !gatewayUrl.trim()}
+                    className="flex-1 bg-brand text-black font-bold text-xs hover:bg-brand/90 h-10 rounded-xl"
+                  >
+                    <Server className="size-3.5 mr-1" /> Verificar & Conectar
+                  </Button>
+                </div>
               </div>
             </TabsContent>
 
-            {/* Tab 3: Meta Cloud API Oficial */}
+            {/* Tab 2: Meta Cloud API Oficial */}
             <TabsContent value="meta" className="space-y-4 focus-visible:outline-none">
               <form onSubmit={handleConnectMeta} className="space-y-3">
                 <p className="text-xs text-gray-400">
                   API corporativa oficial do WhatsApp via Meta for Developers (sem risco de queda).
                 </p>
 
-                <div className="space-y-1.5">
+                <div className="space-y-1">
                   <Label className="text-xs text-gray-300">Phone Number ID</Label>
                   <Input
                     placeholder="Ex: 1045928374928"
                     value={metaPhoneId}
                     onChange={(e) => setMetaPhoneId(e.target.value)}
-                    className="bg-black/40 border-white/10 text-white text-xs font-mono"
+                    className="bg-black/60 border-white/10 text-white text-xs font-mono h-10 rounded-xl"
                     required
                   />
                 </div>
 
-                <div className="space-y-1.5">
+                <div className="space-y-1">
                   <Label className="text-xs text-gray-300">Permanent Access Token</Label>
                   <Input
                     type="password"
                     placeholder="EAAG..."
                     value={metaToken}
                     onChange={(e) => setMetaToken(e.target.value)}
-                    className="bg-black/40 border-white/10 text-white text-xs font-mono"
+                    className="bg-black/60 border-white/10 text-white text-xs font-mono h-10 rounded-xl"
                     required
                   />
                 </div>
@@ -355,11 +368,29 @@ export function WhatsAppConnectModal({ open, onOpenChange, connection }: WhatsAp
                 <Button
                   type="submit"
                   disabled={loading || connectMutation.isPending}
-                  className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs"
+                  className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs h-10 rounded-xl"
                 >
                   <CheckCircle2 className="mr-1.5 size-3.5" /> Salvar Credenciais Meta
                 </Button>
               </form>
+            </TabsContent>
+
+            {/* Tab 3: WhatsApp Web Dedicado */}
+            <TabsContent value="web" className="space-y-4 focus-visible:outline-none">
+              <div className="p-4 rounded-2xl bg-zinc-900/60 border border-white/10 space-y-3 text-center">
+                <MessageCircle className="size-10 text-emerald-400 mx-auto" />
+                <h4 className="text-sm font-bold text-white">WhatsApp Web Oficial em Janela Dedicada</h4>
+                <p className="text-xs text-gray-400 leading-relaxed max-w-sm mx-auto">
+                  Abre uma janela limpa e dedicada do WhatsApp Web oficial para você responder clientes e sincronizar sem sair do ecossistema SM Hub.
+                </p>
+                <Button
+                  type="button"
+                  onClick={openDedicatedWhatsAppWeb}
+                  className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs h-10 rounded-xl"
+                >
+                  <ExternalLink className="size-3.5 mr-1.5" /> Abrir WhatsApp Web em Janela Dedicada
+                </Button>
+              </div>
             </TabsContent>
           </Tabs>
         )}

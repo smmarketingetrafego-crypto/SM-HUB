@@ -245,30 +245,34 @@ export const disconnectIntegration = createServerFn({ method: "POST" })
     }
   });
 
-export const generateWhatsAppSession = createServerFn({ method: "POST" }).handler(async () => {
-  const sessionToken = `smhub_wa_${Date.now()}`;
-  return {
-    success: true,
-    qrCodeData: `2@${sessionToken},${Date.now()},SM-HUB-WEB`,
-    expiresInSeconds: 60,
-  };
-});
+export const fetchRealWhatsAppQrCode = createServerFn({ method: "POST" })
+  .validator((p: { gatewayUrl: string; apiKey?: string; instanceName?: string }) => p)
+  .handler(async ({ data }) => {
+    try {
+      const url = data.gatewayUrl.replace(/\/+$/, '');
+      const instance = data.instanceName?.trim() || 'smhub';
 
-export const pairWhatsAppWithPhone = createServerFn({ method: "POST" })
-  .validator((phone: string) => phone)
-  .handler(async ({ data: phone }) => {
-    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-    let part1 = "";
-    let part2 = "";
-    for (let i = 0; i < 4; i++) part1 += chars[Math.floor(Math.random() * chars.length)];
-    for (let i = 0; i < 4; i++) part2 += chars[Math.floor(Math.random() * chars.length)];
-    const pairingCode = `${part1}-${part2}`;
+      const res = await fetch(`${url}/instance/connect/${instance}`, {
+        headers: data.apiKey ? { "apikey": data.apiKey } : {}
+      });
 
-    return {
-      success: true,
-      pairingCode,
-      phone,
-    };
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => ({}));
+        return { success: false, error: errJson.message || `Instância retornou erro HTTP ${res.status}.` };
+      }
+
+      const json = await res.json();
+      const qrCode = json.base64 || json.qrcode?.base64 || json.code;
+      const pairingCode = json.pairingCode || json.code;
+
+      return {
+        success: true,
+        qrCode,
+        pairingCode,
+      };
+    } catch (e: any) {
+      return { success: false, error: "Não foi possível conectar ao servidor do Gateway Evolution API. Verifique a URL informada." };
+    }
   });
 
 export const testWhatsAppGateway = createServerFn({ method: "POST" })

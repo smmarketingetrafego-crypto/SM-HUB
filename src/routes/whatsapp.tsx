@@ -116,13 +116,7 @@ function WhatsappPage() {
       sender: "me"
     });
 
-    // Se tiver telefone válido, abre o WhatsApp Web / App diretamente com o texto pré-carregado
-    const cleanPhone = (activeContact.phone || "").replace(/\D/g, "");
-    if (cleanPhone.length >= 10 && typeof window !== "undefined") {
-      const fullPhone = cleanPhone.startsWith("55") ? cleanPhone : `55${cleanPhone}`;
-      const url = `https://wa.me/${fullPhone}?text=${encodeURIComponent(msgText)}`;
-      window.open(url, "_blank");
-    }
+    setInputText("");
   };
 
   const sendQuickTemplate = (text: string) => {
@@ -134,14 +128,7 @@ function WhatsappPage() {
       text,
       sender: "automation"
     });
-
-    const cleanPhone = (activeContact.phone || "").replace(/\D/g, "");
-    if (cleanPhone.length >= 10 && typeof window !== "undefined") {
-      const fullPhone = cleanPhone.startsWith("55") ? cleanPhone : `55${cleanPhone}`;
-      const url = `https://wa.me/${fullPhone}?text=${encodeURIComponent(text)}`;
-      window.open(url, "_blank");
-    }
-    toast.success("Disparo automático enviado via WhatsApp!");
+    toast.success("Disparo registrado no atendimento!");
   };
 
   return (
@@ -165,6 +152,26 @@ function WhatsappPage() {
               )}
             </h2>
             <div className="flex items-center gap-1.5">
+              <Button 
+                size="sm" 
+                variant="outline" 
+                onClick={() => {
+                  const width = 1100;
+                  const height = 750;
+                  const left = Math.max(0, window.screenX + (window.outerWidth - width) / 2);
+                  const top = Math.max(0, window.screenY + (window.outerHeight - height) / 2);
+                  window.open(
+                    "https://web.whatsapp.com",
+                    "SMHUB_WHATSAPP_WEB_POPUP",
+                    `width=${width},height=${height},left=${left},top=${top},status=no,menubar=no,toolbar=no,location=no,resizable=yes,scrollbars=yes`
+                  );
+                }}
+                className="text-xs h-8 border-emerald-500/30 text-emerald-400 bg-emerald-500/5 hover:bg-emerald-500/15 rounded-lg"
+                title="Abrir WhatsApp Web Oficial em janela dedicada"
+              >
+                <ExternalLink className="size-3.5 mr-1" /> Web
+              </Button>
+
               {isConnected && (
                 <Button 
                   size="sm" 
@@ -290,20 +297,6 @@ function WhatsappPage() {
                 </div>
 
                 <div className="flex items-center gap-2">
-                  {activeContact?.phone && (
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      onClick={() => {
-                        const cleanPhone = (activeContact.phone || "").replace(/\D/g, "");
-                        const fullPhone = cleanPhone.startsWith("55") ? cleanPhone : `55${cleanPhone}`;
-                        window.open(`https://wa.me/${fullPhone}`, "_blank");
-                      }}
-                      className="text-xs h-8 border-emerald-500/30 text-emerald-400 bg-emerald-500/5 hover:bg-emerald-500/15 rounded-lg"
-                    >
-                      <ExternalLink className="size-3 mr-1" /> Abrir no Zap
-                    </Button>
-                  )}
                   <Button variant="ghost" size="icon" className="text-gray-400 hover:text-white"><Phone className="size-4" /></Button>
                   <Button variant="ghost" size="icon" className="text-gray-400 hover:text-white"><Video className="size-4" /></Button>
                 </div>
