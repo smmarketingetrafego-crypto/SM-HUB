@@ -28,6 +28,7 @@ export function AIConnectModal({ open, onOpenChange, integrations, initialProvid
   const [loadingProvider, setLoadingProvider] = useState<string | null>(null);
 
   // Simple direct inputs
+  const [googleEmail, setGoogleEmail] = useState(integrations?.google?.accountEmail || "smmarketingetrafego@gmail.com");
   const [openaiEmail, setOpenaiEmail] = useState(integrations?.openai?.accountEmail || "");
   const [claudeEmail, setClaudeEmail] = useState(integrations?.claude?.accountEmail || "");
   const [deepseekEmail, setDeepseekEmail] = useState(integrations?.deepseek?.accountEmail || "");
@@ -41,7 +42,22 @@ export function AIConnectModal({ open, onOpenChange, integrations, initialProvid
     mutationFn: async (payload: { service: string; data: any }) => saveIntegration({ data: payload }),
     onSuccess: (res, vars) => {
       toast.success(`Integração com ${vars.service.toUpperCase()} conectada!`);
+      if (typeof window !== 'undefined') {
+        try {
+          const current = JSON.parse(localStorage.getItem('smhub_integrations') || '{}');
+          current[vars.service] = {
+            ...(current[vars.service] || {}),
+            ...vars.data,
+            connected: true,
+            updatedAt: new Date().toISOString(),
+          };
+          localStorage.setItem('smhub_integrations', JSON.stringify(current));
+        } catch {}
+      }
+      queryClient.invalidateQueries({ queryKey: ['integrations-data'] });
       queryClient.invalidateQueries({ queryKey: ['integrations'] });
+      queryClient.invalidateQueries({ queryKey: ['external-status'] });
+      queryClient.invalidateQueries({ queryKey: ['drive-setup'] });
       queryClient.invalidateQueries({ queryKey: ['agents'] });
       setLoadingProvider(null);
     }
@@ -51,24 +67,38 @@ export function AIConnectModal({ open, onOpenChange, integrations, initialProvid
     mutationFn: async (service: string) => disconnectIntegration({ data: service }),
     onSuccess: (res, service) => {
       toast.info(`Integração com ${service.toUpperCase()} desconectada.`);
+      if (typeof window !== 'undefined') {
+        try {
+          const current = JSON.parse(localStorage.getItem('smhub_integrations') || '{}');
+          if (current[service]) {
+            current[service] = { connected: false };
+            localStorage.setItem('smhub_integrations', JSON.stringify(current));
+          }
+        } catch {}
+      }
+      queryClient.invalidateQueries({ queryKey: ['integrations-data'] });
       queryClient.invalidateQueries({ queryKey: ['integrations'] });
+      queryClient.invalidateQueries({ queryKey: ['external-status'] });
+      queryClient.invalidateQueries({ queryKey: ['drive-setup'] });
+      queryClient.invalidateQueries({ queryKey: ['agents'] });
       setLoadingProvider(null);
     }
   });
 
   const handleConnectGoogleOneClick = () => {
+    const emailToUse = googleEmail.trim() || "smmarketingetrafego@gmail.com";
     setLoadingProvider("google");
     setTimeout(() => {
       saveMutation.mutate({
         service: "google",
         data: {
           authMethod: "google",
-          accountEmail: "conta.google@gmail.com",
-          accountName: "Conta Google Conectada",
+          accountEmail: emailToUse,
+          accountName: emailToUse.split("@")[0] || "Conta Google Conectada",
           planName: "Google Workspace & Drive",
         }
       });
-    }, 600);
+    }, 400);
   };
 
   const handleConnectOpenAISimple = () => {
@@ -167,7 +197,7 @@ export function AIConnectModal({ open, onOpenChange, integrations, initialProvid
                   <div className="size-10 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center font-bold text-base shrink-0">
                     G
                   </div>
-                  <div>
+                  <div className="flex-1">
                     <h4 className="text-sm font-bold text-white flex items-center gap-2">
                       Google Workspace & Drive
                       {integrations?.google?.connected && (
@@ -176,9 +206,18 @@ export function AIConnectModal({ open, onOpenChange, integrations, initialProvid
                         </span>
                       )}
                     </h4>
-                    <p className="text-xs text-gray-400 mt-0.5">
-                      Sincronização de arquivos e banco de dados via Google Drive.
-                    </p>
+                    {!integrations?.google?.connected ? (
+                      <Input 
+                        value={googleEmail}
+                        onChange={(e) => setGoogleEmail(e.target.value)}
+                        placeholder="E-mail da sua conta Google (ex: smmarketingetrafego@gmail.com)"
+                        className="bg-black border-white/10 text-white text-xs h-8 mt-2 rounded-lg"
+                      />
+                    ) : (
+                      <p className="text-xs text-gray-400 mt-0.5">
+                        Sincronização de arquivos e banco de dados via Google Drive.
+                      </p>
+                    )}
                   </div>
                 </div>
 

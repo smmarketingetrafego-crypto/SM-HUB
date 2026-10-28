@@ -79,7 +79,39 @@ function TarefasPage() {
 
   const { data: tasks = [] } = useQuery({
     queryKey: ['tasks'],
-    queryFn: () => getTasksFn()
+    queryFn: async () => {
+      try {
+        const fetched = await getTasksFn();
+        if (typeof window !== 'undefined') {
+          try {
+            const localRaw = localStorage.getItem('smhub_tasks');
+            if (localRaw) {
+              const localList: TaskRecord[] = JSON.parse(localRaw);
+              if (Array.isArray(localList) && localList.length > 0) {
+                const map = new Map<string, TaskRecord>();
+                for (const t of (fetched || [])) map.set(t.id, t);
+                for (const t of localList) map.set(t.id, t);
+                const merged = Array.from(map.values());
+                localStorage.setItem('smhub_tasks', JSON.stringify(merged));
+                return merged;
+              }
+            }
+            if (Array.isArray(fetched) && fetched.length > 0) {
+              localStorage.setItem('smhub_tasks', JSON.stringify(fetched));
+            }
+          } catch {}
+        }
+        return fetched || [];
+      } catch (err) {
+        if (typeof window !== 'undefined') {
+          try {
+            const localRaw = localStorage.getItem('smhub_tasks');
+            if (localRaw) return JSON.parse(localRaw);
+          } catch {}
+        }
+        return [];
+      }
+    }
   });
 
   const { data: projects = [] } = useQuery({
@@ -118,13 +150,15 @@ function TarefasPage() {
 
   const addTaskMutation = useMutation({
     mutationFn: async (data: any) => addTaskFn({ data }),
-    onSuccess: (res) => {
+    onSuccess: (res, vars) => {
       if (res.success) {
         toast.success("Tarefa criada com sucesso!");
-        if (res.tasks) {
-          queryClient.setQueryData(['tasks'], res.tasks);
-        } else if (res.task) {
-          queryClient.setQueryData(['tasks'], (prev: any) => [res.task, ...(prev || [])]);
+        const updatedList = res.tasks || (res.task ? [res.task, ...(tasks || [])] : [{ ...vars, id: `tsk-${Date.now()}` }, ...(tasks || [])]);
+        queryClient.setQueryData(['tasks'], updatedList);
+        if (typeof window !== 'undefined') {
+          try {
+            localStorage.setItem('smhub_tasks', JSON.stringify(updatedList));
+          } catch {}
         }
         queryClient.invalidateQueries({ queryKey: ['tasks'] });
         setIsModalOpen(false);
@@ -134,13 +168,15 @@ function TarefasPage() {
 
   const updateTaskMutation = useMutation({
     mutationFn: async (data: any) => updateTaskFn({ data }),
-    onSuccess: (res) => {
+    onSuccess: (res, vars) => {
       if (res.success) {
         toast.success("Tarefa atualizada!");
-        if (res.tasks) {
-          queryClient.setQueryData(['tasks'], res.tasks);
-        } else if (res.task) {
-          queryClient.setQueryData(['tasks'], (prev: any) => (prev || []).map((t: any) => t.id === res.task.id ? res.task : t));
+        const updatedList = res.tasks || (tasks || []).map((t: any) => t.id === vars.id ? { ...t, ...vars } : t);
+        queryClient.setQueryData(['tasks'], updatedList);
+        if (typeof window !== 'undefined') {
+          try {
+            localStorage.setItem('smhub_tasks', JSON.stringify(updatedList));
+          } catch {}
         }
         queryClient.invalidateQueries({ queryKey: ['tasks'] });
         setIsModalOpen(false);
@@ -153,10 +189,12 @@ function TarefasPage() {
     onSuccess: (res, deletedId) => {
       if (res.success) {
         toast.success("Tarefa removida!");
-        if (res.tasks) {
-          queryClient.setQueryData(['tasks'], res.tasks);
-        } else {
-          queryClient.setQueryData(['tasks'], (prev: any) => (prev || []).filter((t: any) => t.id !== deletedId));
+        const updatedList = res.tasks || (tasks || []).filter((t: any) => t.id !== deletedId);
+        queryClient.setQueryData(['tasks'], updatedList);
+        if (typeof window !== 'undefined') {
+          try {
+            localStorage.setItem('smhub_tasks', JSON.stringify(updatedList));
+          } catch {}
         }
         queryClient.invalidateQueries({ queryKey: ['tasks'] });
         setIsModalOpen(false);

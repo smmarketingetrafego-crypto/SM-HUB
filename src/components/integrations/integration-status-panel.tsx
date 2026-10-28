@@ -28,8 +28,59 @@ export function IntegrationStatusPanel() {
   const [activeModal, setActiveModal] = useState<string | null>(null);
 
   const { data, error } = useQuery({ queryKey: ['external-status'], queryFn: () => statusFn() });
-  const { data: drive, error: driveError } = useQuery({ queryKey: ['drive-setup'], queryFn: () => driveFn() });
-  const { data: integrations } = useQuery({ queryKey: ['integrations-data'], queryFn: () => integrationsFn() });
+  
+  const { data: drive, error: driveError } = useQuery({
+    queryKey: ['drive-setup'],
+    queryFn: async () => {
+      try {
+        const fetched = await driveFn();
+        if (typeof window !== 'undefined' && fetched?.connected) {
+          try { localStorage.setItem('smhub_drive_setup', JSON.stringify(fetched)); } catch {}
+        }
+        return fetched;
+      } catch {
+        if (typeof window !== 'undefined') {
+          try {
+            const local = localStorage.getItem('smhub_drive_setup');
+            if (local) return JSON.parse(local);
+          } catch {}
+        }
+        return { connected: false, accountEmail: '', files: [] };
+      }
+    }
+  });
+
+  const { data: integrations } = useQuery({
+    queryKey: ['integrations-data'],
+    queryFn: async () => {
+      try {
+        const fetched = await integrationsFn();
+        if (typeof window !== 'undefined') {
+          try {
+            const local = localStorage.getItem('smhub_integrations');
+            if (local) {
+              const parsed = JSON.parse(local);
+              const merged = { ...parsed, ...fetched };
+              localStorage.setItem('smhub_integrations', JSON.stringify(merged));
+              return merged;
+            }
+            if (fetched) {
+              localStorage.setItem('smhub_integrations', JSON.stringify(fetched));
+            }
+          } catch {}
+        }
+        return fetched;
+      } catch {
+        if (typeof window !== 'undefined') {
+          try {
+            const local = localStorage.getItem('smhub_integrations');
+            if (local) return JSON.parse(local);
+          } catch {}
+        }
+        return null;
+      }
+    }
+  });
 
   const disconnectMutation = useMutation({
     mutationFn: async (service: string) => {
@@ -40,6 +91,21 @@ export function IntegrationStatusPanel() {
     },
     onSuccess: (res, service) => {
       toast.info(`Integração com ${service.toUpperCase()} desconectada.`);
+      if (typeof window !== 'undefined') {
+        try {
+          if (service === 'drive' || service === 'google') {
+            localStorage.removeItem('smhub_drive_setup');
+          }
+          const local = localStorage.getItem('smhub_integrations');
+          if (local) {
+            const parsed = JSON.parse(local);
+            if (parsed[service]) {
+              parsed[service] = { connected: false };
+              localStorage.setItem('smhub_integrations', JSON.stringify(parsed));
+            }
+          }
+        } catch {}
+      }
       qc.invalidateQueries({ queryKey: ['integrations-data'] });
       qc.invalidateQueries({ queryKey: ['integrations'] });
       qc.invalidateQueries({ queryKey: ['external-status'] });

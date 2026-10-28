@@ -78,7 +78,7 @@ export const getTasks = createServerFn({ method: "GET" })
   .handler(async () => {
     try {
       const db = await readDb();
-      if (!db.tasks || !Array.isArray(db.tasks) || db.tasks.length === 0) {
+      if (!db.tasks || !Array.isArray(db.tasks)) {
         db.tasks = [...INITIAL_TASKS];
         await writeDb(db);
       }

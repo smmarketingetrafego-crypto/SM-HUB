@@ -4568,7 +4568,29 @@ function IntegrationsTab({ prefs, setPref, action }: TabProps) {
 
   const { data: integrations = {} as IntegrationsData } = useQuery({
     queryKey: ['integrations'],
-    queryFn: () => getIntegrations(),
+    queryFn: async () => {
+      try {
+        const fetched = await getIntegrations();
+        if (typeof window !== 'undefined') {
+          try {
+            const local = localStorage.getItem('smhub_integrations');
+            if (local) {
+              const parsed = JSON.parse(local);
+              return { ...parsed, ...fetched };
+            }
+          } catch {}
+        }
+        return fetched;
+      } catch {
+        if (typeof window !== 'undefined') {
+          try {
+            const local = localStorage.getItem('smhub_integrations');
+            if (local) return JSON.parse(local);
+          } catch {}
+        }
+        return {} as IntegrationsData;
+      }
+    },
   });
 
   const sections = [

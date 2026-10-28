@@ -55,7 +55,39 @@ function PipelinesPage() {
 
   const { data: pipelines = [] } = useQuery({
     queryKey: ['pipelines'],
-    queryFn: () => getPipelinesFn(),
+    queryFn: async () => {
+      try {
+        const fetched = await getPipelinesFn();
+        if (typeof window !== 'undefined') {
+          try {
+            const localRaw = localStorage.getItem('smhub_pipelines');
+            if (localRaw) {
+              const localParsed = JSON.parse(localRaw);
+              if (Array.isArray(localParsed) && localParsed.length > 0) {
+                // Se local tiver mais dados ou deals mais recentes, prioriza a retenção
+                const localDealsCount = localParsed.reduce((acc, p) => acc + (p.stages?.reduce((a: number, s: any) => a + (s.deals?.length || 0), 0) || 0), 0);
+                const fetchedDealsCount = (fetched || []).reduce((acc: number, p: any) => acc + (p.stages?.reduce((a: number, s: any) => a + (s.deals?.length || 0), 0) || 0), 0);
+                if (localDealsCount > fetchedDealsCount) {
+                  return localParsed;
+                }
+              }
+            }
+            if (Array.isArray(fetched) && fetched.length > 0) {
+              localStorage.setItem('smhub_pipelines', JSON.stringify(fetched));
+            }
+          } catch {}
+        }
+        return fetched || [];
+      } catch (err) {
+        if (typeof window !== 'undefined') {
+          try {
+            const localRaw = localStorage.getItem('smhub_pipelines');
+            if (localRaw) return JSON.parse(localRaw);
+          } catch {}
+        }
+        return [];
+      }
+    },
   });
 
   const [activeId, setActiveId] = useState("");
@@ -81,6 +113,9 @@ function PipelinesPage() {
         toast.success(`Lead adicionado com sucesso!`);
         if (res.pipelines) {
           queryClient.setQueryData(['pipelines'], res.pipelines);
+          if (typeof window !== 'undefined') {
+            try { localStorage.setItem('smhub_pipelines', JSON.stringify(res.pipelines)); } catch {}
+          }
         }
         queryClient.invalidateQueries({ queryKey: ['pipelines'] });
         setNewLead({ name: "", email: "", phone: "", value: "", stage: "" });
@@ -95,6 +130,9 @@ function PipelinesPage() {
       if (res.success) {
         if (res.pipelines) {
           queryClient.setQueryData(['pipelines'], res.pipelines);
+          if (typeof window !== 'undefined') {
+            try { localStorage.setItem('smhub_pipelines', JSON.stringify(res.pipelines)); } catch {}
+          }
         }
         queryClient.invalidateQueries({ queryKey: ['pipelines'] });
       } else toast.error("Erro: " + res.error);
@@ -108,6 +146,9 @@ function PipelinesPage() {
         toast.success("Lead removido.");
         if (res.pipelines) {
           queryClient.setQueryData(['pipelines'], res.pipelines);
+          if (typeof window !== 'undefined') {
+            try { localStorage.setItem('smhub_pipelines', JSON.stringify(res.pipelines)); } catch {}
+          }
         }
         queryClient.invalidateQueries({ queryKey: ['pipelines'] });
       } else toast.error("Erro: " + res.error);
@@ -121,6 +162,9 @@ function PipelinesPage() {
         toast.success(`${selected.length} lead(s) removido(s)`);
         if (res.pipelines) {
           queryClient.setQueryData(['pipelines'], res.pipelines);
+          if (typeof window !== 'undefined') {
+            try { localStorage.setItem('smhub_pipelines', JSON.stringify(res.pipelines)); } catch {}
+          }
         }
         queryClient.invalidateQueries({ queryKey: ['pipelines'] });
         setSelected([]);
@@ -135,6 +179,9 @@ function PipelinesPage() {
         toast.success(`Funil "${res.pipeline.name}" criado!`);
         if (res.pipelines) {
           queryClient.setQueryData(['pipelines'], res.pipelines);
+          if (typeof window !== 'undefined') {
+            try { localStorage.setItem('smhub_pipelines', JSON.stringify(res.pipelines)); } catch {}
+          }
         }
         queryClient.invalidateQueries({ queryKey: ['pipelines'] });
         setActiveId(res.pipeline.id);

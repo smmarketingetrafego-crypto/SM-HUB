@@ -68,6 +68,20 @@ export function WhatsAppConnectModal({ open, onOpenChange, connection }: WhatsAp
       toast.success("WhatsApp conectado com sucesso!", {
         description: `Disparos e atendimento vinculados ao número ${vars.phone}.`,
       });
+      if (typeof window !== 'undefined') {
+        try {
+          const current = JSON.parse(localStorage.getItem('smhub_integrations') || '{}');
+          current.whatsapp = {
+            connected: true,
+            phone: vars.phone,
+            deviceName: vars.deviceName || "WhatsApp Comercial",
+            connectedAt: new Date().toLocaleString('pt-BR'),
+            mode: vars.mode,
+            ...(vars.extra || {}),
+          };
+          localStorage.setItem('smhub_integrations', JSON.stringify(current));
+        } catch {}
+      }
       queryClient.invalidateQueries({ queryKey: ['integrations-data'] });
       queryClient.invalidateQueries({ queryKey: ['integrations'] });
       queryClient.invalidateQueries({ queryKey: ['external-status'] });
@@ -84,6 +98,13 @@ export function WhatsAppConnectModal({ open, onOpenChange, connection }: WhatsAp
       toast.info("WhatsApp desconectado com sucesso.", {
         description: "Você pode conectar outro número ou instância a qualquer momento.",
       });
+      if (typeof window !== 'undefined') {
+        try {
+          const current = JSON.parse(localStorage.getItem('smhub_integrations') || '{}');
+          current.whatsapp = { connected: false, phone: "" };
+          localStorage.setItem('smhub_integrations', JSON.stringify(current));
+        } catch {}
+      }
       queryClient.invalidateQueries({ queryKey: ['integrations-data'] });
       queryClient.invalidateQueries({ queryKey: ['integrations'] });
       queryClient.invalidateQueries({ queryKey: ['external-status'] });

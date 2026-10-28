@@ -66,7 +66,36 @@ function ClientsPage() {
 
   const { data: dbData = { clients: [], groups: [] } } = useQuery({
     queryKey: ['clients-data'],
-    queryFn: () => getClients(),
+    queryFn: async () => {
+      try {
+        const fetched = await getClients();
+        if (typeof window !== 'undefined') {
+          try {
+            const localRaw = localStorage.getItem('smhub_clients');
+            if (localRaw) {
+              const localParsed = JSON.parse(localRaw);
+              if (localParsed?.clients && Array.isArray(localParsed.clients)) {
+                if (localParsed.clients.length > (fetched?.clients?.length || 0)) {
+                  return localParsed;
+                }
+              }
+            }
+            if (fetched?.clients) {
+              localStorage.setItem('smhub_clients', JSON.stringify(fetched));
+            }
+          } catch {}
+        }
+        return fetched || { clients: [], groups: [] };
+      } catch (e) {
+        if (typeof window !== 'undefined') {
+          try {
+            const localRaw = localStorage.getItem('smhub_clients');
+            if (localRaw) return JSON.parse(localRaw);
+          } catch {}
+        }
+        return { clients: [], groups: [] };
+      }
+    },
   });
 
   const clients = dbData.clients || [];
@@ -74,9 +103,18 @@ function ClientsPage() {
 
   const addMutation = useMutation({
     mutationFn: async (data: any) => addClient({ data }),
-    onSuccess: (res) => {
+    onSuccess: (res, vars) => {
       if (res.success) {
         toast.success("Cliente cadastrado com sucesso!");
+        const newClient = res.client || { ...vars, id: `c_${Date.now()}` };
+        const updatedData = {
+          ...dbData,
+          clients: [newClient, ...(dbData.clients || [])]
+        };
+        queryClient.setQueryData(['clients-data'], updatedData);
+        if (typeof window !== 'undefined') {
+          try { localStorage.setItem('smhub_clients', JSON.stringify(updatedData)); } catch {}
+        }
         queryClient.invalidateQueries({ queryKey: ['clients-data'] });
         setEditor(null);
       } else toast.error("Erro: " + res.error);
@@ -85,9 +123,15 @@ function ClientsPage() {
 
   const updateMutation = useMutation({
     mutationFn: async (data: any) => updateClient({ data }),
-    onSuccess: (res) => {
+    onSuccess: (res, vars) => {
       if (res.success) {
         toast.success("Cliente atualizado com sucesso!");
+        const updatedClients = (dbData.clients || []).map((c: any) => c.id === vars.id ? { ...c, ...vars } : c);
+        const updatedData = { ...dbData, clients: updatedClients };
+        queryClient.setQueryData(['clients-data'], updatedData);
+        if (typeof window !== 'undefined') {
+          try { localStorage.setItem('smhub_clients', JSON.stringify(updatedData)); } catch {}
+        }
         queryClient.invalidateQueries({ queryKey: ['clients-data'] });
         setEditor(null);
       } else toast.error("Erro: " + res.error);
@@ -96,9 +140,15 @@ function ClientsPage() {
 
   const archiveMutation = useMutation({
     mutationFn: async ({ id, archived }: { id: string; archived: boolean }) => archiveClient({ data: { id, archived } }),
-    onSuccess: (res) => {
+    onSuccess: (res, vars) => {
       if (res.success) {
         toast.success(res.client?.archived ? "Cliente arquivado." : "Cliente restaurado.");
+        const updatedClients = (dbData.clients || []).map((c: any) => c.id === vars.id ? { ...c, archived: vars.archived } : c);
+        const updatedData = { ...dbData, clients: updatedClients };
+        queryClient.setQueryData(['clients-data'], updatedData);
+        if (typeof window !== 'undefined') {
+          try { localStorage.setItem('smhub_clients', JSON.stringify(updatedData)); } catch {}
+        }
         queryClient.invalidateQueries({ queryKey: ['clients-data'] });
       } else toast.error("Erro: " + res.error);
     }
@@ -106,9 +156,15 @@ function ClientsPage() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => deleteClient({ data: id }),
-    onSuccess: (res) => {
+    onSuccess: (res, deletedId) => {
       if (res.success) {
         toast.success("Cliente excluído.");
+        const updatedClients = (dbData.clients || []).filter((c: any) => c.id !== deletedId);
+        const updatedData = { ...dbData, clients: updatedClients };
+        queryClient.setQueryData(['clients-data'], updatedData);
+        if (typeof window !== 'undefined') {
+          try { localStorage.setItem('smhub_clients', JSON.stringify(updatedData)); } catch {}
+        }
         queryClient.invalidateQueries({ queryKey: ['clients-data'] });
       } else toast.error("Erro: " + res.error);
     }
@@ -116,9 +172,15 @@ function ClientsPage() {
 
   const addGroupMutation = useMutation({
     mutationFn: async (data: { name: string; description: string }) => addClientGroup({ data }),
-    onSuccess: (res) => {
+    onSuccess: (res, vars) => {
       if (res.success) {
         toast.success("Grupo criado!");
+        const newGroup = res.group || { id: `g_${Date.now()}`, ...vars, memberCount: 0 };
+        const updatedData = { ...dbData, groups: [...(dbData.groups || []), newGroup] };
+        queryClient.setQueryData(['clients-data'], updatedData);
+        if (typeof window !== 'undefined') {
+          try { localStorage.setItem('smhub_clients', JSON.stringify(updatedData)); } catch {}
+        }
         queryClient.invalidateQueries({ queryKey: ['clients-data'] });
       } else toast.error("Erro: " + res.error);
     }

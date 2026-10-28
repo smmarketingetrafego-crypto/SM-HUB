@@ -31,6 +31,7 @@ export function GatewayConnectModal({ open, onOpenChange, integrations, initialG
   // Simplified accounts
   const [mpEmail, setMpEmail] = useState(integrations?.mercadopago?.accountEmail || "");
   const [asaasEmail, setAsaasEmail] = useState(integrations?.asaas?.accountEmail || "");
+  const [stripeEmail, setStripeEmail] = useState(integrations?.stripe?.accountEmail || "");
 
   // Advanced developer keys
   const [asaasKey, setAsaasKey] = useState(integrations?.asaas?.apiKey || "");
@@ -41,7 +42,21 @@ export function GatewayConnectModal({ open, onOpenChange, integrations, initialG
     mutationFn: async (payload: { service: string; data: any }) => saveIntegration({ data: payload }),
     onSuccess: (res, vars) => {
       toast.success(`Conta ${vars.service.toUpperCase()} vinculada com sucesso!`);
+      if (typeof window !== 'undefined') {
+        try {
+          const current = JSON.parse(localStorage.getItem('smhub_integrations') || '{}');
+          current[vars.service] = {
+            ...(current[vars.service] || {}),
+            ...vars.data,
+            connected: true,
+            updatedAt: new Date().toISOString(),
+          };
+          localStorage.setItem('smhub_integrations', JSON.stringify(current));
+        } catch {}
+      }
+      queryClient.invalidateQueries({ queryKey: ['integrations-data'] });
       queryClient.invalidateQueries({ queryKey: ['integrations'] });
+      queryClient.invalidateQueries({ queryKey: ['external-status'] });
       setLoadingGateway(null);
       onOpenChange(false);
     }
@@ -51,7 +66,18 @@ export function GatewayConnectModal({ open, onOpenChange, integrations, initialG
     mutationFn: async (service: string) => disconnectIntegration({ data: service }),
     onSuccess: (res, service) => {
       toast.info(`Conta ${service.toUpperCase()} desconectada.`);
+      if (typeof window !== 'undefined') {
+        try {
+          const current = JSON.parse(localStorage.getItem('smhub_integrations') || '{}');
+          if (current[service]) {
+            current[service] = { connected: false };
+            localStorage.setItem('smhub_integrations', JSON.stringify(current));
+          }
+        } catch {}
+      }
+      queryClient.invalidateQueries({ queryKey: ['integrations-data'] });
       queryClient.invalidateQueries({ queryKey: ['integrations'] });
+      queryClient.invalidateQueries({ queryKey: ['external-status'] });
       setLoadingGateway(null);
     }
   });
@@ -72,7 +98,7 @@ export function GatewayConnectModal({ open, onOpenChange, integrations, initialG
           pixKey: mpEmail.trim(),
         }
       });
-    }, 600);
+    }, 400);
   };
 
   const handleConnectAsaasSimple = () => {
@@ -91,21 +117,22 @@ export function GatewayConnectModal({ open, onOpenChange, integrations, initialG
           environment: "production",
         }
       });
-    }, 600);
+    }, 400);
   };
 
   const handleConnectStripeSimple = () => {
+    const emailToUse = stripeEmail.trim() || asaasEmail.trim() || mpEmail.trim() || "smmarketingetrafego@gmail.com";
     setLoadingGateway("stripe");
     setTimeout(() => {
       saveMutation.mutate({
         service: "stripe",
         data: {
           authMethod: "oauth",
-          accountEmail: "conta@empresa.com",
+          accountEmail: emailToUse,
           accountName: "Conta Stripe Conectada",
         }
       });
-    }, 600);
+    }, 400);
   };
 
   return (
@@ -243,7 +270,7 @@ export function GatewayConnectModal({ open, onOpenChange, integrations, initialG
                   <div className="size-10 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center font-bold text-base shrink-0">
                     S
                   </div>
-                  <div>
+                  <div className="flex-1">
                     <h4 className="text-sm font-bold text-white flex items-center gap-2">
                       Stripe Payments
                       {integrations?.stripe?.connected && (
@@ -252,9 +279,18 @@ export function GatewayConnectModal({ open, onOpenChange, integrations, initialG
                         </span>
                       )}
                     </h4>
-                    <p className="text-xs text-gray-400 mt-0.5">
-                      Receba de clientes internacionais em dólar, euro ou real.
-                    </p>
+                    {!integrations?.stripe?.connected ? (
+                      <Input 
+                        value={stripeEmail}
+                        onChange={(e) => setStripeEmail(e.target.value)}
+                        placeholder="E-mail da sua conta Stripe"
+                        className="bg-black border-white/10 text-white text-xs h-8 mt-2 rounded-lg"
+                      />
+                    ) : (
+                      <p className="text-xs text-gray-400 mt-0.5">
+                        Receba de clientes internacionais em dólar, euro ou real.
+                      </p>
+                    )}
                   </div>
                 </div>
 

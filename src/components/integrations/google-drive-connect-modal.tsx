@@ -45,6 +45,16 @@ export function GoogleDriveConnectModal({
         toast.success("Google Drive conectado com sucesso!", {
           description: `Base de dados smhub_database.json sincronizada com a conta ${email}.`,
         });
+        if (typeof window !== 'undefined') {
+          try {
+            localStorage.setItem('smhub_drive_setup', JSON.stringify({
+              connected: true,
+              accountEmail: email,
+              folderId: folder || '',
+              status: 'ready'
+            }));
+          } catch {}
+        }
         queryClient.invalidateQueries({ queryKey: ['drive-setup'] });
         queryClient.invalidateQueries({ queryKey: ['integrations-data'] });
         queryClient.invalidateQueries({ queryKey: ['external-status'] });
@@ -64,6 +74,11 @@ export function GoogleDriveConnectModal({
       toast.info("Google Drive desconectado.", {
         description: "Você pode conectar outra conta do Google a qualquer momento.",
       });
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.removeItem('smhub_drive_setup');
+        } catch {}
+      }
       queryClient.invalidateQueries({ queryKey: ['drive-setup'] });
       queryClient.invalidateQueries({ queryKey: ['integrations-data'] });
       queryClient.invalidateQueries({ queryKey: ['external-status'] });

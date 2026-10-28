@@ -1,9 +1,8 @@
 import { createServerFn } from '@tanstack/react-start';
-import { requireSupabaseAuth } from '@/integrations/supabase/auth-middleware';
 import { resolveAccountId, readDb, writeDb } from './db-drive';
 import { z } from 'zod';
 
-export const getDriveSetup = createServerFn({ method: 'GET' }).middleware([requireSupabaseAuth]).handler(async () => {
+export const getDriveSetup = createServerFn({ method: 'GET' }).handler(async () => {
   const accountId = await resolveAccountId();
   const db = await readDb();
   const connected = !!(process.env['GOOGLE_DRIVE_API_KEY'] || (db.integrations?.google?.connected && db.integrations?.google?.accountEmail));
@@ -34,7 +33,6 @@ export const getDriveSetup = createServerFn({ method: 'GET' }).middleware([requi
 });
 
 export const connectGoogleDrive = createServerFn({ method: 'POST' })
-  .middleware([requireSupabaseAuth])
   .validator((p: unknown) => z.object({
     email: z.string().email(),
     folderId: z.string().optional(),
@@ -60,7 +58,6 @@ export const connectGoogleDrive = createServerFn({ method: 'POST' })
   });
 
 export const disconnectGoogleDrive = createServerFn({ method: 'POST' })
-  .middleware([requireSupabaseAuth])
   .handler(async () => {
     const db = await readDb();
     if (db.integrations?.google) {
@@ -77,7 +74,7 @@ export const disconnectGoogleDrive = createServerFn({ method: 'POST' })
     return { success: true };
   });
 
-export const prepareDriveFolder = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth]).handler(async () => {
+export const prepareDriveFolder = createServerFn({ method: 'POST' }).handler(async () => {
   const accountId = await resolveAccountId();
   try {
     const { ensureAccountFolder } = await import('./drive-central.server');
@@ -92,7 +89,6 @@ export const prepareDriveFolder = createServerFn({ method: 'POST' }).middleware(
 });
 
 export const uploadAccountFile = createServerFn({ method: 'POST' })
-  .middleware([requireSupabaseAuth])
   .validator((p: unknown) =>
     z.object({
       name: z.string().trim().min(1).max(200),
@@ -136,7 +132,6 @@ export const uploadAccountFile = createServerFn({ method: 'POST' })
   });
 
 export const downloadAccountFile = createServerFn({ method: 'POST' })
-  .middleware([requireSupabaseAuth])
   .validator((p: unknown) => z.string().uuid().parse(p))
   .handler(async ({ data }) => {
     const db = await readDb();
