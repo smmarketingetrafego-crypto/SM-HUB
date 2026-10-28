@@ -30,6 +30,7 @@ import { Route as IntegracaoEquipeRouteImport } from './routes/integracao-equipe
 import { Route as IntegracoesRouteImport } from './routes/integracoes'
 import { Route as LeadDetailsRouteImport } from './routes/lead-details'
 import { Route as LeadsRouteImport } from './routes/leads'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as MetasRouteImport } from './routes/metas'
 import { Route as PainelTvRouteImport } from './routes/painel-tv'
 import { Route as PipelinesRouteImport } from './routes/pipelines'
@@ -152,6 +153,11 @@ const LeadsRoute = LeadsRouteImport.update({
   path: '/leads',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MetasRoute = MetasRouteImport.update({
   id: '/metas',
   path: '/metas',
@@ -260,6 +266,7 @@ export interface FileRoutesByFullPath {
   '/integracoes': typeof IntegracoesRoute
   '/lead-details': typeof LeadDetailsRoute
   '/leads': typeof LeadsRoute
+  '/login': typeof LoginRoute
   '/metas': typeof MetasRoute
   '/painel-tv': typeof PainelTvRoute
   '/pipelines': typeof PipelinesRoute
@@ -299,6 +306,7 @@ export interface FileRoutesByTo {
   '/integracoes': typeof IntegracoesRoute
   '/lead-details': typeof LeadDetailsRoute
   '/leads': typeof LeadsRoute
+  '/login': typeof LoginRoute
   '/metas': typeof MetasRoute
   '/painel-tv': typeof PainelTvRoute
   '/pipelines': typeof PipelinesRoute
@@ -340,6 +348,7 @@ export interface FileRoutesById {
   '/integracoes': typeof IntegracoesRoute
   '/lead-details': typeof LeadDetailsRoute
   '/leads': typeof LeadsRoute
+  '/login': typeof LoginRoute
   '/metas': typeof MetasRoute
   '/painel-tv': typeof PainelTvRoute
   '/pipelines': typeof PipelinesRoute
@@ -381,6 +390,7 @@ export interface FileRouteTypes {
     | '/integracoes'
     | '/lead-details'
     | '/leads'
+    | '/login'
     | '/metas'
     | '/painel-tv'
     | '/pipelines'
@@ -420,6 +430,7 @@ export interface FileRouteTypes {
     | '/integracoes'
     | '/lead-details'
     | '/leads'
+    | '/login'
     | '/metas'
     | '/painel-tv'
     | '/pipelines'
@@ -460,6 +471,7 @@ export interface FileRouteTypes {
     | '/integracoes'
     | '/lead-details'
     | '/leads'
+    | '/login'
     | '/metas'
     | '/painel-tv'
     | '/pipelines'
@@ -501,6 +513,7 @@ export interface RootRouteChildren {
   IntegracoesRoute: typeof IntegracoesRoute
   LeadDetailsRoute: typeof LeadDetailsRoute
   LeadsRoute: typeof LeadsRoute
+  LoginRoute: typeof LoginRoute
   MetasRoute: typeof MetasRoute
   PainelTvRoute: typeof PainelTvRoute
   PipelinesRoute: typeof PipelinesRoute
@@ -668,6 +681,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LeadsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/metas': {
       id: '/metas'
       path: '/metas'
@@ -823,6 +843,7 @@ const rootRouteChildren: RootRouteChildren = {
   IntegracoesRoute: IntegracoesRoute,
   LeadDetailsRoute: LeadDetailsRoute,
   LeadsRoute: LeadsRoute,
+  LoginRoute: LoginRoute,
   MetasRoute: MetasRoute,
   PainelTvRoute: PainelTvRoute,
   PipelinesRoute: PipelinesRoute,

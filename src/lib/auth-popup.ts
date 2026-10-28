@@ -100,6 +100,17 @@ export function notifyAuthSuccess(userData: AuthUserData) {
   }
 }
 
+/**
+ * Remove a sessão de autenticação atual e notifica a aplicação
+ */
+export function clearAuthSession() {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.removeItem(AUTH_STORAGE_KEY);
+  } catch {}
+  window.dispatchEvent(new Event(AUTH_EVENT_NAME));
+}
+
 export interface OpenAuthPopupOptions {
   mode?: "login" | "signup";
   defaultEmail?: string;

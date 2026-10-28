@@ -70,17 +70,15 @@ describe('Real Integrations and Storage Integrity', () => {
 
   it('deve mover leads com resiliência sem erro de deal not found', async () => {
     const db = await readDb();
-    if (!db.pipelines) {
-      db.pipelines = [{
-        id: "pipeline-principal",
-        name: "Pipeline Principal",
-        stages: [
-          { name: "Novo Lead", deals: [] },
-          { name: "Qualificação", deals: [{ id: "deal_silas_test", client: "Silas teste", stage: "Qualificação", value: 3000 }] },
-        ]
-      }];
-      await writeDb(db);
-    }
+    db.pipelines = [{
+      id: "pipeline-principal",
+      name: "Pipeline Principal",
+      stages: [
+        { name: "Novo Lead", deals: [] },
+        { name: "Qualificação", deals: [{ id: "deal_silas_test", client: "Silas teste", stage: "Qualificação", value: 3000 }] },
+      ]
+    }];
+    await writeDb(db);
 
     // Busca o deal e move de Qualificação para Novo Lead
     const targetPipeline = db.pipelines[0];

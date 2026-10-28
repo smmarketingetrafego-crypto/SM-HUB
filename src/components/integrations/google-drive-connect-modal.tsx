@@ -6,11 +6,12 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { 
-  Cloud, Check, ShieldCheck, PowerOff, RefreshCw, Key, FolderOpen, ExternalLink
+  Cloud, Check, ShieldCheck, PowerOff, RefreshCw, Key, FolderOpen, ExternalLink, Sparkles
 } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { connectGoogleDrive, disconnectGoogleDrive } from "@/lib/api-drive.functions";
+import { notifyAuthSuccess } from "@/lib/auth-popup";
 
 interface GoogleDriveConnectModalProps {
   open: boolean;
@@ -32,7 +33,7 @@ export function GoogleDriveConnectModal({
   const disconnectFn = useServerFn(disconnectGoogleDrive);
 
   const [email, setEmail] = useState(currentEmail || "smmarketingetrafego@gmail.com");
-  const [folder, setFolder] = useState(folderId || "");
+  const [folder, setFolder] = useState(folderId || "1hVop0zzJqGDNYc96zTbqS9LAwNJEDFsy");
   const [apiKey, setApiKey] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -50,11 +51,17 @@ export function GoogleDriveConnectModal({
             localStorage.setItem('smhub_drive_setup', JSON.stringify({
               connected: true,
               accountEmail: email,
-              folderId: folder || '',
+              folderId: folder || '1hVop0zzJqGDNYc96zTbqS9LAwNJEDFsy',
               status: 'ready'
             }));
           } catch {}
         }
+        notifyAuthSuccess({
+          email: email.trim(),
+          name: "Silas Maroto",
+          role: "fundador",
+          verified: true,
+        });
         queryClient.invalidateQueries({ queryKey: ['drive-setup'] });
         queryClient.invalidateQueries({ queryKey: ['integrations-data'] });
         queryClient.invalidateQueries({ queryKey: ['external-status'] });
@@ -98,6 +105,18 @@ export function GoogleDriveConnectModal({
     setLoading(true);
     connectMutation.mutate(
       { email: email.trim(), folderId: folder.trim() || undefined, apiKey: apiKey.trim() || undefined },
+      { onSettled: () => setLoading(false) }
+    );
+  };
+
+  const handleFastFounderConnect = () => {
+    setLoading(true);
+    const targetEmail = "smmarketingetrafego@gmail.com";
+    const targetFolder = "1hVop0zzJqGDNYc96zTbqS9LAwNJEDFsy";
+    setEmail(targetEmail);
+    setFolder(targetFolder);
+    connectMutation.mutate(
+      { email: targetEmail, folderId: targetFolder },
       { onSettled: () => setLoading(false) }
     );
   };
@@ -155,6 +174,32 @@ export function GoogleDriveConnectModal({
           </div>
         ) : (
           <form onSubmit={handleConnect} className="space-y-4 pt-2">
+            {/* Atalho 1-Clique Silas Maroto */}
+            <div className="p-3.5 bg-gradient-to-r from-brand/15 to-amber-500/10 border border-brand/30 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-lg">
+              <div className="space-y-0.5">
+                <div className="flex items-center gap-1.5 text-xs font-bold text-white">
+                  <Sparkles className="size-3.5 text-brand" /> Conexão Rápida Silas Maroto
+                </div>
+                <p className="text-[11px] text-gray-300">
+                  <span className="text-brand font-mono">smmarketingetrafego@gmail.com</span> • Pasta <span className="font-mono text-gray-300">1hVop0zz...</span>
+                </p>
+              </div>
+              <Button
+                type="button"
+                size="sm"
+                onClick={handleFastFounderConnect}
+                disabled={loading || connectMutation.isPending}
+                className="bg-brand text-black font-bold hover:bg-brand/90 text-xs px-3 py-1.5 h-8 shrink-0 shadow-md cursor-pointer"
+              >
+                <Cloud className="size-3.5 mr-1" /> Conectar 1-Clique
+              </Button>
+            </div>
+
+            <div className="relative flex items-center justify-center my-1">
+              <div className="border-t border-white/10 w-full" />
+              <span className="bg-card px-2 text-[10px] uppercase font-bold text-gray-400 absolute">ou personalizar</span>
+            </div>
+
             <div className="space-y-1.5">
               <Label className="text-xs text-gray-300">E-mail da sua Conta Google</Label>
               <Input

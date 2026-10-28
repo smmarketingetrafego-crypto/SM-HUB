@@ -21,12 +21,13 @@ import {
   Video,
   Wand2,
   LogOut,
+  LogIn,
   ExternalLink,
   Target,
   Monitor,
 } from "lucide-react";
 import { useState, useEffect } from "react";
-import { useAuthUser, openAuthPopup } from "@/lib/auth-popup";
+import { useAuthUser, openAuthPopup, clearAuthSession } from "@/lib/auth-popup";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -58,6 +59,7 @@ const navigation: NavSection[] = [
     title: "Geral",
     items: [
       { title: "Dashboard", href: "/", icon: LayoutDashboard },
+      { title: "Login & Sessão", href: "/login", icon: LogIn },
       { title: "Painel de Vendas (TV)", href: "/painel-tv", icon: Monitor },
       { title: "Metas & OKRs", href: "/metas", icon: Target },
       { title: "Atualizações", href: "/atualizacoes", icon: Megaphone },
@@ -129,8 +131,8 @@ export function AppSidebar({ collapsed, onToggle }: { collapsed: boolean; onTogg
 
   const authUser = useAuthUser();
   const currentUser = {
-    name: authUser?.name || "Minha Conta",
-    email: authUser?.email || "usuario@smhub.com.br",
+    name: authUser?.name || "Silas Maroto",
+    email: authUser?.email || "smmarketingetrafego@gmail.com",
   };
 
   const handleLogout = async () => {
@@ -139,9 +141,9 @@ export function AppSidebar({ collapsed, onToggle }: { collapsed: boolean; onTogg
     } catch (e) {
       console.error(e);
     }
-    localStorage.removeItem("smhub_user");
+    clearAuthSession();
     toast.success("Você saiu da conta.");
-    window.location.href = "/auth";
+    navigate({ to: "/login" });
   };
 
   const handleSwitchAccount = () => {
@@ -255,6 +257,13 @@ export function AppSidebar({ collapsed, onToggle }: { collapsed: boolean; onTogg
             </DropdownMenuLabel>
 
             <DropdownMenuSeparator className="bg-white/10 my-1" />
+
+            <DropdownMenuItem asChild className="px-3 py-2.5 text-xs text-brand hover:text-white hover:bg-brand/10 rounded-xl cursor-pointer flex items-center gap-2.5 font-semibold">
+              <Link to="/login">
+                <LogIn className="size-4 text-brand" />
+                <span>Página de Login & Sessão</span>
+              </Link>
+            </DropdownMenuItem>
 
             <DropdownMenuItem asChild className="px-3 py-2.5 text-xs text-neutral-300 hover:text-white hover:bg-white/5 rounded-xl cursor-pointer flex items-center gap-2.5">
               <Link to="/configuracoes">
