@@ -190,7 +190,7 @@ function ConectarResendPage() {
       if (res.success && res.provider === "resend") {
         toast.success("E-mail real de teste disparado via Resend com sucesso!");
       } else {
-        toast.info(`E-mail processado (Simulação). Código: ${res.code}`);
+        toast.info(`E-mail registrado no sistema. Código de verificação: ${res.code}`);
       }
     } catch (e: any) {
       toast.error(`Erro no disparo de teste: ${e.message}`);

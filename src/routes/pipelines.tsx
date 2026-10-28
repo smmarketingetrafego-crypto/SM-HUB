@@ -125,9 +125,10 @@ function PipelinesPage() {
   });
 
   const moveDealMutation = useMutation({
-    mutationFn: async (payload: { pipelineId: string; fromStage: string; toStage: string; clientName: string }) => moveDealFn({ data: payload }),
-    onSuccess: (res) => {
+    mutationFn: async (payload: { pipelineId?: string; fromStage?: string; toStage: string; clientName: string; dealId?: string; dealData?: any }) => moveDealFn({ data: payload }),
+    onSuccess: (res, vars) => {
       if (res.success) {
+        toast.success(`Lead movido para "${vars.toStage}"`);
         if (res.pipelines) {
           queryClient.setQueryData(['pipelines'], res.pipelines);
           if (typeof window !== 'undefined') {
@@ -140,7 +141,7 @@ function PipelinesPage() {
   });
 
   const removeDealMutation = useMutation({
-    mutationFn: async (payload: { pipelineId: string; stageName: string; clientName: string }) => removeDealFn({ data: payload }),
+    mutationFn: async (payload: { pipelineId?: string; stageName?: string; clientName: string; dealId?: string }) => removeDealFn({ data: payload }),
     onSuccess: (res) => {
       if (res.success) {
         toast.success("Lead removido.");
@@ -239,22 +240,83 @@ function PipelinesPage() {
     }
   };
 
-  const removeDeal = (stageName: string, clientName: string) => {
+  const removeDeal = (stageName: string, dealInput: any) => {
+    const clientName = typeof dealInput === 'string' ? dealInput : dealInput?.client;
+    const dealId = typeof dealInput === 'object' ? dealInput?.id : undefined;
+
+    // Atualização otimista imediata na UI
+    queryClient.setQueryData(['pipelines'], (prevPipelines: any) => {
+      if (!Array.isArray(prevPipelines)) return prevPipelines;
+      return prevPipelines.map((p: any) => {
+        if (p.id !== (pipeline?.id || prevPipelines[0]?.id)) return p;
+        return {
+          ...p,
+          stages: (p.stages || []).map((st: any) => ({
+            ...st,
+            deals: (st.deals || []).filter((d: any) => {
+              if (dealId && (d.id === dealId || d._id === dealId)) return false;
+              if (clientName && d.client?.trim().toLowerCase() === clientName.trim().toLowerCase()) return false;
+              return true;
+            })
+          }))
+        };
+      });
+    });
+
     removeDealMutation.mutate({
       pipelineId: pipeline?.id,
       stageName,
       clientName,
+      dealId,
     });
   };
 
-  const moveDeal = async (fromStage: string, toStage: string, clientName: string) => {
+  const moveDeal = async (fromStage: string, toStage: string, dealInput: any) => {
+    const clientName = typeof dealInput === 'string' ? dealInput : dealInput?.client;
+    const dealId = typeof dealInput === 'object' ? dealInput?.id : undefined;
+
+    // Atualização otimista imediata na UI (estilo fluido e instantâneo do quadro de Tarefas)
+    queryClient.setQueryData(['pipelines'], (prevPipelines: any) => {
+      if (!Array.isArray(prevPipelines)) return prevPipelines;
+      return prevPipelines.map((p: any) => {
+        if (p.id !== (pipeline?.id || prevPipelines[0]?.id)) return p;
+        let movingDeal: any = null;
+        const newStages = (p.stages || []).map((st: any) => {
+          if (!Array.isArray(st.deals)) return st;
+          const matchIdx = st.deals.findIndex((d: any) => 
+            (dealId && (d.id === dealId || d._id === dealId)) ||
+            (clientName && d.client?.trim().toLowerCase() === clientName.trim().toLowerCase())
+          );
+          if (matchIdx !== -1) {
+            movingDeal = { ...st.deals[matchIdx], stage: toStage };
+            return { ...st, deals: st.deals.filter((_: any, idx: number) => idx !== matchIdx) };
+          }
+          return st;
+        });
+
+        if (!movingDeal && typeof dealInput === 'object') {
+          movingDeal = { ...dealInput, stage: toStage };
+        }
+
+        if (movingDeal) {
+          const target = newStages.find((st: any) => st.name === toStage);
+          if (target) {
+            if (!Array.isArray(target.deals)) target.deals = [];
+            target.deals.push(movingDeal);
+          }
+        }
+        return { ...p, stages: newStages };
+      });
+    });
+
     moveDealMutation.mutate({
       pipelineId: pipeline?.id,
       fromStage,
       toStage,
       clientName,
+      dealId,
+      dealData: typeof dealInput === 'object' ? dealInput : undefined,
     });
-    toast.success(`Lead movido para "${toStage}"`);
 
     try {
       const autoRes = await triggerFunnelAutomation({
@@ -273,7 +335,7 @@ function PipelinesPage() {
     }
   };
 
-  const handleMoveStage = (fromStageName: string, direction: "next" | "prev", clientName: string, e: React.MouseEvent) => {
+  const handleMoveStage = (fromStageName: string, direction: "next" | "prev", dealInput: any, e: React.MouseEvent) => {
     e.stopPropagation();
     const stages = pipeline?.stages || [];
     const currentIndex = stages.findIndex((s: any) => s.name === fromStageName);
@@ -281,7 +343,7 @@ function PipelinesPage() {
     const newIndex = direction === "next" ? currentIndex + 1 : currentIndex - 1;
     if (newIndex >= 0 && newIndex < stages.length) {
       const toStage = stages[newIndex].name;
-      moveDeal(fromStageName, toStage, clientName);
+      moveDeal(fromStageName, toStage, dealInput);
     }
   };
 
@@ -509,7 +571,7 @@ function PipelinesPage() {
                                 >
                                   <ExternalLink className="size-3" />
                                 </Link>
-                                <Select onValueChange={(v) => v === "__remove__" ? removeDeal(stage.name, deal.client) : moveDeal(stage.name, v, deal.client)}>
+                                <Select onValueChange={(v) => v === "__remove__" ? removeDeal(stage.name, deal) : moveDeal(stage.name, v, deal)}>
                                   <SelectTrigger className="size-6 border-0 bg-transparent text-gray-500 hover:text-white p-0 [&>svg]:hidden">
                                     <MoreHorizontal className="size-3.5" />
                                   </SelectTrigger>
@@ -563,7 +625,7 @@ function PipelinesPage() {
                               <div className="flex items-center gap-1 shrink-0">
                                 {colIdx > 0 && (
                                   <button
-                                    onClick={(e) => handleMoveStage(stage.name, "prev", deal.client, e)}
+                                    onClick={(e) => handleMoveStage(stage.name, "prev", deal, e)}
                                     className="size-6 rounded-md bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white flex items-center justify-center transition-colors"
                                     title={`Voltar para ${allCols[colIdx - 1]?.name}`}
                                   >
@@ -572,7 +634,7 @@ function PipelinesPage() {
                                 )}
                                 {colIdx < allCols.length - 1 && (
                                   <button
-                                    onClick={(e) => handleMoveStage(stage.name, "next", deal.client, e)}
+                                    onClick={(e) => handleMoveStage(stage.name, "next", deal, e)}
                                     className="size-6 rounded-md bg-brand/20 hover:bg-brand/30 text-brand flex items-center justify-center transition-colors font-bold shadow-sm"
                                     title={`Avançar para ${allCols[colIdx + 1]?.name}`}
                                   >
@@ -654,12 +716,12 @@ function PipelinesPage() {
                           <div className="flex justify-end gap-1">
                             {pipeline?.stages.filter((s) => s.name !== stage.name).slice(0, 1).map((s) => (
                               <Button key={s.name} size="sm" variant="ghost" className="h-8 text-xs text-gray-400 hover:text-white"
-                                onClick={(e) => { e.stopPropagation(); moveDeal(stage.name, s.name, deal.client); }}>
+                                onClick={(e) => { e.stopPropagation(); moveDeal(stage.name, s.name, deal); }}>
                                 → {s.name}
                               </Button>
                             ))}
                             <Button size="sm" variant="ghost" className="h-8 text-xs text-red-400 hover:text-red-300 hover:bg-red-500/10"
-                              onClick={(e) => { e.stopPropagation(); removeDeal(stage.name, deal.client); }}>
+                                onClick={(e) => { e.stopPropagation(); removeDeal(stage.name, deal); }}>
                               Remover
                             </Button>
                           </div>

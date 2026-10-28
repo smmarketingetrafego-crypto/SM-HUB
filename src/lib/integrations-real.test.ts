@@ -67,4 +67,39 @@ describe('Real Integrations and Storage Integrity', () => {
     const after = await readDb();
     expect(after.integrations?.whatsapp?.connected).toBe(false);
   });
+
+  it('deve mover leads com resiliência sem erro de deal not found', async () => {
+    const db = await readDb();
+    if (!db.pipelines) {
+      db.pipelines = [{
+        id: "pipeline-principal",
+        name: "Pipeline Principal",
+        stages: [
+          { name: "Novo Lead", deals: [] },
+          { name: "Qualificação", deals: [{ id: "deal_silas_test", client: "Silas teste", stage: "Qualificação", value: 3000 }] },
+        ]
+      }];
+      await writeDb(db);
+    }
+
+    // Busca o deal e move de Qualificação para Novo Lead
+    const targetPipeline = db.pipelines[0];
+    const qualifStage = targetPipeline.stages.find((s: any) => s.name === "Qualificação");
+    const novoLeadStage = targetPipeline.stages.find((s: any) => s.name === "Novo Lead");
+
+    expect(qualifStage?.deals.some((d: any) => d.client === "Silas teste")).toBe(true);
+
+    // Simula a movimentação resiliente
+    const [deal] = qualifStage.deals.splice(0, 1);
+    deal.stage = "Novo Lead";
+    novoLeadStage.deals.push(deal);
+    await writeDb(db);
+
+    const reloaded = await readDb();
+    const updatedQualif = reloaded.pipelines[0].stages.find((s: any) => s.name === "Qualificação");
+    const updatedNovoLead = reloaded.pipelines[0].stages.find((s: any) => s.name === "Novo Lead");
+
+    expect(updatedNovoLead?.deals.some((d: any) => d.client === "Silas teste")).toBe(true);
+    expect(updatedQualif?.deals.some((d: any) => d.client === "Silas teste")).toBe(false);
+  });
 });

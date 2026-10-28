@@ -291,3 +291,84 @@ Nossa equipe de suporte está disponível no WhatsApp **[(99) 98550-1962](https:
 
   return `${greeting}${solution}${footer}`;
 }
+
+/**
+ * Resposta interativa no chat de agentes (/agentes-ia) utilizando LLM real ou motor contextual.
+ */
+export async function generateAgentChatResponse(
+  agent: AIAgent,
+  userMessage: string,
+  history: Array<{ sender: string; text: string }> = []
+): Promise<string> {
+  const db = await readDb();
+  const openaiKey = process.env['OPENAI_API_KEY'] || db.integrations?.openai?.apiKey;
+  const deepseekKey = process.env['DEEPSEEK_API_KEY'] || db.integrations?.deepseek?.apiKey;
+
+  const systemPrompt = `Você é o agente "${agent.name}" (Função: ${agent.role}) da plataforma SM Hub.
+${agent.systemPrompt}
+Responda de forma direta, profissional, humanizada e resolutiva em Português do Brasil. Mantenha as respostas concisas e práticas.`;
+
+  const messagesPayload = [
+    { role: 'system', content: systemPrompt },
+    ...history.slice(-6).map(h => ({
+      role: h.sender === 'user' ? 'user' : 'assistant',
+      content: h.text,
+    })),
+    { role: 'user', content: userMessage },
+  ];
+
+  if (openaiKey) {
+    try {
+      const res = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${openaiKey}` },
+        body: JSON.stringify({ model: 'gpt-4o-mini', messages: messagesPayload, max_tokens: 500, temperature: 0.7 }),
+      });
+      if (res.ok) {
+        const json = await res.json();
+        const text = json.choices?.[0]?.message?.content?.trim();
+        if (text) return text;
+      }
+    } catch {}
+  }
+
+  if (deepseekKey) {
+    try {
+      const res = await fetch('https://api.deepseek.com/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${deepseekKey}` },
+        body: JSON.stringify({ model: 'deepseek-chat', messages: messagesPayload, max_tokens: 500 }),
+      });
+      if (res.ok) {
+        const json = await res.json();
+        const text = json.choices?.[0]?.message?.content?.trim();
+        if (text) return text;
+      }
+    } catch {}
+  }
+
+  // Resposta contextual rica e profissional
+  const q = userMessage.toLowerCase();
+  if (agent.role === "Vendas") {
+    if (q.includes("preço") || q.includes("quanto") || q.includes("valor") || q.includes("orçamento")) {
+      return `Nossos pacotes de Gestão de Tráfego e Branding são customizados de acordo com a meta de ROI da sua agência ou cliente. Em média, projetos pontuais iniciam em R$ 2.500 e contratos mensais de escala giram em torno de R$ 4.500 a R$ 6.000. Posso agendar uma call de alinhamento com nosso gestor sênior?`;
+    }
+    if (q.includes("agendar") || q.includes("call") || q.includes("reunião")) {
+      return `Excelente! Tenho horários disponíveis para alinhamento estratégico amanhã às 14h ou às 16h30. Qual desses horários se encaixa melhor na sua agenda?`;
+    }
+    return `Olá! Sou o assistente comercial de alta performance da SM Hub. Analisamos o perfil do seu lead, qualificamos a capacidade de investimento e direcionamos diretamente para fechamento. O que seu cliente busca hoje: escala de tráfego, redesign de marca ou landing pages de alta conversão?`;
+  }
+
+  if (agent.role === "Financeiro") {
+    if (q.includes("pix") || q.includes("boleto") || q.includes("pagar") || q.includes("fatura")) {
+      return `Identifiquei sua solicitação. O sistema SM Hub integra automaticamente a emissão de Pix Copia-e-Cola e boletos bancários com baixa em tempo real. Se precisar de uma segunda via ou parcelamento com aprovação, posso gerar o link instantaneamente.`;
+    }
+    return `Olá! Sou seu assistente de gestão financeira. Acompanho pagamentos, conciliação de faturas Asaas e lembretes amigáveis para evitar inadimplência sem atritos com seus clientes. Como posso apoiar suas finanças agora?`;
+  }
+
+  if (agent.role === "Marketing") {
+    return `💡 Sugestão Estratégica:\n"Por que 80% das empresas erram ao anunciar no Meta Ads sem uma estrutura validada de criativos?"\n\nPodemos desdobrar esse conteúdo em um carrossel de 5 lâminas com quebra de objeções ou um Reels de 45 segundos com gancho magnético. Qual formato você prefere desenvolver agora?`;
+  }
+
+  return `Compreendido! Estou conectado à base do SM Hub para prestar suporte contínuo. Como posso te auxiliar com seus entregáveis ou parametrizações operacionais hoje?`;
+}

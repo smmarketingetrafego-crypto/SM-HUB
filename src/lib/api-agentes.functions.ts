@@ -162,25 +162,9 @@ export const chatWithAgent = createServerFn({ method: "POST" })
       agent.history.push(userMsg);
       agent.chats = (agent.chats || 0) + 1;
 
-      // Resposta inteligente contextual do agente de acordo com sua função
-      let reply = "";
-      const msgLower = data.userMessage.toLowerCase();
-
-      if (agent.role === "Vendas") {
-        if (msgLower.includes("preço") || msgLower.includes("quanto custa") || msgLower.includes("valor")) {
-          reply = `Nossos projetos de Branding e Tráfego são personalizados conforme a maturidade do seu negócio, variando em média entre R$ 2.500 a R$ 6.000. Posso agendar uma call de 15 minutos com nosso especialista para montarmos um orçamento sob medida?`;
-        } else if (msgLower.includes("reunião") || msgLower.includes("agendar") || msgLower.includes("call")) {
-          reply = `Perfeito! Tenho horários disponíveis amanhã às 14h ou 16h. Qual horário fica melhor para você?`;
-        } else {
-          reply = `Com certeza! Aqui na SM Hub focamos em design de alto padrão e campanhas voltadas para ROI imediato. Me conta: sua empresa já tem presença digital consolidada ou está começando do zero?`;
-        }
-      } else if (agent.role === "Financeiro") {
-        reply = `Compreendido! Identifiquei seu cadastro e as faturas pendentes contam com emissão instantânea de Pix Copia-e-Cola com compensação em tempo real. Se precisar de prorrogação ou segunda via, posso gerar agora mesmo.`;
-      } else if (agent.role === "Marketing") {
-        reply = `💡 Ideia de Gancho de Alto Engajamento:\n"O erro de R$ 10.000 que a maioria dos negócios comete antes de contratar um designer..."\n\nQuer que eu monte o roteiro completo com os 3 slides centrais e o CTA final?`;
-      } else {
-        reply = `Entendido! Como posso ajudar com sua solicitação técnica? Seus arquivos de projeto estão seguros e com backup em nuvem contínuo.`;
-      }
+      // Resposta contextual através do motor de IA
+      const { generateAgentChatResponse } = await import("./ai-support.server");
+      const reply = await generateAgentChatResponse(agent, data.userMessage, agent.history);
 
       const agentMsg: AgentMessage = {
         id: `msg-${Date.now()}-a`,

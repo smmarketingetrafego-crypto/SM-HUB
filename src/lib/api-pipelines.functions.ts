@@ -64,26 +64,57 @@ export const addLeadDeal = createServerFn({ method: "POST" })
   });
 
 export const moveLeadDeal = createServerFn({ method: "POST" })
-  .validator((data: { pipelineId?: string; fromStage: string; toStage: string; clientName: string }) => data)
+  .validator((data: { pipelineId?: string; fromStage?: string; toStage: string; clientName: string; dealId?: string; dealData?: any }) => data)
   .handler(async ({ data }) => {
     try {
       const db = await readDb();
-      if (!db.pipelines) return { success: false, error: "No pipelines found" };
+      if (!db.pipelines || !Array.isArray(db.pipelines) || db.pipelines.length === 0) {
+        db.pipelines = [DEFAULT_PIPELINE];
+      }
       const pIdx = data.pipelineId ? db.pipelines.findIndex((p: any) => p.id === data.pipelineId) : 0;
       const targetPipeline = pIdx !== -1 ? db.pipelines[pIdx] : db.pipelines[0];
 
-      const fromStage = targetPipeline.stages.find((s: any) => s.name === data.fromStage);
-      const toStage = targetPipeline.stages.find((s: any) => s.name === data.toStage);
+      // Garante que o estágio de destino existe
+      let toStage = targetPipeline.stages.find((s: any) => s.name === data.toStage);
+      if (!toStage) {
+        toStage = { name: data.toStage, deals: [] };
+        targetPipeline.stages.push(toStage);
+      }
+      if (!Array.isArray(toStage.deals)) toStage.deals = [];
 
-      if (!fromStage || !toStage) return { success: false, error: "Stage not found" };
+      // Procura o deal em TODAS as etapas do funil para garantir movimentação precisa
+      let foundDeal: any = null;
+      for (const st of targetPipeline.stages) {
+        if (!Array.isArray(st.deals)) st.deals = [];
+        const idx = st.deals.findIndex((d: any) => 
+          (data.dealId && (d.id === data.dealId || d._id === data.dealId)) ||
+          (data.clientName && String(d.client || "").trim().toLowerCase() === String(data.clientName || "").trim().toLowerCase())
+        );
+        if (idx !== -1) {
+          [foundDeal] = st.deals.splice(idx, 1);
+          break;
+        }
+      }
 
-      const dealIdx = fromStage.deals.findIndex((d: any) => d.client === data.clientName);
-      if (dealIdx === -1) return { success: false, error: "Deal not found" };
-
-      const [deal] = fromStage.deals.splice(dealIdx, 1);
-      deal.stage = toStage.name;
-      if (toStage.name.toLowerCase().includes("ganho") && !deal.wonAt) deal.wonAt = new Date().toISOString();
-      toStage.deals.push(deal);
+      // Se encontrado, atualiza o estágio e adiciona ao destino
+      if (foundDeal) {
+        foundDeal.stage = toStage.name;
+        if (toStage.name.toLowerCase().includes("ganho") && !foundDeal.wonAt) {
+          foundDeal.wonAt = new Date().toISOString();
+        }
+        toStage.deals.push(foundDeal);
+      } else {
+        // Se por qualquer motivo não estava no servidor, restaura diretamente no destino
+        const restored = {
+          ...(data.dealData || {}),
+          id: data.dealId || `deal_${Date.now()}`,
+          client: data.clientName,
+          stage: toStage.name,
+          createdAt: new Date().toISOString(),
+          value: data.dealData?.value ?? 0,
+        };
+        toStage.deals.push(restored);
+      }
 
       await writeDb(db);
       return { success: true, pipelines: db.pipelines };
@@ -94,7 +125,7 @@ export const moveLeadDeal = createServerFn({ method: "POST" })
   });
 
 export const removeLeadDeal = createServerFn({ method: "POST" })
-  .validator((data: { pipelineId?: string; stageName: string; clientName: string }) => data)
+  .validator((data: { pipelineId?: string; stageName?: string; clientName: string; dealId?: string }) => data)
   .handler(async ({ data }) => {
     try {
       const db = await readDb();
@@ -102,10 +133,16 @@ export const removeLeadDeal = createServerFn({ method: "POST" })
       const pIdx = data.pipelineId ? db.pipelines.findIndex((p: any) => p.id === data.pipelineId) : 0;
       const targetPipeline = pIdx !== -1 ? db.pipelines[pIdx] : db.pipelines[0];
 
-      const stage = targetPipeline.stages.find((s: any) => s.name === data.stageName);
-      if (stage) {
-        stage.deals = stage.deals.filter((d: any) => d.client !== data.clientName);
-      }
+      // Remove de todas as etapas para garantir que o lead seja removido sem ficar fantasma
+      targetPipeline.stages.forEach((stage: any) => {
+        if (Array.isArray(stage.deals)) {
+          stage.deals = stage.deals.filter((d: any) => {
+            if (data.dealId && (d.id === data.dealId || d._id === data.dealId)) return false;
+            if (data.clientName && String(d.client || "").trim().toLowerCase() === String(data.clientName || "").trim().toLowerCase()) return false;
+            return true;
+          });
+        }
+      });
 
       await writeDb(db);
       return { success: true, pipelines: db.pipelines };

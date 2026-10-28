@@ -303,7 +303,7 @@ function AgentesPage() {
               <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-[#0a0a0a]">
                 <div className="text-center my-2">
                   <span className="text-[10px] uppercase font-bold text-gray-500 tracking-wider bg-white/5 px-3 py-1 rounded-full border border-white/5">
-                    Início da Simulação de IA
+                    Canal Ativo do Agente de IA
                   </span>
                 </div>
 

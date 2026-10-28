@@ -179,22 +179,22 @@
       "stages": [
         {
           "name": "Novo Lead",
-          "deals": []
-        },
-        {
-          "name": "Qualificação",
           "deals": [
             {
-              "client": "teste",
+              "client": "Silas teste",
               "value": 0,
-              "email": "",
-              "phone": "",
-              "owner": "",
+              "email": "silas@smhub.com",
+              "phone": "(99) 98550-1962",
+              "owner": "Silas Maroto",
               "id": "deal_1793195910898",
-              "stage": "Qualificação",
+              "stage": "Novo Lead",
               "createdAt": "2026-10-28T13:58:30.898Z"
             }
           ]
+        },
+        {
+          "name": "Qualificação",
+          "deals": []
         },
         {
           "name": "Proposta Enviada",
@@ -444,7 +444,7 @@
       "connected": false,
       "authMethod": "google",
       "accountEmail": "",
-      "updatedAt": "2026-10-28T19:06:08.123Z"
+      "updatedAt": "2026-10-28T19:26:45.129Z"
     },
     "whatsapp": {
       "connected": false,
