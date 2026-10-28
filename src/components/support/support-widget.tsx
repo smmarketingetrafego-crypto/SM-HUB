@@ -46,23 +46,23 @@ export function SupportWidget() {
     try {
       let ticketId = id;
       if (!ticketId) {
-        const result = await create({ data: { subject, body, requesterType: 'cliente' } });
+        const result = await create({ data: { subject, body, requesterType: 'cliente', autoRespondWithAI: useAI } });
         ticketId = result.id; 
         setId(ticketId);
         toast.success('Ticket aberto com sucesso!');
       } else {
         await update({ data: { id: ticketId, body } });
+        if (useAI) {
+          setAiBusy(true);
+          const result = await answer({ data: { id: ticketId, followUp: true } });
+          if (!result.success) setError(result.error || 'Assistente indisponível.');
+        }
       }
       setBody('');
       await qc.invalidateQueries({ queryKey: ['support-ticket', ticketId] });
       qc.invalidateQueries({ queryKey: ['support-tickets'] });
 
-      if (useAI && !data?.ticket?.needs_human) {
-        setAiBusy(true);
-        const result = await answer({ data: { id: ticketId, followUp: true } });
-        if (!result.success) setError(result.error || 'Assistente indisponível.');
-        await qc.invalidateQueries({ queryKey: ['support-ticket', ticketId] });
-      } else if (!id) {
+      if (!id && !useAI) {
         await update({ data: { id: ticketId, escalate: true } });
       }
     } catch (e: any) { 
@@ -212,7 +212,7 @@ export function SupportWidget() {
                     }
                   >
                     <p className="mb-1 text-[11px] font-medium text-muted-foreground">
-                      {m.sender === 'ai' ? '🤖 Assistente SM Hub' : m.sender === 'founder' ? '👨‍💻 Atendimento Técnico' : 'Você'}
+                      {m.sender === 'ai' ? (m.agent_name ? `🤖 ${m.agent_name}` : '🤖 Assistente SM Hub') : m.sender === 'founder' ? '👨‍💻 Atendimento Técnico' : 'Você'}
                     </p>
                     {m.sender === 'ai' ? (
                       <MessageResponse>{m.body}</MessageResponse>
