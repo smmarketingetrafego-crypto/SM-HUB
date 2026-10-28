@@ -170,6 +170,7 @@ export function MandatoryOnboardingModal() {
   if (isLoading || !profile) return null;
   if (dismissed) return null;
   if (location.pathname.startsWith("/configuracoes")) return null;
+  if (location.pathname.startsWith("/suporte")) return null;
   if (profile.isCompleted && profile.legalName?.trim()) return null;
 
   const isFreelancer = form.providerType === "freelancer";
