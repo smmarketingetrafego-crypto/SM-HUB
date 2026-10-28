@@ -1,4 +1,6 @@
 # SM Hub roadmap
+- [ ] Repair ticket replies and verify saved founder responses
+- [ ] Add global support with tickets, automatic AI conversation and WhatsApp link
 - [x] Complete Founder account settings and access overview with direct account configuration entry; authenticated save and navigation verified
 - [x] Per-account data + founder role
 - [x] Remove sample data (proposals, goals, team, messages)
