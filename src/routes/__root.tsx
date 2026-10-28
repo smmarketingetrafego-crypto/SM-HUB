@@ -25,6 +25,7 @@ import { GlobalVideoModal } from "@/components/layout/video-modal";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { MandatoryOnboardingModal } from "@/components/auth/mandatory-onboarding-modal";
 import { SupportWidget } from "@/components/support/support-widget";
+import { cn } from "@/lib/utils";
 
 function NotFoundComponent() {
   return (
@@ -248,7 +249,14 @@ function RootComponent() {
               <div className="flex min-w-0 flex-1 flex-col">
                 <Topbar />
                 <FounderAccountBanner />
-                <main className="flex-1 space-y-6 px-5 pt-6 pb-28 md:px-8 md:py-8">
+                <main 
+                  className={cn(
+                    "flex-1 min-w-0",
+                    pathname === "/whatsapp"
+                      ? "h-[calc(100dvh-4.25rem)] overflow-hidden p-2 sm:p-3 md:p-4 flex flex-col"
+                      : "space-y-6 px-5 pt-6 pb-28 md:px-8 md:py-8"
+                  )}
+                >
                   {/* Required: nested routes render here. */}
                   <Outlet />
                 </main>

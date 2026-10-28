@@ -292,3 +292,29 @@ export const testWhatsAppGateway = createServerFn({ method: "POST" })
       return { success: false, error: "Não foi possível conectar ao endereço do gateway informado." };
     }
   });
+
+export const checkSupabaseOAuthProvider = createServerFn({ method: "POST" })
+  .validator((p: { provider: string }) => p)
+  .handler(async ({ data }) => {
+    const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || "https://vitdanfzlonxouwjlosv.supabase.co";
+    try {
+      const res = await fetch(`${supabaseUrl}/auth/v1/authorize?provider=${data.provider}`, {
+        method: "GET",
+        redirect: "manual",
+      });
+      if (res.status === 400) {
+        const json = await res.json().catch(() => ({}));
+        if (json?.msg?.includes("missing OAuth secret") || json?.error_code === "validation_failed") {
+          return { 
+            configured: false, 
+            reason: "missing_secret", 
+            message: "O provedor OAuth não possui Client Secret configurado no painel do Supabase." 
+          };
+        }
+      }
+      return { configured: true };
+    } catch (e: any) {
+      return { configured: false, reason: "network_error", message: e.message };
+    }
+  });
+

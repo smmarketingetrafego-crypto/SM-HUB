@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { Link } from '@tanstack/react-router';
+import { Link, useRouterState } from '@tanstack/react-router';
 import { useServerFn } from '@tanstack/react-start';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { cn } from '@/lib/utils';
 import { 
   LifeBuoy, MessageCircle, Send, Headphones, ExternalLink, 
   HelpCircle, CheckCircle2, Sparkles, X, ChevronRight, Phone
@@ -74,10 +75,20 @@ export function SupportWidget() {
     }
   }
 
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const isWhatsApp = pathname === "/whatsapp";
+
   return (
     <>
       {/* Botão Flutuante de Suporte */}
-      <div className="fixed right-4 bottom-[calc(5rem+env(safe-area-inset-bottom))] z-40 flex items-center gap-2 md:bottom-6 md:right-6">
+      <div 
+        className={cn(
+          "fixed z-40 flex items-center gap-2 transition-all",
+          isWhatsApp 
+            ? "bottom-20 right-4 md:bottom-24 md:right-6" 
+            : "right-4 bottom-[calc(5rem+env(safe-area-inset-bottom))] md:bottom-6 md:right-6"
+        )}
+      >
         {/* Botão rápido para WhatsApp direto */}
         <a
           href={SUPPORT_WHATSAPP}

@@ -5,11 +5,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { 
-  Cloud, Check, ShieldCheck, PowerOff, RefreshCw, Key, FolderOpen, ExternalLink, Lock
+  Cloud, Check, ShieldCheck, PowerOff, RefreshCw, Key, FolderOpen, ExternalLink, Lock, AlertCircle
 } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { connectGoogleDrive, disconnectGoogleDrive } from "@/lib/api-drive.functions";
+import { checkSupabaseOAuthProvider } from "@/lib/api-integracoes.functions";
 import { supabase } from "@/integrations/supabase/client";
 
 interface GoogleDriveConnectModalProps {
@@ -33,6 +34,8 @@ export function GoogleDriveConnectModal({
 
   const [folder, setFolder] = useState(folderId || "1hVop0zzJqGDNYc96zTbqS9LAwNJEDFsy");
   const [apiKey, setApiKey] = useState("");
+  const [email, setEmail] = useState(currentEmail || "smmarketingetrafego@gmail.com");
+  const [oauthNotice, setOauthNotice] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const disconnectMutation = useMutation({
@@ -62,7 +65,17 @@ export function GoogleDriveConnectModal({
   // 1. Conexão Oficial via Google OAuth (Abre tela oficial do Google para Login & Autorização)
   const handleGoogleOAuth = async () => {
     setLoading(true);
+    setOauthNotice(null);
     try {
+      // Pré-validação para evitar que o usuário caia na página de erro 400 do Supabase
+      const checkRes = await checkSupabaseOAuthProvider({ data: { provider: "google" } });
+      if (checkRes && !checkRes.configured) {
+        setOauthNotice("O provedor Google OAuth precisa ser habilitado no painel do Supabase (Authentication > Providers > Google) com o Client Secret do Google Cloud. Para conectar seus arquivos agora, utilize sua Chave de API Google Cloud abaixo.");
+        toast.error("Google OAuth não configurado no Supabase. Utilize a Chave Google Cloud abaixo.");
+        setLoading(false);
+        return;
+      }
+
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
@@ -91,18 +104,27 @@ export function GoogleDriveConnectModal({
 
     setLoading(true);
     try {
-      // Valida chave no endpoint do Google Drive
-      const res = await fetch(`https://www.googleapis.com/drive/v3/about?fields=user&key=${apiKey.trim()}`);
+      const trimmedKey = apiKey.trim();
+      const isBearerToken = trimmedKey.startsWith("ya29.");
+      const testUrl = isBearerToken
+        ? "https://www.googleapis.com/oauth2/v3/userinfo"
+        : `https://www.googleapis.com/discovery/v1/apis/drive/v3/rest?key=${trimmedKey}`;
+
+      const res = await fetch(testUrl, {
+        headers: isBearerToken ? { Authorization: `Bearer ${trimmedKey}` } : {},
+      });
+
       if (!res.ok) {
         const errJson = await res.json().catch(() => ({}));
-        toast.error(errJson?.error?.message || "Chave de API do Google inválida ou sem permissão para Google Drive.");
+        toast.error(errJson?.error?.message || "Chave Google inválida ou sem permissão para Google Drive.");
+        setLoading(false);
         return;
       }
 
       const resData = await connectFn({
         data: {
-          email: "google-cloud-key@smhub.com.br",
-          apiKey: apiKey.trim(),
+          email: email.trim() || "smmarketingetrafego@gmail.com",
+          apiKey: trimmedKey,
           folderId: folder.trim() || undefined,
         }
       });
@@ -174,6 +196,16 @@ export function GoogleDriveConnectModal({
           </div>
         ) : (
           <div className="space-y-4 pt-2">
+            {oauthNotice && (
+              <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs flex items-start gap-2.5">
+                <AlertCircle className="size-4 shrink-0 text-amber-400 mt-0.5" />
+                <div className="space-y-1">
+                  <p className="font-semibold text-amber-200">Aviso de Configuração Supabase</p>
+                  <p className="text-[11px] text-amber-300/90 leading-relaxed">{oauthNotice}</p>
+                </div>
+              </div>
+            )}
+
             {/* Opção 1: Google OAuth Oficial */}
             <div className="p-4 rounded-2xl bg-zinc-900/60 border border-white/10 space-y-3">
               <div className="flex items-center gap-2 text-xs font-bold text-white">
@@ -194,23 +226,44 @@ export function GoogleDriveConnectModal({
                 disabled={loading}
                 className="w-full bg-white hover:bg-gray-100 text-black font-bold text-xs h-10 rounded-xl flex items-center justify-center gap-2"
               >
-                <Cloud className="size-4 text-blue-500" />
+                {loading ? <RefreshCw className="size-4 animate-spin text-blue-500" /> : <Cloud className="size-4 text-blue-500" />}
                 Fazer Login com Google e Autorizar Drive
               </Button>
             </div>
 
             <div className="relative flex items-center justify-center my-2">
               <div className="border-t border-white/10 w-full" />
-              <span className="bg-[#0f0f12] px-3 text-[10px] uppercase font-bold text-gray-500 absolute">ou via chave de api</span>
+              <span className="bg-[#0f0f12] px-3 text-[10px] uppercase font-bold text-gray-500 absolute">ou via chave google cloud</span>
             </div>
 
             {/* Opção 2: Chave de API Google Cloud */}
             <form onSubmit={handleApiKeyConnect} className="space-y-3">
               <div className="space-y-1">
-                <Label className="text-xs text-gray-300">Google Cloud API Key (Opcional)</Label>
+                <Label className="text-xs text-gray-300">E-mail da sua Conta Google</Label>
+                <Input
+                  type="email"
+                  placeholder="smmarketingetrafego@gmail.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="bg-black/60 border-white/10 text-white text-xs h-10 rounded-xl"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs text-gray-300">Chave de API do Google Cloud</Label>
+                  <a 
+                    href="https://console.cloud.google.com/apis/credentials" 
+                    target="_blank" 
+                    rel="noreferrer" 
+                    className="text-[10px] text-brand hover:underline flex items-center gap-1"
+                  >
+                    Obter no Google Cloud <ExternalLink className="size-2.5" />
+                  </a>
+                </div>
                 <Input
                   type="password"
-                  placeholder="AIzaSy..."
+                  placeholder="AIzaSy... ou Token ya29..."
                   value={apiKey}
                   onChange={(e) => setApiKey(e.target.value)}
                   className="bg-black/60 border-white/10 text-white font-mono text-xs h-10 rounded-xl"
@@ -233,7 +286,7 @@ export function GoogleDriveConnectModal({
                 className="w-full bg-brand text-black font-bold hover:bg-brand/90 text-xs h-10 rounded-xl"
               >
                 {loading ? <RefreshCw className="size-3.5 animate-spin mr-1.5" /> : <Key className="size-3.5 mr-1.5" />}
-                Validar Chave Google Cloud
+                Conectar e Validar Google Drive
               </Button>
             </form>
           </div>

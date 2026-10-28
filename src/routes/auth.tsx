@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { sendTransactionalEmail } from "@/lib/api-email.functions";
+import { checkSupabaseOAuthProvider } from "@/lib/api-integracoes.functions";
 import { lovable } from "@/integrations/lovable/index";
 import { notifyAuthSuccess } from "@/lib/auth-popup";
 import {
@@ -400,6 +401,22 @@ export function AuthPage() {
 
     try {
       setLoading(true);
+
+      // 1. Verifica no backend se o provedor tem Client ID / Secret configurado no Supabase para prevenir tela de erro 400
+      try {
+        const checkRes = await checkSupabaseOAuthProvider({ 
+          data: { provider: provider === "microsoft" ? "azure" : provider } 
+        });
+        if (checkRes && !checkRes.configured) {
+          toast.error(
+            `O login com ${providerName} precisa ser ativado com Client Secret no painel do Supabase. Para acessar agora, entre com seu E-mail e Senha abaixo.`,
+            { duration: 7000 }
+          );
+          setLoading(false);
+          return;
+        }
+      } catch {}
+
       const result = await lovable.auth.signInWithOAuth(provider, {
         redirect_uri: window.location.origin,
       });
