@@ -6,10 +6,10 @@ import { z } from 'zod';
 export const getDriveSetup = createServerFn({ method: 'GET' }).middleware([requireSupabaseAuth]).handler(async () => {
   const accountId = await resolveAccountId();
   const db = await readDb();
-  const connected = !!(process.env['GOOGLE_DRIVE_API_KEY'] || db.integrations?.google?.connected || true);
+  const connected = !!(process.env['GOOGLE_DRIVE_API_KEY'] || (db.integrations?.google?.connected && db.integrations?.google?.accountEmail));
   
   let files: Array<{ id: string; name: string; mime_type: string; created_at: string }> = db.drive_files || [];
-  let folderId = db.drive_folder_id || 'smhub-local-folder';
+  let folderId = db.drive_folder_id || '';
 
   try {
     const { supabaseAdmin } = await import('@/integrations/supabase/client.server');
@@ -27,10 +27,55 @@ export const getDriveSetup = createServerFn({ method: 'GET' }).middleware([requi
     accountId,
     folderId,
     connected,
-    status: 'ready',
+    status: connected ? 'ready' : 'disconnected',
+    accountEmail: db.integrations?.google?.accountEmail || '',
     files,
   };
 });
+
+export const connectGoogleDrive = createServerFn({ method: 'POST' })
+  .middleware([requireSupabaseAuth])
+  .validator((p: unknown) => z.object({
+    email: z.string().email(),
+    folderId: z.string().optional(),
+    apiKey: z.string().optional(),
+  }).parse(p))
+  .handler(async ({ data }) => {
+    const db = await readDb();
+    if (!db.integrations) db.integrations = {};
+    db.integrations.google = {
+      connected: true,
+      authMethod: data.apiKey ? 'apikey' : 'google',
+      accountEmail: data.email,
+      accountName: data.email.split('@')[0],
+      planName: 'Google Drive Sincronizado',
+      updatedAt: new Date().toISOString(),
+      ...(data.apiKey ? { apiKey: data.apiKey } : {}),
+    };
+    if (data.folderId) {
+      db.drive_folder_id = data.folderId;
+    }
+    await writeDb(db);
+    return { success: true, google: db.integrations.google };
+  });
+
+export const disconnectGoogleDrive = createServerFn({ method: 'POST' })
+  .middleware([requireSupabaseAuth])
+  .handler(async () => {
+    const db = await readDb();
+    if (db.integrations?.google) {
+      db.integrations.google = {
+        connected: false,
+        authMethod: 'google',
+        accountEmail: '',
+        accountName: '',
+        planName: '',
+        updatedAt: new Date().toISOString(),
+      };
+      await writeDb(db);
+    }
+    return { success: true };
+  });
 
 export const prepareDriveFolder = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth]).handler(async () => {
   const accountId = await resolveAccountId();

@@ -78,10 +78,14 @@ export const getTasks = createServerFn({ method: "GET" })
   .handler(async () => {
     try {
       const db = await readDb();
+      if (!db.tasks || !Array.isArray(db.tasks) || db.tasks.length === 0) {
+        db.tasks = [...INITIAL_TASKS];
+        await writeDb(db);
+      }
       return (db.tasks || []) as TaskRecord[];
     } catch (e: any) {
-      console.error(e);
-      return [] as TaskRecord[];
+      console.error("Failed to load tasks:", e);
+      return [...INITIAL_TASKS] as TaskRecord[];
     }
   });
 
@@ -90,7 +94,7 @@ export const addTask = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     try {
       const db = await readDb();
-      if (!db.tasks) db.tasks = [];
+      if (!db.tasks || !Array.isArray(db.tasks)) db.tasks = [];
       const newTask: TaskRecord = {
         ...data,
         id: `tsk-${Date.now()}`,
@@ -99,16 +103,23 @@ export const addTask = createServerFn({ method: "POST" })
       };
       db.tasks.unshift(newTask);
       await writeDb(db);
-      const summary = taskSummary(newTask);
-      await notifyAccount(accountOf(db), { kind: "task", title: `Nova tarefa: ${newTask.title || "sem título"}`, body: summary, link: "/tarefas" });
-      await notifyAssignee(db, newTask.assignee?.name, {
-        kind: "task",
-        title: `Tarefa para você: ${newTask.title || "sem título"}`,
-        body: [summary, newTask.desc].filter(Boolean).join(" — "),
-        link: "/tarefas",
-      });
-      return { success: true, task: newTask };
+
+      try {
+        const summary = taskSummary(newTask);
+        await notifyAccount(accountOf(db), { kind: "task", title: `Nova tarefa: ${newTask.title || "sem título"}`, body: summary, link: "/tarefas" });
+        await notifyAssignee(db, newTask.assignee?.name, {
+          kind: "task",
+          title: `Tarefa para você: ${newTask.title || "sem título"}`,
+          body: [summary, newTask.desc].filter(Boolean).join(" — "),
+          link: "/tarefas",
+        });
+      } catch (err) {
+        console.warn("Notification warning on task add:", err);
+      }
+
+      return { success: true, task: newTask, tasks: db.tasks };
     } catch (e: any) {
+      console.error("Failed to add task:", e);
       return { success: false, error: e.message };
     }
   });
@@ -125,15 +136,17 @@ export const updateTask = createServerFn({ method: "POST" })
       db.tasks[index] = { ...db.tasks[index], ...data };
       await writeDb(db);
       const t = db.tasks[index];
-      if (t.assignee?.name && t.assignee.name !== before) {
-        await notifyAssignee(db, t.assignee.name, {
-          kind: "task",
-          title: `Tarefa atribuída a você: ${t.title || "sem título"}`,
-          body: [taskSummary(t), t.desc].filter(Boolean).join(" — "),
-          link: "/tarefas",
-        });
-      }
-      return { success: true, task: db.tasks[index] };
+      try {
+        if (t.assignee?.name && t.assignee.name !== before) {
+          await notifyAssignee(db, t.assignee.name, {
+            kind: "task",
+            title: `Tarefa atribuída a você: ${t.title || "sem título"}`,
+            body: [taskSummary(t), t.desc].filter(Boolean).join(" — "),
+            link: "/tarefas",
+          });
+        }
+      } catch {}
+      return { success: true, task: db.tasks[index], tasks: db.tasks };
     } catch (e: any) {
       return { success: false, error: e.message };
     }
@@ -144,10 +157,10 @@ export const deleteTask = createServerFn({ method: "POST" })
   .handler(async ({ data: id }) => {
     try {
       const db = await readDb();
-      if (!db.tasks) return { success: true };
+      if (!db.tasks) return { success: true, tasks: [] };
       db.tasks = db.tasks.filter((p: any) => p.id !== id);
       await writeDb(db);
-      return { success: true };
+      return { success: true, tasks: db.tasks };
     } catch (e: any) {
       return { success: false, error: e.message };
     }

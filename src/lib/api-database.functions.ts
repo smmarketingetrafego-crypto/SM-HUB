@@ -55,7 +55,7 @@ export const getDatabaseStats = createServerFn({ method: "GET" }).handler(async 
     dbFilename: DB_FILENAME,
     fileSizeBytes,
     lastModified,
-    googleDriveConnected: !!(process.env['GOOGLE_DRIVE_API_KEY'] || db.integrations?.google?.connected || true),
+    googleDriveConnected: !!(process.env['GOOGLE_DRIVE_API_KEY'] || (db.integrations?.google?.connected && db.integrations?.google?.accountEmail)),
     counts: {
       clients: Array.isArray(db.clients) ? db.clients.length : 0,
       pipelines: Array.isArray(db.pipelines) ? db.pipelines.length : 0,

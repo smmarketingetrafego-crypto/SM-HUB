@@ -439,7 +439,18 @@
       "link": "/briefing/brf-002"
     }
   ],
-  "integrations": {},
+  "integrations": {
+    "google": {
+      "connected": false,
+      "authMethod": "google",
+      "accountEmail": "",
+      "updatedAt": "2026-10-28T16:30:50.106Z"
+    },
+    "whatsapp": {
+      "connected": false,
+      "phone": ""
+    }
+  },
   "collaborators": [],
   "agencyProfile": {
     "razaoSocial": "SM Hub Agência",

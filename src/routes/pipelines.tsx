@@ -1,5 +1,6 @@
 import { getCollaborators } from "@/lib/api-colaboradores.functions";
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { createFileRoute, Link } from '@tanstack/react-router';
+import { useServerFn } from '@tanstack/react-start';
 import {
   Plus, TrendingUp, Search, CalendarClock, MoreHorizontal,
   RefreshCw, Users, Trophy, XCircle, DollarSign, CheckSquare,
@@ -40,12 +41,21 @@ export const Route = createFileRoute("/pipelines")({
 type NewLeadForm = { name: string; email: string; phone: string; value: string; stage: string; owner?: string };
 
 function PipelinesPage() {
-  const { data: colabs = [] } = useQuery({ queryKey: ["collaborators"], queryFn: () => getCollaborators() });
-  const sellers = (colabs as any[]).map((c) => c.name).filter(Boolean) as string[];
   const queryClient = useQueryClient();
+  const getColabsFn = useServerFn(getCollaborators);
+  const getPipelinesFn = useServerFn(getPipelines);
+  const addDealFn = useServerFn(addLeadDeal);
+  const moveDealFn = useServerFn(moveLeadDeal);
+  const removeDealFn = useServerFn(removeLeadDeal);
+  const removeBatchFn = useServerFn(removeBatchDeals);
+  const addPipelineFn = useServerFn(addPipeline);
+
+  const { data: colabs = [] } = useQuery({ queryKey: ["collaborators"], queryFn: () => getColabsFn() });
+  const sellers = (colabs as any[]).map((c) => c.name).filter(Boolean) as string[];
+
   const { data: pipelines = [] } = useQuery({
     queryKey: ['pipelines'],
-    queryFn: () => getPipelines(),
+    queryFn: () => getPipelinesFn(),
   });
 
   const [activeId, setActiveId] = useState("");
@@ -65,10 +75,13 @@ function PipelinesPage() {
   const allDeals = pipeline?.stages.flatMap((s: any) => s.deals) ?? [];
 
   const addDealMutation = useMutation({
-    mutationFn: async (payload: { pipelineId: string; stageName: string; deal: any }) => addLeadDeal({ data: payload }),
+    mutationFn: async (payload: { pipelineId: string; stageName: string; deal: any }) => addDealFn({ data: payload }),
     onSuccess: (res) => {
       if (res.success) {
         toast.success(`Lead adicionado com sucesso!`);
+        if (res.pipelines) {
+          queryClient.setQueryData(['pipelines'], res.pipelines);
+        }
         queryClient.invalidateQueries({ queryKey: ['pipelines'] });
         setNewLead({ name: "", email: "", phone: "", value: "", stage: "" });
         setAddLeadOpen(false);
@@ -77,29 +90,38 @@ function PipelinesPage() {
   });
 
   const moveDealMutation = useMutation({
-    mutationFn: async (payload: { pipelineId: string; fromStage: string; toStage: string; clientName: string }) => moveLeadDeal({ data: payload }),
+    mutationFn: async (payload: { pipelineId: string; fromStage: string; toStage: string; clientName: string }) => moveDealFn({ data: payload }),
     onSuccess: (res) => {
       if (res.success) {
+        if (res.pipelines) {
+          queryClient.setQueryData(['pipelines'], res.pipelines);
+        }
         queryClient.invalidateQueries({ queryKey: ['pipelines'] });
       } else toast.error("Erro: " + res.error);
     }
   });
 
   const removeDealMutation = useMutation({
-    mutationFn: async (payload: { pipelineId: string; stageName: string; clientName: string }) => removeLeadDeal({ data: payload }),
+    mutationFn: async (payload: { pipelineId: string; stageName: string; clientName: string }) => removeDealFn({ data: payload }),
     onSuccess: (res) => {
       if (res.success) {
         toast.success("Lead removido.");
+        if (res.pipelines) {
+          queryClient.setQueryData(['pipelines'], res.pipelines);
+        }
         queryClient.invalidateQueries({ queryKey: ['pipelines'] });
       } else toast.error("Erro: " + res.error);
     }
   });
 
   const removeBatchMutation = useMutation({
-    mutationFn: async (payload: { pipelineId: string; selectedKeys: string[] }) => removeBatchDeals({ data: payload }),
+    mutationFn: async (payload: { pipelineId: string; selectedKeys: string[] }) => removeBatchFn({ data: payload }),
     onSuccess: (res) => {
       if (res.success) {
         toast.success(`${selected.length} lead(s) removido(s)`);
+        if (res.pipelines) {
+          queryClient.setQueryData(['pipelines'], res.pipelines);
+        }
         queryClient.invalidateQueries({ queryKey: ['pipelines'] });
         setSelected([]);
       } else toast.error("Erro: " + res.error);
@@ -107,10 +129,13 @@ function PipelinesPage() {
   });
 
   const addPipelineMutation = useMutation({
-    mutationFn: async (name: string) => addPipeline({ data: { name } }),
+    mutationFn: async (name: string) => addPipelineFn({ data: { name } }),
     onSuccess: (res) => {
       if (res.success) {
         toast.success(`Funil "${res.pipeline.name}" criado!`);
+        if (res.pipelines) {
+          queryClient.setQueryData(['pipelines'], res.pipelines);
+        }
         queryClient.invalidateQueries({ queryKey: ['pipelines'] });
         setActiveId(res.pipeline.id);
         setNewPipelineName("");

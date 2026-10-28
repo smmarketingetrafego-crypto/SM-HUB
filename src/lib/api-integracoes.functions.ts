@@ -6,7 +6,7 @@ export interface WhatsAppConnection {
   phone?: string;
   deviceName?: string;
   connectedAt?: string;
-  mode?: "qrcode" | "phone";
+  mode?: "qrcode" | "phone" | "direct" | "gateway" | "meta_cloud";
   qrCodeData?: string;
 }
 
@@ -124,13 +124,63 @@ export const getExternalStatus = createServerFn({ method: "GET" }).handler(async
   const db = await readDb();
   const integrations = db.integrations || {};
   return {
-    asaasConfigured: !!(process.env['ASAAS_API_KEY'] || integrations.asaas?.connected),
-    webhookConfigured: !!(process.env['ASAAS_WEBHOOK_TOKEN'] || integrations.asaas?.connected),
-    emailConfigured: !!(process.env['RESEND_API_KEY'] || integrations.email?.connected),
-    aiConfigured: !!(process.env['LOVABLE_API_KEY'] || integrations.openai?.connected || integrations.claude?.connected || integrations.google?.connected),
-    driveConnected: true,
+    asaasConfigured: !!(process.env['ASAAS_API_KEY'] || (integrations.asaas?.connected && (integrations.asaas?.apiKey || integrations.asaas?.accountEmail))),
+    webhookConfigured: !!(process.env['ASAAS_WEBHOOK_TOKEN'] || (integrations.asaas?.connected && integrations.asaas?.webhookToken)),
+    emailConfigured: !!(process.env['RESEND_API_KEY'] || (integrations.email?.connected && integrations.email?.apiKey)),
+    aiConfigured: !!(
+      process.env['OPENAI_API_KEY'] ||
+      process.env['LOVABLE_API_KEY'] ||
+      process.env['DEEPSEEK_API_KEY'] ||
+      (integrations.openai?.connected && (integrations.openai?.apiKey || integrations.openai?.accountEmail)) ||
+      (integrations.claude?.connected && (integrations.claude?.apiKey || integrations.claude?.accountEmail)) ||
+      (integrations.deepseek?.connected && (integrations.deepseek?.apiKey || integrations.deepseek?.accountEmail)) ||
+      (integrations.google?.connected && integrations.google?.apiKey)
+    ),
+    driveConnected: !!(process.env['GOOGLE_DRIVE_API_KEY'] || (integrations.google?.connected && integrations.google?.accountEmail)),
   };
 });
+
+export const testAsaasConnection = createServerFn({ method: "POST" })
+  .validator((p: { apiKey: string; environment?: "production" | "sandbox" }) => p)
+  .handler(async ({ data }) => {
+    try {
+      const baseUrl = data.environment === "sandbox" ? "https://sandbox.asaas.com/api/v3" : "https://api.asaas.com/v3";
+      const res = await fetch(`${baseUrl}/finance/balance`, {
+        headers: { "access_token": data.apiKey }
+      });
+      if (res.ok) {
+        const json = await res.json();
+        return { success: true, balance: json.balance };
+      }
+      return { success: false, error: "Chave inválida ou não autorizada no Asaas." };
+    } catch (e: any) {
+      return { success: false, error: e.message || "Erro de conexão com Asaas." };
+    }
+  });
+
+export const testAiKey = createServerFn({ method: "POST" })
+  .validator((p: { provider: string; apiKey: string }) => p)
+  .handler(async ({ data }) => {
+    try {
+      if (data.provider === 'openai') {
+        const res = await fetch('https://api.openai.com/v1/models', {
+          headers: { 'Authorization': `Bearer ${data.apiKey}` }
+        });
+        if (res.ok) return { success: true };
+        return { success: false, error: 'Chave de API OpenAI inválida ou sem permissão.' };
+      }
+      if (data.provider === 'deepseek') {
+        const res = await fetch('https://api.deepseek.com/models', {
+          headers: { 'Authorization': `Bearer ${data.apiKey}` }
+        });
+        if (res.ok) return { success: true };
+        return { success: false, error: 'Chave de API DeepSeek inválida.' };
+      }
+      return { success: true };
+    } catch (e: any) {
+      return { success: false, error: e.message || 'Falha ao validar chave.' };
+    }
+  });
 
 export const saveIntegration = createServerFn({ method: "POST" })
   .validator((p: { service: string; data: unknown }) => p)
@@ -196,4 +246,22 @@ export const pairWhatsAppWithPhone = createServerFn({ method: "POST" })
       pairingCode,
       phone,
     };
+  });
+
+export const testWhatsAppGateway = createServerFn({ method: "POST" })
+  .validator((p: { gatewayUrl: string; apiKey?: string; instanceName?: string }) => p)
+  .handler(async ({ data }) => {
+    try {
+      const url = data.gatewayUrl.replace(/\/+$/, '');
+      const res = await fetch(`${url}/instance/connectionState/${data.instanceName || 'default'}`, {
+        headers: data.apiKey ? { "apikey": data.apiKey } : {}
+      });
+      if (res.ok) {
+        const json = await res.json();
+        return { success: true, state: json };
+      }
+      return { success: false, error: "Instância não respondeu ou credenciais inválidas." };
+    } catch (e: any) {
+      return { success: false, error: "Não foi possível conectar ao endereço do gateway informado." };
+    }
   });

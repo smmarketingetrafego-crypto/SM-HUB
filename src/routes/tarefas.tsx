@@ -1,4 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router';
+import { useServerFn } from '@tanstack/react-start';
 import { PageHeader } from "@/components/layout/page-header";
 import { TutorialBanner } from "@/components/layout/tutorial-banner";
 import {
@@ -64,6 +65,13 @@ const STATUS_COLUMNS = [
 
 function TarefasPage() {
   const queryClient = useQueryClient();
+  const getTasksFn = useServerFn(getTasks);
+  const addTaskFn = useServerFn(addTask);
+  const updateTaskFn = useServerFn(updateTask);
+  const deleteTaskFn = useServerFn(deleteTask);
+  const getProjectsFn = useServerFn(getProjects);
+  const getCollaboratorsFn = useServerFn(getCollaborators);
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [assigneeFilter, setAssigneeFilter] = useState<string>("todos");
@@ -71,17 +79,17 @@ function TarefasPage() {
 
   const { data: tasks = [] } = useQuery({
     queryKey: ['tasks'],
-    queryFn: () => getTasks()
+    queryFn: () => getTasksFn()
   });
 
   const { data: projects = [] } = useQuery({
     queryKey: ['projects'],
-    queryFn: () => getProjects()
+    queryFn: () => getProjectsFn()
   });
 
   const { data: collaborators = [] } = useQuery({
     queryKey: ['collaborators'],
-    queryFn: () => getCollaborators()
+    queryFn: () => getCollaboratorsFn()
   });
 
   const teamMembers = useMemo(() => {
@@ -109,10 +117,15 @@ function TarefasPage() {
   });
 
   const addTaskMutation = useMutation({
-    mutationFn: async (data: any) => addTask({ data }),
+    mutationFn: async (data: any) => addTaskFn({ data }),
     onSuccess: (res) => {
       if (res.success) {
-        toast.success("Tarefa criada!");
+        toast.success("Tarefa criada com sucesso!");
+        if (res.tasks) {
+          queryClient.setQueryData(['tasks'], res.tasks);
+        } else if (res.task) {
+          queryClient.setQueryData(['tasks'], (prev: any) => [res.task, ...(prev || [])]);
+        }
         queryClient.invalidateQueries({ queryKey: ['tasks'] });
         setIsModalOpen(false);
       } else toast.error("Erro: " + res.error);
@@ -120,10 +133,15 @@ function TarefasPage() {
   });
 
   const updateTaskMutation = useMutation({
-    mutationFn: async (data: any) => updateTask({ data }),
+    mutationFn: async (data: any) => updateTaskFn({ data }),
     onSuccess: (res) => {
       if (res.success) {
         toast.success("Tarefa atualizada!");
+        if (res.tasks) {
+          queryClient.setQueryData(['tasks'], res.tasks);
+        } else if (res.task) {
+          queryClient.setQueryData(['tasks'], (prev: any) => (prev || []).map((t: any) => t.id === res.task.id ? res.task : t));
+        }
         queryClient.invalidateQueries({ queryKey: ['tasks'] });
         setIsModalOpen(false);
       } else toast.error("Erro: " + res.error);
@@ -131,10 +149,15 @@ function TarefasPage() {
   });
 
   const deleteTaskMutation = useMutation({
-    mutationFn: async (id: string) => deleteTask({ data: id }),
-    onSuccess: (res) => {
+    mutationFn: async (id: string) => deleteTaskFn({ data: id }),
+    onSuccess: (res, deletedId) => {
       if (res.success) {
         toast.success("Tarefa removida!");
+        if (res.tasks) {
+          queryClient.setQueryData(['tasks'], res.tasks);
+        } else {
+          queryClient.setQueryData(['tasks'], (prev: any) => (prev || []).filter((t: any) => t.id !== deletedId));
+        }
         queryClient.invalidateQueries({ queryKey: ['tasks'] });
         setIsModalOpen(false);
       } else toast.error("Erro: " + res.error);
@@ -221,11 +244,13 @@ function TarefasPage() {
 
   // Filtragem
   const filteredTasks = useMemo(() => {
-    return tasks.filter((t) => {
+    return (tasks || []).filter((t) => {
+      const q = searchQuery.toLowerCase().trim();
       const matchesSearch =
-        t.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (t.desc && t.desc.toLowerCase().includes(searchQuery.toLowerCase())) ||
-        (t.assignee?.name && t.assignee.name.toLowerCase().includes(searchQuery.toLowerCase()));
+        !q ||
+        (t.title && t.title.toLowerCase().includes(q)) ||
+        (t.desc && t.desc.toLowerCase().includes(q)) ||
+        (t.assignee?.name && t.assignee.name.toLowerCase().includes(q));
 
       if (!matchesSearch) return false;
 
@@ -243,7 +268,7 @@ function TarefasPage() {
 
   const columnsWithTasks = STATUS_COLUMNS.map((col) => ({
     ...col,
-    tasks: filteredTasks.filter((t) => t.status === col.id)
+    tasks: filteredTasks.filter((t) => (t.status || "").toLowerCase().trim() === col.id.toLowerCase().trim())
   }));
 
   const getPriorityBadgeClass = (priority?: string) => {
