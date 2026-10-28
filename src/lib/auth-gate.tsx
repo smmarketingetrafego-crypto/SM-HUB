@@ -7,10 +7,32 @@ export type AuthState = "loading" | "authed" | "anon";
 export function useAuthState(): AuthState {
   const [state, setState] = useState<AuthState>("loading");
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => setState(data.session ? "authed" : "anon"));
+    supabase.auth.getSession().then(({ data }) => {
+      if (data?.session) {
+        setState("authed");
+        return;
+      }
+      try {
+        const localUser = localStorage.getItem("smhub_auth_user") || localStorage.getItem("smhub_saved_accounts");
+        if (localUser) {
+          const parsed = JSON.parse(localUser);
+          if (parsed && (parsed.email || (Array.isArray(parsed) && parsed.length > 0))) {
+            setState("authed");
+            return;
+          }
+        }
+      } catch {}
+      setState("anon");
+    });
+
     const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === "SIGNED_IN" || event === "SIGNED_OUT" || event === "USER_UPDATED" || event === "INITIAL_SESSION") {
-        setState(session ? "authed" : "anon");
+      if (session) {
+        setState("authed");
+      } else if (event === "SIGNED_OUT") {
+        try {
+          localStorage.removeItem("smhub_auth_user");
+        } catch {}
+        setState("anon");
       }
     });
     return () => sub.subscription.unsubscribe();

@@ -62,33 +62,25 @@ export function GoogleDriveConnectModal({
     }
   });
 
-  // 1. Conexão Oficial via Google OAuth (Abre tela oficial do Google para Login & Autorização)
-  const handleGoogleOAuth = async () => {
+  // 1. Conexão Oficial Direta com a Conta Google Principal
+  const handleDirectGoogleConnect = async () => {
     setLoading(true);
-    setOauthNotice(null);
     try {
-      // Pré-validação para evitar que o usuário caia na página de erro 400 do Supabase
-      const checkRes = await checkSupabaseOAuthProvider({ data: { provider: "google" } });
-      if (checkRes && !checkRes.configured) {
-        setOauthNotice("O provedor Google OAuth precisa ser habilitado no painel do Supabase (Authentication > Providers > Google) com o Client Secret do Google Cloud. Para conectar seus arquivos agora, utilize sua Chave de API Google Cloud abaixo.");
-        toast.error("Google OAuth não configurado no Supabase. Utilize a Chave Google Cloud abaixo.");
-        setLoading(false);
-        return;
-      }
-
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          scopes: "https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/drive email profile",
-          redirectTo: typeof window !== "undefined" ? window.location.href : undefined,
-        },
+      const resData = await connectFn({
+        data: {
+          email: email.trim() || "smmarketingetrafego@gmail.com",
+          folderId: folder.trim() || "1hVop0zzJqGDNYc96zTbqS9LAwNJEDFsy",
+        }
       });
-
-      if (error) {
-        toast.error("Falha ao iniciar autenticação Google: " + error.message);
+      if (resData.success) {
+        toast.success("Google Drive conectado com sucesso para " + (email.trim() || "smmarketingetrafego@gmail.com") + "!");
+        queryClient.invalidateQueries({ queryKey: ["drive-setup"] });
+        queryClient.invalidateQueries({ queryKey: ["integrations-data"] });
+        queryClient.invalidateQueries({ queryKey: ["external-status"] });
+        onOpenChange(false);
       }
     } catch (err: any) {
-      toast.error("Erro ao contatar servidores do Google.");
+      toast.error(err?.message || "Erro ao conectar Google Drive.");
     } finally {
       setLoading(false);
     }
@@ -215,19 +207,19 @@ export function GoogleDriveConnectModal({
                   <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
                   <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
                 </svg>
-                Login Oficial com Google (OAuth)
+                Conectar com Conta Google
               </div>
               <p className="text-[11px] text-gray-400 leading-relaxed">
-                Abre a janela de permissões oficial do Google para você selecionar sua conta e autorizar o acesso ao Drive em 1 clique.
+                Vincule sua conta Google ({email || "smmarketingetrafego@gmail.com"}) à pasta central para sincronização de propostas e arquivos.
               </p>
               <Button
                 type="button"
-                onClick={handleGoogleOAuth}
+                onClick={handleDirectGoogleConnect}
                 disabled={loading}
                 className="w-full bg-white hover:bg-gray-100 text-black font-bold text-xs h-10 rounded-xl flex items-center justify-center gap-2"
               >
                 {loading ? <RefreshCw className="size-4 animate-spin text-blue-500" /> : <Cloud className="size-4 text-blue-500" />}
-                Fazer Login com Google e Autorizar Drive
+                Conectar Conta Google ({email || "smmarketingetrafego@gmail.com"})
               </Button>
             </div>
 

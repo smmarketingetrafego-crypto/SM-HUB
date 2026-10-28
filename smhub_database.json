@@ -147,8 +147,52 @@
       "history": []
     }
   ],
-  "whatsapp": [],
-  "clients": [],
+  "whatsapp": [
+    {
+      "id": "msg_init_1",
+      "contactId": "client_sos_protecao",
+      "contactName": "Sos Proteção Veicular",
+      "phone": "(99) 98550-1962",
+      "text": "Olá Silas! Gostaria de consultar a proposta comercial para a nossa frota.",
+      "sender": "client",
+      "timestamp": "14:20",
+      "status": "read",
+      "isAutomation": false
+    },
+    {
+      "id": "msg_init_2",
+      "contactId": "client_sos_protecao",
+      "contactName": "Sos Proteção Veicular",
+      "phone": "(99) 98550-1962",
+      "text": "Olá! Perfeito, já estou preparando a proposta detalhada aqui no SM Hub.",
+      "sender": "me",
+      "timestamp": "14:22",
+      "status": "sent",
+      "isAutomation": false
+    }
+  ],
+  "clients": [
+    {
+      "id": "client_sos_protecao",
+      "name": "Sos Proteção Veicular",
+      "phone": "(99) 98550-1962",
+      "email": "contato@sosprotecaoveicular.com.br",
+      "company": "Sos Proteção Veicular",
+      "status": "active",
+      "createdAt": "2026-10-28T23:36:25.357Z",
+      "source": "WhatsApp"
+    },
+    {
+      "id": "client_silas_maroto",
+      "name": "Silas Maroto",
+      "phone": "(99) 98550-1962",
+      "email": "smmarketingetrafego@gmail.com",
+      "company": "SM Hub",
+      "status": "active",
+      "createdAt": "2026-10-28T23:36:25.357Z",
+      "source": "Admin"
+    }
+  ],
   "clientGroups": [],
   "pipelines": [
     {
@@ -402,7 +446,7 @@
       "connected": false,
       "authMethod": "google",
       "accountEmail": "",
-      "updatedAt": "2026-10-28T23:23:39.687Z"
+      "updatedAt": "2026-10-28T23:39:53.644Z"
     },
     "whatsapp": {
       "connected": false,
@@ -476,5 +520,6 @@
       "caption": "Mais um resultado expressivo gerado este mês com ROAS de 6.4x!",
       "client": "João Pereira"
     }
-  ]
+  ],
+  "drive_folder_id": "1hVop0zzJqGDNYc96zTbqS9LAwNJEDFsy"
 }

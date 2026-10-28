@@ -32,7 +32,9 @@ export function WhatsAppConnectModal({ open, onOpenChange, connection }: WhatsAp
   const testGatewayFn = useServerFn(testWhatsAppGateway);
   const fetchQrFn = useServerFn(fetchRealWhatsAppQrCode);
 
-  const [activeTab, setActiveTab] = useState<"gateway" | "meta" | "web">("gateway");
+  const [activeTab, setActiveTab] = useState<"direct" | "gateway" | "meta" | "web">("direct");
+  const [directPhone, setDirectPhone] = useState("(99) 98550-1962");
+  const [directName, setDirectName] = useState("WhatsApp Comercial");
   
   // Gateway (Evolution API, Z-API, WPPConnect)
   const [gatewayUrl, setGatewayUrl] = useState("");
@@ -178,6 +180,20 @@ export function WhatsAppConnectModal({ open, onOpenChange, connection }: WhatsAp
     }
   };
 
+  const handleConnectDirect = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!directPhone.trim()) {
+      toast.error("Informe seu número de WhatsApp comercial.");
+      return;
+    }
+    setLoading(true);
+    connectMutation.mutate({
+      phone: directPhone.trim(),
+      deviceName: directName.trim() || "WhatsApp Comercial",
+      mode: "direct",
+    }, { onSettled: () => setLoading(false) });
+  };
+
   const handleConnectMeta = (e: React.FormEvent) => {
     e.preventDefault();
     if (!metaPhoneId.trim() || !metaToken.trim()) {
@@ -244,17 +260,63 @@ export function WhatsAppConnectModal({ open, onOpenChange, connection }: WhatsAp
           </div>
         ) : (
           <Tabs value={activeTab} onValueChange={(v: any) => setActiveTab(v)} className="w-full pt-1">
-            <TabsList className="grid grid-cols-3 bg-black/40 p-1 rounded-xl border border-white/5 mb-4">
+            <TabsList className="grid grid-cols-4 bg-black/40 p-1 rounded-xl border border-white/5 mb-4">
+              <TabsTrigger value="direct" className="text-xs font-semibold">
+                <MessageCircle className="size-3.5 mr-1" /> Atendimento
+              </TabsTrigger>
               <TabsTrigger value="gateway" className="text-xs font-semibold">
-                <Server className="size-3.5 mr-1" /> QR Code / Gateway
+                <Server className="size-3.5 mr-1" /> QR Code
               </TabsTrigger>
               <TabsTrigger value="meta" className="text-xs font-semibold">
-                <Globe className="size-3.5 mr-1" /> Meta Cloud API
+                <Globe className="size-3.5 mr-1" /> Meta Cloud
               </TabsTrigger>
               <TabsTrigger value="web" className="text-xs font-semibold">
-                <ExternalLink className="size-3.5 mr-1" /> WhatsApp Web
+                <ExternalLink className="size-3.5 mr-1" /> Web
               </TabsTrigger>
             </TabsList>
+
+            {/* Tab 0: Atendimento Direto no Sistema */}
+            <TabsContent value="direct" className="space-y-4 focus-visible:outline-none">
+              <div className="p-3 bg-emerald-950/20 border border-emerald-500/20 rounded-2xl text-xs text-emerald-300 space-y-1">
+                <div className="flex items-center gap-1.5 font-bold">
+                  <ShieldCheck className="size-3.5" /> Atendimento Direto no SM Hub
+                </div>
+                <p className="text-[11px] text-gray-400 leading-relaxed">
+                  Conecte seu WhatsApp comercial para conversar com clientes em tempo real, enviar propostas e disparar cobranças Pix direto pelo sistema.
+                </p>
+              </div>
+
+              <form onSubmit={handleConnectDirect} className="space-y-3">
+                <div className="space-y-1">
+                  <Label className="text-xs text-gray-300">Número do WhatsApp Comercial</Label>
+                  <Input
+                    placeholder="(99) 98550-1962"
+                    value={directPhone}
+                    onChange={(e) => setDirectPhone(e.target.value)}
+                    className="bg-black/60 border-white/10 text-white text-xs font-mono h-10 rounded-xl"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <Label className="text-xs text-gray-300">Nome do Canal</Label>
+                  <Input
+                    placeholder="Ex: WhatsApp Comercial"
+                    value={directName}
+                    onChange={(e) => setDirectName(e.target.value)}
+                    className="bg-black/60 border-white/10 text-white text-xs h-10 rounded-xl"
+                  />
+                </div>
+
+                <Button
+                  type="submit"
+                  disabled={loading || !directPhone.trim()}
+                  className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs h-10 rounded-xl"
+                >
+                  {loading ? <RefreshCw className="size-3.5 animate-spin mr-1.5" /> : <MessageCircle className="size-3.5 mr-1.5" />}
+                  Conectar Atendimento Direto
+                </Button>
+              </form>
+            </TabsContent>
 
             {/* Tab 1: Evolution API / Z-API Gateway (QR Code Real escaneável pelo celular) */}
             <TabsContent value="gateway" className="space-y-4 focus-visible:outline-none">
