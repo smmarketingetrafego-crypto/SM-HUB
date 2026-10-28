@@ -1,17 +1,18 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { 
-  Sparkles, Check, ShieldCheck, RefreshCw, Zap
+  Sparkles, Check, ShieldCheck, RefreshCw, PowerOff, Key, ExternalLink, Bot
 } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { 
   saveIntegration, 
   disconnectIntegration, 
+  testAiKey,
   type IntegrationsData 
 } from "@/lib/api-integracoes.functions";
 
@@ -19,431 +20,332 @@ interface AIConnectModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   integrations?: IntegrationsData;
-  initialProvider?: "google" | "openai" | "claude" | "deepseek";
+  initialProvider?: string;
 }
 
-export function AIConnectModal({ open, onOpenChange, integrations, initialProvider = "google" }: AIConnectModalProps) {
+export function AIConnectModal({ open, onOpenChange, integrations, initialProvider }: AIConnectModalProps) {
   const queryClient = useQueryClient();
-  const [activeTab, setActiveTab] = useState<"simple" | "advanced">("simple");
-  const [loadingProvider, setLoadingProvider] = useState<string | null>(null);
+  const saveFn = useServerFn(saveIntegration);
+  const disconnectFn = useServerFn(disconnectIntegration);
+  const testKeyFn = useServerFn(testAiKey);
 
-  // Simple direct inputs
-  const [googleEmail, setGoogleEmail] = useState(integrations?.google?.accountEmail || "smmarketingetrafego@gmail.com");
-  const [openaiEmail, setOpenaiEmail] = useState(integrations?.openai?.accountEmail || "");
-  const [claudeEmail, setClaudeEmail] = useState(integrations?.claude?.accountEmail || "");
-  const [deepseekEmail, setDeepseekEmail] = useState(integrations?.deepseek?.accountEmail || "");
-
-  // Advanced developer inputs
   const [openaiKey, setOpenaiKey] = useState(integrations?.openai?.apiKey || "");
-  const [claudeKey, setClaudeKey] = useState(integrations?.claude?.apiKey || "");
   const [deepseekKey, setDeepseekKey] = useState(integrations?.deepseek?.apiKey || "");
+  const [claudeKey, setClaudeKey] = useState(integrations?.claude?.apiKey || "");
 
-  const saveMutation = useMutation({
-    mutationFn: async (payload: { service: string; data: any }) => saveIntegration({ data: payload }),
-    onSuccess: (res, vars) => {
-      toast.success(`Integração com ${vars.service.toUpperCase()} conectada!`);
-      if (typeof window !== 'undefined') {
+  const [testingProvider, setTestingProvider] = useState<string | null>(null);
+
+  const isOpenaiConnected = Boolean(integrations?.openai?.connected && integrations?.openai?.apiKey);
+  const isDeepseekConnected = Boolean(integrations?.deepseek?.connected && integrations?.deepseek?.apiKey);
+  const isClaudeConnected = Boolean(integrations?.claude?.connected && integrations?.claude?.apiKey);
+
+  // Test and Connect
+  const handleTestAndConnect = async (provider: "openai" | "deepseek" | "claude", keyToTest: string, defaultModel: string) => {
+    const trimmed = keyToTest.trim();
+    if (!trimmed) {
+      toast.error(`Informe a chave de API oficial para ${provider.toUpperCase()}.`);
+      return;
+    }
+
+    setTestingProvider(provider);
+    try {
+      const result = await testKeyFn({
+        data: {
+          provider,
+          apiKey: trimmed,
+        }
+      });
+
+      if (!result.success) {
+        toast.error(result.error || `Chave de API ${provider.toUpperCase()} inválida.`);
+        return;
+      }
+
+      // Salva no banco de dados
+      await saveFn({
+        data: {
+          service: provider,
+          data: {
+            apiKey: trimmed,
+            defaultModel,
+            authMethod: "apikey",
+            connected: true,
+          }
+        }
+      });
+
+      if (typeof window !== "undefined") {
         try {
-          const current = JSON.parse(localStorage.getItem('smhub_integrations') || '{}');
-          current[vars.service] = {
-            ...(current[vars.service] || {}),
-            ...vars.data,
+          const current = JSON.parse(localStorage.getItem("smhub_integrations") || "{}");
+          current[provider] = {
+            ...(current[provider] || {}),
+            apiKey: trimmed,
+            defaultModel,
+            authMethod: "apikey",
             connected: true,
             updatedAt: new Date().toISOString(),
           };
-          localStorage.setItem('smhub_integrations', JSON.stringify(current));
+          localStorage.setItem("smhub_integrations", JSON.stringify(current));
         } catch {}
       }
-      queryClient.invalidateQueries({ queryKey: ['integrations-data'] });
-      queryClient.invalidateQueries({ queryKey: ['integrations'] });
-      queryClient.invalidateQueries({ queryKey: ['external-status'] });
-      queryClient.invalidateQueries({ queryKey: ['drive-setup'] });
-      queryClient.invalidateQueries({ queryKey: ['agents'] });
-      setLoadingProvider(null);
-    }
-  });
 
-  const disconnectMutation = useMutation({
-    mutationFn: async (service: string) => disconnectIntegration({ data: service }),
-    onSuccess: (res, service) => {
-      toast.info(`Integração com ${service.toUpperCase()} desconectada.`);
-      if (typeof window !== 'undefined') {
+      queryClient.invalidateQueries({ queryKey: ["integrations-data"] });
+      queryClient.invalidateQueries({ queryKey: ["integrations"] });
+      queryClient.invalidateQueries({ queryKey: ["external-status"] });
+      queryClient.invalidateQueries({ queryKey: ["agents"] });
+
+      toast.success(`Chave ${provider.toUpperCase()} validada e conectada com sucesso!`);
+    } catch (err: any) {
+      toast.error(err?.message || `Erro ao testar chave ${provider.toUpperCase()}.`);
+    } finally {
+      setTestingProvider(null);
+    }
+  };
+
+  // Disconnect
+  const handleDisconnect = async (provider: "openai" | "deepseek" | "claude") => {
+    setTestingProvider(provider);
+    try {
+      await disconnectFn({ data: provider });
+      if (typeof window !== "undefined") {
         try {
-          const current = JSON.parse(localStorage.getItem('smhub_integrations') || '{}');
-          if (current[service]) {
-            current[service] = { connected: false };
-            localStorage.setItem('smhub_integrations', JSON.stringify(current));
+          const current = JSON.parse(localStorage.getItem("smhub_integrations") || "{}");
+          if (current[provider]) {
+            current[provider] = { connected: false, apiKey: "" };
+            localStorage.setItem("smhub_integrations", JSON.stringify(current));
           }
         } catch {}
       }
-      queryClient.invalidateQueries({ queryKey: ['integrations-data'] });
-      queryClient.invalidateQueries({ queryKey: ['integrations'] });
-      queryClient.invalidateQueries({ queryKey: ['external-status'] });
-      queryClient.invalidateQueries({ queryKey: ['drive-setup'] });
-      queryClient.invalidateQueries({ queryKey: ['agents'] });
-      setLoadingProvider(null);
-    }
-  });
+      if (provider === "openai") setOpenaiKey("");
+      if (provider === "deepseek") setDeepseekKey("");
+      if (provider === "claude") setClaudeKey("");
 
-  const handleConnectGoogleOneClick = () => {
-    const emailToUse = googleEmail.trim() || "smmarketingetrafego@gmail.com";
-    setLoadingProvider("google");
-    setTimeout(() => {
-      saveMutation.mutate({
-        service: "google",
-        data: {
-          authMethod: "google",
-          accountEmail: emailToUse,
-          accountName: emailToUse.split("@")[0] || "Conta Google Conectada",
-          planName: "Google Workspace & Drive",
-        }
-      });
-    }, 400);
-  };
+      queryClient.invalidateQueries({ queryKey: ["integrations-data"] });
+      queryClient.invalidateQueries({ queryKey: ["integrations"] });
+      queryClient.invalidateQueries({ queryKey: ["external-status"] });
+      queryClient.invalidateQueries({ queryKey: ["agents"] });
 
-  const handleConnectOpenAISimple = () => {
-    if (!openaiEmail.trim()) {
-      toast.error("Informe o e-mail da sua conta ChatGPT/OpenAI");
-      return;
+      toast.info(`Integração com ${provider.toUpperCase()} desconectada.`);
+    } catch (err: any) {
+      toast.error(err?.message || `Erro ao desconectar ${provider.toUpperCase()}.`);
+    } finally {
+      setTestingProvider(null);
     }
-    setLoadingProvider("openai");
-    setTimeout(() => {
-      saveMutation.mutate({
-        service: "openai",
-        data: {
-          authMethod: "account",
-          accountEmail: openaiEmail.trim(),
-          defaultModel: "gpt-4o",
-          planName: "ChatGPT Plus / Conexão Direta",
-        }
-      });
-    }, 600);
-  };
-
-  const handleConnectClaudeSimple = () => {
-    if (!claudeEmail.trim()) {
-      toast.error("Informe o e-mail da sua conta Claude/Anthropic");
-      return;
-    }
-    setLoadingProvider("claude");
-    setTimeout(() => {
-      saveMutation.mutate({
-        service: "claude",
-        data: {
-          authMethod: "account",
-          accountEmail: claudeEmail.trim(),
-          defaultModel: "claude-3-5-sonnet-20241022",
-          planName: "Claude Pro / Conexão Direta",
-        }
-      });
-    }, 600);
-  };
-
-  const handleConnectDeepSeekSimple = () => {
-    if (!deepseekEmail.trim()) {
-      toast.error("Informe o e-mail da sua conta DeepSeek");
-      return;
-    }
-    setLoadingProvider("deepseek");
-    setTimeout(() => {
-      saveMutation.mutate({
-        service: "deepseek",
-        data: {
-          authMethod: "account",
-          accountEmail: deepseekEmail.trim(),
-          defaultModel: "deepseek-chat",
-          planName: "DeepSeek V3 Inteligente",
-        }
-      });
-    }, 600);
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-[#0f0f0f] border border-white/10 text-white sm:max-w-xl p-0 rounded-2xl overflow-hidden shadow-2xl">
+      <DialogContent className="bg-[#0f0f11] border border-white/10 text-white sm:max-w-xl p-0 rounded-3xl overflow-hidden shadow-2xl">
         {/* Header */}
-        <div className="p-6 bg-gradient-to-r from-[#171717] to-[#111111] border-b border-white/10 flex items-center justify-between">
+        <div className="p-6 bg-gradient-to-r from-[#17171c] to-[#111114] border-b border-white/10 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="size-11 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center font-bold">
+            <div className="size-11 rounded-2xl bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center font-bold">
               <Sparkles className="size-6" />
             </div>
             <div>
-              <DialogTitle className="text-xl font-bold text-white flex items-center gap-2">
-                Conectar Provedores de IA
+              <DialogTitle className="text-lg font-bold text-white flex items-center gap-2">
+                Conectar Provedores de IA Reais
               </DialogTitle>
-              <p className="text-xs text-gray-400 mt-0.5">
-                Vincule seus modelos favoritos para alimentar os agentes de conteúdo e suporte.
-              </p>
+              <DialogDescription className="text-xs text-gray-400 mt-0.5">
+                Vincule suas chaves de API oficiais para alimentar os agentes de suporte, WhatsApp e propostas.
+              </DialogDescription>
             </div>
           </div>
         </div>
 
-        <div className="p-6">
-          <Tabs value={activeTab} onValueChange={(v: any) => setActiveTab(v)} className="w-full">
-            <TabsList className="grid grid-cols-2 bg-[#171717] p-1 rounded-xl border border-white/5 mb-6">
-              <TabsTrigger value="simple" className="data-[state=active]:bg-[#242424] data-[state=active]:text-white text-xs font-semibold rounded-lg py-2">
-                <Zap className="size-3.5 mr-1.5" /> Conexão Rápida
-              </TabsTrigger>
-              <TabsTrigger value="advanced" className="data-[state=active]:bg-[#242424] data-[state=active]:text-white text-xs font-semibold rounded-lg py-2">
-                <ShieldCheck className="size-3.5 mr-1.5" /> Chaves de API (Avançado)
-              </TabsTrigger>
-            </TabsList>
+        <div className="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
+          <div className="p-3 bg-purple-950/20 border border-purple-500/20 rounded-2xl text-xs text-purple-300 flex items-start gap-2.5">
+            <ShieldCheck className="size-4 shrink-0 mt-0.5 text-purple-400" />
+            <p className="leading-relaxed">
+              As conexões são validadas diretamente nos servidores oficiais da <strong>OpenAI</strong>, <strong>DeepSeek</strong> e <strong>Anthropic</strong>. Nenhuma conexão fictícia é permitida.
+            </p>
+          </div>
 
-            {/* ── Modo Rápido ── */}
-            <TabsContent value="simple" className="space-y-4 focus-visible:outline-none">
-              {/* Google Drive / Gemini */}
-              <div className="p-4 rounded-2xl bg-[#141414] border border-white/5 flex items-center justify-between gap-4">
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="size-10 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center font-bold text-base shrink-0">
-                    G
-                  </div>
-                  <div className="flex-1">
-                    <h4 className="text-sm font-bold text-white flex items-center gap-2">
-                      Google Workspace & Drive
-                      {integrations?.google?.connected && (
-                        <span className="text-[10px] font-bold bg-emerald-500/15 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/20 flex items-center gap-1">
-                          <Check className="size-3" /> Ativo
-                        </span>
-                      )}
-                    </h4>
-                    {!integrations?.google?.connected ? (
-                      <Input 
-                        value={googleEmail}
-                        onChange={(e) => setGoogleEmail(e.target.value)}
-                        placeholder="E-mail da sua conta Google (ex: smmarketingetrafego@gmail.com)"
-                        className="bg-black border-white/10 text-white text-xs h-8 mt-2 rounded-lg"
-                      />
+          {/* 1. OpenAI */}
+          <div className="p-4 rounded-2xl bg-[#141418] border border-white/10 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="size-8 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-xs">
+                  AI
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold text-white">OpenAI (ChatGPT & GPT-4o)</h4>
+                  <p className="text-[11px] text-gray-400">Usado para geração de contratos, automação e inteligência geral.</p>
+                </div>
+              </div>
+              {isOpenaiConnected ? (
+                <span className="text-[10px] font-bold bg-emerald-500/15 text-emerald-400 px-2.5 py-0.5 rounded-full border border-emerald-500/20 flex items-center gap-1">
+                  <Check className="size-3" /> Conectado
+                </span>
+              ) : (
+                <span className="text-[10px] font-bold bg-zinc-800 text-gray-400 px-2.5 py-0.5 rounded-full border border-white/5">
+                  Desconectado
+                </span>
+              )}
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-xs text-gray-300 font-medium">OpenAI API Key (sk-...)</Label>
+              <div className="flex gap-2">
+                <Input
+                  type="password"
+                  value={openaiKey}
+                  onChange={(e) => setOpenaiKey(e.target.value)}
+                  placeholder="sk-proj-..."
+                  className="bg-black/60 border-white/10 text-white font-mono text-xs h-10 rounded-xl"
+                />
+                {isOpenaiConnected ? (
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    onClick={() => handleDisconnect("openai")}
+                    disabled={testingProvider === "openai"}
+                    className="h-10 text-xs px-3 rounded-xl shrink-0"
+                  >
+                    <PowerOff className="size-3.5 mr-1" /> Desconectar
+                  </Button>
+                ) : (
+                  <Button
+                    size="sm"
+                    onClick={() => handleTestAndConnect("openai", openaiKey, "gpt-4o")}
+                    disabled={testingProvider === "openai" || !openaiKey.trim()}
+                    className="h-10 text-xs px-4 rounded-xl bg-brand text-black font-bold hover:bg-brand/90 shrink-0"
+                  >
+                    {testingProvider === "openai" ? (
+                      <RefreshCw className="size-3.5 animate-spin mr-1" />
                     ) : (
-                      <p className="text-xs text-gray-400 mt-0.5">
-                        Sincronização de arquivos e banco de dados via Google Drive.
-                      </p>
+                      <Check className="size-3.5 mr-1" />
                     )}
-                  </div>
-                </div>
-
-                {integrations?.google?.connected ? (
-                  <Button 
-                    size="sm" 
-                    variant="ghost" 
-                    onClick={() => disconnectMutation.mutate("google")}
-                    className="text-xs text-red-400 hover:bg-red-500/10 h-9 rounded-xl shrink-0"
-                  >
-                    Desconectar
-                  </Button>
-                ) : (
-                  <Button 
-                    size="sm" 
-                    onClick={handleConnectGoogleOneClick}
-                    disabled={loadingProvider === "google"}
-                    className="gradient-brand text-black font-bold text-xs h-9 px-4 rounded-xl shrink-0"
-                  >
-                    {loadingProvider === "google" ? <RefreshCw className="size-3.5 animate-spin mr-1" /> : <Check className="size-3.5 mr-1" />}
-                    Conectar Conta Google
+                    Validar & Conectar
                   </Button>
                 )}
               </div>
+            </div>
+          </div>
 
-              {/* OpenAI / ChatGPT */}
-              <div className="p-4 rounded-2xl bg-[#141414] border border-white/5 flex items-center justify-between gap-4">
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="size-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-base shrink-0">
-                    AI
-                  </div>
-                  <div className="flex-1">
-                    <h4 className="text-sm font-bold text-white flex items-center gap-2">
-                      OpenAI (GPT-4o)
-                      {integrations?.openai?.connected && (
-                        <span className="text-[10px] font-bold bg-emerald-500/15 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/20 flex items-center gap-1">
-                          <Check className="size-3" /> Conectado
-                        </span>
-                      )}
-                    </h4>
-                    {!integrations?.openai?.connected && (
-                      <Input 
-                        value={openaiEmail}
-                        onChange={(e) => setOpenaiEmail(e.target.value)}
-                        placeholder="E-mail da sua conta ChatGPT"
-                        className="bg-black border-white/10 text-white text-xs h-8 mt-2 rounded-lg"
-                      />
-                    )}
-                  </div>
+          {/* 2. DeepSeek */}
+          <div className="p-4 rounded-2xl bg-[#141418] border border-white/10 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="size-8 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center font-bold text-xs">
+                  D
                 </div>
+                <div>
+                  <h4 className="text-sm font-bold text-white">DeepSeek (V3 / R1)</h4>
+                  <p className="text-[11px] text-gray-400">Modelo ultra-rápido de baixo custo para atendimento de suporte.</p>
+                </div>
+              </div>
+              {isDeepseekConnected ? (
+                <span className="text-[10px] font-bold bg-emerald-500/15 text-emerald-400 px-2.5 py-0.5 rounded-full border border-emerald-500/20 flex items-center gap-1">
+                  <Check className="size-3" /> Conectado
+                </span>
+              ) : (
+                <span className="text-[10px] font-bold bg-zinc-800 text-gray-400 px-2.5 py-0.5 rounded-full border border-white/5">
+                  Desconectado
+                </span>
+              )}
+            </div>
 
-                {integrations?.openai?.connected ? (
-                  <Button 
-                    size="sm" 
-                    variant="ghost" 
-                    onClick={() => disconnectMutation.mutate("openai")}
-                    className="text-xs text-red-400 hover:bg-red-500/10 h-9 rounded-xl shrink-0"
+            <div className="space-y-1.5">
+              <Label className="text-xs text-gray-300 font-medium">DeepSeek API Key (sk-...)</Label>
+              <div className="flex gap-2">
+                <Input
+                  type="password"
+                  value={deepseekKey}
+                  onChange={(e) => setDeepseekKey(e.target.value)}
+                  placeholder="sk-..."
+                  className="bg-black/60 border-white/10 text-white font-mono text-xs h-10 rounded-xl"
+                />
+                {isDeepseekConnected ? (
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    onClick={() => handleDisconnect("deepseek")}
+                    disabled={testingProvider === "deepseek"}
+                    className="h-10 text-xs px-3 rounded-xl shrink-0"
                   >
-                    Desconectar
+                    <PowerOff className="size-3.5 mr-1" /> Desconectar
                   </Button>
                 ) : (
-                  <Button 
-                    size="sm" 
-                    onClick={handleConnectOpenAISimple}
-                    disabled={loadingProvider === "openai"}
-                    className="gradient-brand text-black font-bold text-xs h-9 px-4 rounded-xl shrink-0"
+                  <Button
+                    size="sm"
+                    onClick={() => handleTestAndConnect("deepseek", deepseekKey, "deepseek-chat")}
+                    disabled={testingProvider === "deepseek" || !deepseekKey.trim()}
+                    className="h-10 text-xs px-4 rounded-xl bg-brand text-black font-bold hover:bg-brand/90 shrink-0"
                   >
-                    {loadingProvider === "openai" ? <RefreshCw className="size-3.5 animate-spin mr-1" /> : <Check className="size-3.5 mr-1" />}
-                    Ativar OpenAI
+                    {testingProvider === "deepseek" ? (
+                      <RefreshCw className="size-3.5 animate-spin mr-1" />
+                    ) : (
+                      <Check className="size-3.5 mr-1" />
+                    )}
+                    Validar & Conectar
                   </Button>
                 )}
               </div>
+            </div>
+          </div>
 
-              {/* Anthropic Claude */}
-              <div className="p-4 rounded-2xl bg-[#141414] border border-white/5 flex items-center justify-between gap-4">
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="size-10 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center font-bold text-base shrink-0">
-                    C
-                  </div>
-                  <div className="flex-1">
-                    <h4 className="text-sm font-bold text-white flex items-center gap-2">
-                      Anthropic Claude 3.5
-                      {integrations?.claude?.connected && (
-                        <span className="text-[10px] font-bold bg-emerald-500/15 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/20 flex items-center gap-1">
-                          <Check className="size-3" /> Conectado
-                        </span>
-                      )}
-                    </h4>
-                    {!integrations?.claude?.connected && (
-                      <Input 
-                        value={claudeEmail}
-                        onChange={(e) => setClaudeEmail(e.target.value)}
-                        placeholder="E-mail da sua conta Claude"
-                        className="bg-black border-white/10 text-white text-xs h-8 mt-2 rounded-lg"
-                      />
-                    )}
-                  </div>
+          {/* 3. Anthropic Claude */}
+          <div className="p-4 rounded-2xl bg-[#141418] border border-white/10 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="size-8 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center font-bold text-xs">
+                  C
                 </div>
+                <div>
+                  <h4 className="text-sm font-bold text-white">Anthropic Claude 3.5 Sonnet</h4>
+                  <p className="text-[11px] text-gray-400">Alta precisão na redação de propostas e análises de tráfego.</p>
+                </div>
+              </div>
+              {isClaudeConnected ? (
+                <span className="text-[10px] font-bold bg-emerald-500/15 text-emerald-400 px-2.5 py-0.5 rounded-full border border-emerald-500/20 flex items-center gap-1">
+                  <Check className="size-3" /> Conectado
+                </span>
+              ) : (
+                <span className="text-[10px] font-bold bg-zinc-800 text-gray-400 px-2.5 py-0.5 rounded-full border border-white/5">
+                  Desconectado
+                </span>
+              )}
+            </div>
 
-                {integrations?.claude?.connected ? (
-                  <Button 
-                    size="sm" 
-                    variant="ghost" 
-                    onClick={() => disconnectMutation.mutate("claude")}
-                    className="text-xs text-red-400 hover:bg-red-500/10 h-9 rounded-xl shrink-0"
+            <div className="space-y-1.5">
+              <Label className="text-xs text-gray-300 font-medium">Anthropic API Key (sk-ant-...)</Label>
+              <div className="flex gap-2">
+                <Input
+                  type="password"
+                  value={claudeKey}
+                  onChange={(e) => setClaudeKey(e.target.value)}
+                  placeholder="sk-ant-api03-..."
+                  className="bg-black/60 border-white/10 text-white font-mono text-xs h-10 rounded-xl"
+                />
+                {isClaudeConnected ? (
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    onClick={() => handleDisconnect("claude")}
+                    disabled={testingProvider === "claude"}
+                    className="h-10 text-xs px-3 rounded-xl shrink-0"
                   >
-                    Desconectar
+                    <PowerOff className="size-3.5 mr-1" /> Desconectar
                   </Button>
                 ) : (
-                  <Button 
-                    size="sm" 
-                    onClick={handleConnectClaudeSimple}
-                    disabled={loadingProvider === "claude"}
-                    className="gradient-brand text-black font-bold text-xs h-9 px-4 rounded-xl shrink-0"
+                  <Button
+                    size="sm"
+                    onClick={() => handleTestAndConnect("claude", claudeKey, "claude-3-5-sonnet-20241022")}
+                    disabled={testingProvider === "claude" || !claudeKey.trim()}
+                    className="h-10 text-xs px-4 rounded-xl bg-brand text-black font-bold hover:bg-brand/90 shrink-0"
                   >
-                    {loadingProvider === "claude" ? <RefreshCw className="size-3.5 animate-spin mr-1" /> : <Check className="size-3.5 mr-1" />}
-                    Ativar Claude
+                    {testingProvider === "claude" ? (
+                      <RefreshCw className="size-3.5 animate-spin mr-1" />
+                    ) : (
+                      <Check className="size-3.5 mr-1" />
+                    )}
+                    Validar & Conectar
                   </Button>
                 )}
               </div>
-
-              {/* DeepSeek */}
-              <div className="p-4 rounded-2xl bg-[#141414] border border-white/5 flex items-center justify-between gap-4">
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="size-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold text-base shrink-0">
-                    D
-                  </div>
-                  <div className="flex-1">
-                    <h4 className="text-sm font-bold text-white flex items-center gap-2">
-                      DeepSeek V3 / R1
-                      {integrations?.deepseek?.connected && (
-                        <span className="text-[10px] font-bold bg-emerald-500/15 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/20 flex items-center gap-1">
-                          <Check className="size-3" /> Conectado
-                        </span>
-                      )}
-                    </h4>
-                    {!integrations?.deepseek?.connected && (
-                      <Input 
-                        value={deepseekEmail}
-                        onChange={(e) => setDeepseekEmail(e.target.value)}
-                        placeholder="E-mail da sua conta DeepSeek"
-                        className="bg-black border-white/10 text-white text-xs h-8 mt-2 rounded-lg"
-                      />
-                    )}
-                  </div>
-                </div>
-
-                {integrations?.deepseek?.connected ? (
-                  <Button 
-                    size="sm" 
-                    variant="ghost" 
-                    onClick={() => disconnectMutation.mutate("deepseek")}
-                    className="text-xs text-red-400 hover:bg-red-500/10 h-9 rounded-xl shrink-0"
-                  >
-                    Desconectar
-                  </Button>
-                ) : (
-                  <Button 
-                    size="sm" 
-                    onClick={handleConnectDeepSeekSimple}
-                    disabled={loadingProvider === "deepseek"}
-                    className="gradient-brand text-black font-bold text-xs h-9 px-4 rounded-xl shrink-0"
-                  >
-                    {loadingProvider === "deepseek" ? <RefreshCw className="size-3.5 animate-spin mr-1" /> : <Check className="size-3.5 mr-1" />}
-                    Ativar DeepSeek
-                  </Button>
-                )}
-              </div>
-            </TabsContent>
-
-            {/* ── Modo Chaves Manuais ── */}
-            <TabsContent value="advanced" className="space-y-4 focus-visible:outline-none">
-              <div className="p-3 rounded-xl bg-brand/10 border border-brand/20 text-xs text-brand-100 flex items-center gap-2">
-                <ShieldCheck className="size-4 text-brand shrink-0" />
-                <span>Insira chaves de desenvolvedor personalizadas (opcional).</span>
-              </div>
-
-              <div className="space-y-3">
-                <div className="space-y-1">
-                  <Label className="text-xs text-gray-300 font-bold uppercase">OpenAI API Key (sk-...)</Label>
-                  <Input 
-                    type="password"
-                    value={openaiKey}
-                    onChange={(e) => setOpenaiKey(e.target.value)}
-                    placeholder="sk-proj-..." 
-                    className="bg-black border-white/10 text-white font-mono text-xs h-10 rounded-xl"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <Label className="text-xs text-gray-300 font-bold uppercase">Anthropic Claude API Key (sk-ant-...)</Label>
-                  <Input 
-                    type="password"
-                    value={claudeKey}
-                    onChange={(e) => setClaudeKey(e.target.value)}
-                    placeholder="sk-ant-api03-..." 
-                    className="bg-black border-white/10 text-white font-mono text-xs h-10 rounded-xl"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <Label className="text-xs text-gray-300 font-bold uppercase">DeepSeek API Key (sk-...)</Label>
-                  <Input 
-                    type="password"
-                    value={deepseekKey}
-                    onChange={(e) => setDeepseekKey(e.target.value)}
-                    placeholder="sk-..." 
-                    className="bg-black border-white/10 text-white font-mono text-xs h-10 rounded-xl"
-                  />
-                </div>
-              </div>
-
-              <Button 
-                onClick={() => {
-                  if (openaiKey.trim()) saveMutation.mutate({ service: "openai", data: { apiKey: openaiKey.trim(), defaultModel: "gpt-4o", authMethod: "apikey" } });
-                  if (claudeKey.trim()) saveMutation.mutate({ service: "claude", data: { apiKey: claudeKey.trim(), defaultModel: "claude-3-5-sonnet-20241022", authMethod: "apikey" } });
-                  if (deepseekKey.trim()) saveMutation.mutate({ service: "deepseek", data: { apiKey: deepseekKey.trim(), defaultModel: "deepseek-chat", authMethod: "apikey" } });
-                  toast.success("Chaves de API salvas!");
-                  onOpenChange(false);
-                }}
-                className="w-full gradient-brand text-black font-bold h-11 rounded-xl shadow-[0_0_15px_rgba(201,162,39,0.25)]"
-              >
-                <Check className="size-4 mr-1.5" /> Salvar Chaves Manuais
-              </Button>
-            </TabsContent>
-          </Tabs>
+            </div>
+          </div>
         </div>
       </DialogContent>
     </Dialog>

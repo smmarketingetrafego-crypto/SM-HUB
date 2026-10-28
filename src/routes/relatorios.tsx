@@ -63,7 +63,7 @@ function ReportsPage() {
   const clients = clientsData.clients || [];
 
   // Form State
-  const [selectedClientName, setSelectedClientName] = useState<string>(() => clients[0]?.name || "Maria Silva");
+  const [selectedClientName, setSelectedClientName] = useState<string>(() => clients[0]?.name || "");
   
   // Configuração do Período
   const [periodType, setPeriodType] = useState<PeriodType>("mensal");

@@ -147,29 +147,7 @@
       "history": []
     }
   ],
-  "whatsapp": [
-    {
-      "id": "msg_init",
-      "contactId": "c_1",
-      "contactName": "Maria Silva",
-      "phone": "(11) 98765-4321",
-      "text": "Olá! Gostaria de receber uma proposta para gestão de tráfego pago.",
-      "sender": "contact",
-      "timestamp": "10:30",
-      "status": "read"
-    },
-    {
-      "id": "msg_1793196111206",
-      "contactId": "c_1",
-      "contactName": "Maria Silva",
-      "phone": "(11) 98765-4321",
-      "text": "Olá Maria Silva! Seu contrato foi gerado e está pronto para assinatura digital: http://localhost:8080/propostas",
-      "sender": "automation",
-      "timestamp": "11:01",
-      "status": "sent",
-      "isAutomation": true
-    }
-  ],
+  "whatsapp": [],
   "clients": [],
   "clientGroups": [],
   "pipelines": [
@@ -424,7 +402,7 @@
       "connected": false,
       "authMethod": "google",
       "accountEmail": "",
-      "updatedAt": "2026-10-28T19:36:22.910Z"
+      "updatedAt": "2026-10-28T22:29:44.147Z"
     },
     "whatsapp": {
       "connected": false,

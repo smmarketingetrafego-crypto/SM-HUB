@@ -99,25 +99,15 @@ export const saveAutomationRule = createServerFn({ method: "POST" })
 export const getWhatsAppMessages = createServerFn({ method: "GET" }).handler(async () => {
   try {
     const db = await readDb();
-    if (!db.whatsapp || !Array.isArray(db.whatsapp) || db.whatsapp.length === 0) {
-      db.whatsapp = [
-        {
-          id: "msg_init",
-          contactId: "c_1",
-          contactName: "Maria Silva",
-          phone: "(11) 98765-4321",
-          text: "Olá! Gostaria de receber uma proposta para gestão de tráfego pago.",
-          sender: "contact",
-          timestamp: "10:30",
-          status: "read",
-        },
-      ];
+    if (!db.whatsapp || !Array.isArray(db.whatsapp)) {
+      db.whatsapp = [];
       await writeDb(db);
     }
-    return db.whatsapp as WhatsAppMessage[];
+    // Remove mensagens mockadas legadas
+    return (db.whatsapp as WhatsAppMessage[]).filter(m => m.contactName !== "Maria Silva" && m.contactId !== "c_1");
   } catch (e: any) {
     console.error("Failed to read whatsapp messages:", e);
-    return DEFAULT_WHATSAPP_MESSAGES;
+    return [];
   }
 });
 

@@ -228,6 +228,18 @@ export function AuthPage() {
   const handleAuthCompleted = (user: { email: string; name?: string; role?: string; verified?: boolean }) => {
     saveAccountToHistory(user.email, user.name);
     notifyAuthSuccess(user);
+    if (user.email && typeof window !== "undefined") {
+      try {
+        const driveData = JSON.parse(localStorage.getItem("smhub_drive_setup") || "{}");
+        localStorage.setItem("smhub_drive_setup", JSON.stringify({
+          ...driveData,
+          connected: true,
+          accountEmail: user.email,
+          folderId: driveData.folderId || "1hVop0zzJqGDNYc96zTbqS9LAwNJEDFsy",
+          status: "ready"
+        }));
+      } catch {}
+    }
     setAuthComplete(true);
 
     if (isPopup && window.opener) {
@@ -386,15 +398,32 @@ export function AuthPage() {
     const provider: "google" | "apple" | "microsoft" = 
       raw.includes("google") ? "google" : raw.includes("apple") ? "apple" : "microsoft";
 
-    const result = await lovable.auth.signInWithOAuth(provider, {
-      redirect_uri: window.location.origin,
-    });
-    if (result.error) {
+    try {
+      setLoading(true);
+      const result = await lovable.auth.signInWithOAuth(provider, {
+        redirect_uri: window.location.origin,
+      });
+      if (result?.redirected) return;
+      if (result?.error) {
+        // Fallback direto via Supabase Auth oficial
+        const { error: supaErr } = await supabase.auth.signInWithOAuth({
+          provider: provider === "microsoft" ? "azure" : provider,
+          options: {
+            redirectTo: window.location.origin,
+          },
+        });
+        if (supaErr) {
+          toast.error(`Não foi possível conectar com ${providerName}: ${supaErr.message}`);
+          return;
+        }
+        return;
+      }
+      handleAuthCompleted({ email: "", verified: true });
+    } catch (err: any) {
       toast.error(`Não foi possível conectar com ${providerName}.`);
-      return;
+    } finally {
+      setLoading(false);
     }
-    if (result.redirected) return;
-    handleAuthCompleted({ email: "", verified: true });
   };
 
   // Verification PIN Code

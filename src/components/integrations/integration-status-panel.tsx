@@ -99,10 +99,14 @@ export function IntegrationStatusPanel() {
           const local = localStorage.getItem('smhub_integrations');
           if (local) {
             const parsed = JSON.parse(local);
-            if (parsed[service]) {
+            if (service === 'ai') {
+              if (parsed.openai) parsed.openai = { connected: false, apiKey: '' };
+              if (parsed.claude) parsed.claude = { connected: false, apiKey: '' };
+              if (parsed.deepseek) parsed.deepseek = { connected: false, apiKey: '' };
+            } else if (parsed[service]) {
               parsed[service] = { connected: false };
-              localStorage.setItem('smhub_integrations', JSON.stringify(parsed));
             }
+            localStorage.setItem('smhub_integrations', JSON.stringify(parsed));
           }
         } catch {}
       }
@@ -110,6 +114,7 @@ export function IntegrationStatusPanel() {
       qc.invalidateQueries({ queryKey: ['integrations'] });
       qc.invalidateQueries({ queryKey: ['external-status'] });
       qc.invalidateQueries({ queryKey: ['drive-setup'] });
+      qc.invalidateQueries({ queryKey: ['agents'] });
     },
     onError: (err: any) => {
       toast.error(err.message || 'Erro ao desconectar serviço.');
@@ -118,13 +123,16 @@ export function IntegrationStatusPanel() {
 
   // Validação estrita de conexão (não exibe conectado se não houver dados reais)
   const isWaConnected = Boolean(integrations?.whatsapp?.connected && integrations?.whatsapp?.phone);
-  const isGoogleConnected = Boolean(drive?.connected && (drive?.accountEmail || integrations?.google?.accountEmail));
+  const isGoogleConnected = Boolean(
+    (drive?.connected && (drive?.accountEmail || integrations?.google?.accountEmail)) ||
+    (integrations?.google?.connected && integrations?.google?.accountEmail)
+  );
   const isAsaasConnected = Boolean(integrations?.asaas?.connected && (integrations?.asaas?.apiKey || integrations?.asaas?.accountEmail));
   const isEmailConnected = Boolean(integrations?.email?.connected && integrations?.email?.apiKey);
   const isAiConnected = Boolean(
-    (integrations?.openai?.connected && (integrations?.openai?.apiKey || integrations?.openai?.accountEmail)) ||
-    (integrations?.claude?.connected && (integrations?.claude?.apiKey || integrations?.claude?.accountEmail)) ||
-    (integrations?.deepseek?.connected && (integrations?.deepseek?.apiKey || integrations?.deepseek?.accountEmail)) ||
+    (integrations?.openai?.connected && integrations?.openai?.apiKey) ||
+    (integrations?.claude?.connected && integrations?.claude?.apiKey) ||
+    (integrations?.deepseek?.connected && integrations?.deepseek?.apiKey) ||
     (integrations?.google?.connected && integrations?.google?.apiKey)
   );
   const isStripeOrMp = Boolean(integrations?.stripe?.connected || integrations?.mercadopago?.connected);
@@ -171,11 +179,17 @@ export function IntegrationStatusPanel() {
       title: 'Agentes & Modelos de IA',
       icon: Bot,
       connected: isAiConnected,
-      accountDetail: integrations?.openai?.connected ? 'OpenAI GPT-4o' : integrations?.deepseek?.connected ? 'DeepSeek' : 'Modelos Conectados',
+      accountDetail: (integrations?.openai?.connected && integrations?.openai?.apiKey) 
+        ? 'OpenAI (GPT-4o)' 
+        : (integrations?.deepseek?.connected && integrations?.deepseek?.apiKey) 
+          ? 'DeepSeek (V3)' 
+          : (integrations?.claude?.connected && integrations?.claude?.apiKey)
+            ? 'Claude 3.5'
+            : undefined,
       status: isAiConnected ? 'Modelos Conectados' : 'Desconectado',
       note: isAiConnected
-        ? 'Assistentes autônomos treinados para suporte, SDR comercial e geração de propostas.'
-        : 'Conecte sua chave de API da OpenAI, DeepSeek, Claude ou Gemini para potencializar seus agentes.',
+        ? 'Assistentes autônomos prontos com chave oficial para suporte e geração de propostas.'
+        : 'Conecte sua chave de API oficial da OpenAI, DeepSeek ou Claude para potencializar seus agentes.',
       onConnect: () => setActiveModal('ai'),
     },
     {
