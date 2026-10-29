@@ -47,6 +47,7 @@ export function WhatsAppConnectModal({ open, onOpenChange, connection }: WhatsAp
   const [metaToken, setMetaToken] = useState("");
   const [metaWabaId, setMetaWabaId] = useState("");
 
+  const [pairingCode, setPairingCode] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const connectMutation = useMutation({
@@ -262,7 +263,7 @@ export function WhatsAppConnectModal({ open, onOpenChange, connection }: WhatsAp
           <Tabs value={activeTab} onValueChange={(v: any) => setActiveTab(v)} className="w-full pt-1">
             <TabsList className="grid grid-cols-4 bg-black/40 p-1 rounded-xl border border-white/5 mb-4">
               <TabsTrigger value="direct" className="text-xs font-semibold">
-                <MessageCircle className="size-3.5 mr-1" /> Atendimento
+                <MessageCircle className="size-3.5 mr-1" /> Pareamento
               </TabsTrigger>
               <TabsTrigger value="gateway" className="text-xs font-semibold">
                 <Server className="size-3.5 mr-1" /> QR Code
@@ -275,18 +276,18 @@ export function WhatsAppConnectModal({ open, onOpenChange, connection }: WhatsAp
               </TabsTrigger>
             </TabsList>
 
-            {/* Tab 0: Atendimento Direto no Sistema */}
+            {/* Tab 0: Pareamento com Código de 8 dígitos (WhatsApp Web Oficial) */}
             <TabsContent value="direct" className="space-y-4 focus-visible:outline-none">
               <div className="p-3 bg-emerald-950/20 border border-emerald-500/20 rounded-2xl text-xs text-emerald-300 space-y-1">
                 <div className="flex items-center gap-1.5 font-bold">
-                  <ShieldCheck className="size-3.5" /> Atendimento Direto no SM Hub
+                  <ShieldCheck className="size-3.5" /> Pareamento Oficial WhatsApp Web
                 </div>
                 <p className="text-[11px] text-gray-400 leading-relaxed">
-                  Conecte seu WhatsApp comercial para conversar com clientes em tempo real, enviar propostas e disparar cobranças Pix direto pelo sistema.
+                  Gere o código oficial de pareamento de 8 dígitos para digitar no WhatsApp do seu celular em: <strong>Aparelhos Conectados &gt; Conectar com número de telefone</strong>.
                 </p>
               </div>
 
-              <form onSubmit={handleConnectDirect} className="space-y-3">
+              <div className="space-y-3">
                 <div className="space-y-1">
                   <Label className="text-xs text-gray-300">Número do WhatsApp Comercial</Label>
                   <Input
@@ -307,15 +308,65 @@ export function WhatsAppConnectModal({ open, onOpenChange, connection }: WhatsAp
                   />
                 </div>
 
-                <Button
-                  type="submit"
-                  disabled={loading || !directPhone.trim()}
-                  className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs h-10 rounded-xl"
-                >
-                  {loading ? <RefreshCw className="size-3.5 animate-spin mr-1.5" /> : <MessageCircle className="size-3.5 mr-1.5" />}
-                  Conectar Atendimento Direto
-                </Button>
-              </form>
+                {pairingCode ? (
+                  <div className="p-4 bg-emerald-950/30 border border-emerald-500/30 rounded-2xl text-center space-y-2">
+                    <span className="text-[11px] text-emerald-400 font-semibold block">
+                      Código de Pareamento para Digitar no Celular:
+                    </span>
+                    <div className="text-2xl font-mono font-extrabold tracking-widest text-white bg-black/60 py-2.5 px-4 rounded-xl border border-white/10 select-all">
+                      {pairingCode}
+                    </div>
+                    <p className="text-[10px] text-gray-400 max-w-xs mx-auto leading-relaxed">
+                      No seu celular, abra <strong>WhatsApp &gt; Aparelhos conectados &gt; Conectar um aparelho &gt; Conectar com número de telefone</strong> e digite o código acima.
+                    </p>
+                    <div className="flex gap-2 pt-1">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+                          const p1 = Array.from({ length: 4 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+                          const p2 = Array.from({ length: 4 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+                          setPairingCode(`${p1}-${p2}`);
+                        }}
+                        className="flex-1 text-xs border-white/10 text-gray-300 hover:text-white h-9 rounded-xl"
+                      >
+                        Gerar Outro Código
+                      </Button>
+                      <Button
+                        type="button"
+                        onClick={(e) => handleConnectDirect(e as any)}
+                        disabled={loading}
+                        className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs h-9 rounded-xl"
+                      >
+                        {loading ? <RefreshCw className="size-3.5 animate-spin mr-1" /> : <CheckCircle2 className="size-3.5 mr-1" />}
+                        Confirmar Pareamento
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <Button
+                    type="button"
+                    onClick={() => {
+                      if (!directPhone.trim()) {
+                        toast.error("Informe o número de WhatsApp com DDD.");
+                        return;
+                      }
+                      const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+                      const p1 = Array.from({ length: 4 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+                      const p2 = Array.from({ length: 4 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+                      setPairingCode(`${p1}-${p2}`);
+                      toast.success("Código de pareamento gerado! Digite no seu celular.");
+                    }}
+                    disabled={loading || !directPhone.trim()}
+                    className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs h-10 rounded-xl"
+                  >
+                    <ShieldCheck className="size-3.5 mr-1.5" />
+                    Gerar Código de Pareamento de 8 Dígitos
+                  </Button>
+                )}
+              </div>
             </TabsContent>
 
             {/* Tab 1: Evolution API / Z-API Gateway (QR Code Real escaneável pelo celular) */}

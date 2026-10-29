@@ -7,6 +7,7 @@ import { updateAppSettings } from "./-settings.functions";
 import { getTutorials, saveTutorialItem, deleteTutorialItem } from "@/lib/api-tutoriais.functions";
 import { getAutomations, toggleAutomationRule, saveAutomationRule, type AutomationRule } from "@/lib/api-automacoes.functions";
 import { WhatsAppConnectModal } from "@/components/integrations/whatsapp-connect-modal";
+import { GoogleDriveConnectModal } from "@/components/integrations/google-drive-connect-modal";
 import { AIConnectModal } from "@/components/integrations/ai-connect-modal";
 import { GatewayConnectModal } from "@/components/integrations/gateway-connect-modal";
 import { EmailConnectModal } from "@/components/integrations/email-connect-modal";
@@ -4516,6 +4517,7 @@ function AutomationsTab({ prefs, setPref, action }: TabProps) {
 
 function IntegrationsTab({ prefs, setPref, action }: TabProps) {
   const [whatsappModalOpen, setWhatsappModalOpen] = useState(false);
+  const [driveModalOpen, setDriveModalOpen] = useState(false);
   const [aiModalOpen, setAiModalOpen] = useState(false);
   const [selectedAIProvider, setSelectedAIProvider] = useState<"google" | "openai" | "claude" | "deepseek">("openai");
   const [gatewayModalOpen, setGatewayModalOpen] = useState(false);
@@ -4664,15 +4666,15 @@ function IntegrationsTab({ prefs, setPref, action }: TabProps) {
           name: "Google Drive", 
           icon: "🔺", 
           connected: Boolean(integrations.google?.connected),
-          badge: "Conta Google Ativa",
-          onClick: () => { setSelectedAIProvider("google"); setAiModalOpen(true); }
+          badge: integrations.google?.connected ? (integrations.google?.accountEmail || "Conta Google Ativa") : "Conectar com Login",
+          onClick: () => setDriveModalOpen(true)
         },
         { 
           name: "Google Calendar", 
           icon: "📅", 
           connected: Boolean(integrations.google?.connected),
-          badge: "Sincronizado",
-          onClick: () => { setSelectedAIProvider("google"); setAiModalOpen(true); }
+          badge: integrations.google?.connected ? "Sincronizado" : "Conectar com Login",
+          onClick: () => setDriveModalOpen(true)
         },
         { name: "Agendamento", icon: "🕒", connected: true },
         { name: "Dropbox", icon: "📂", connected: false, comingSoon: true },
@@ -4900,6 +4902,13 @@ function IntegrationsTab({ prefs, setPref, action }: TabProps) {
       <EmailConnectModal
         open={emailModalOpen}
         onOpenChange={setEmailModalOpen}
+      />
+
+      <GoogleDriveConnectModal
+        open={driveModalOpen}
+        onOpenChange={setDriveModalOpen}
+        connected={Boolean(integrations.google?.connected)}
+        currentEmail={integrations.google?.accountEmail}
       />
     </div>
   );

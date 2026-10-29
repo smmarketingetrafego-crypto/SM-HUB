@@ -28,6 +28,8 @@ export const getDriveSetup = createServerFn({ method: 'GET' }).handler(async () 
     connected,
     status: connected ? 'ready' : 'disconnected',
     accountEmail: db.integrations?.google?.accountEmail || '',
+    accountName: db.integrations?.google?.accountName || '',
+    accounts: db.integrations?.google?.accounts || [],
     files,
   };
 });
@@ -35,20 +37,36 @@ export const getDriveSetup = createServerFn({ method: 'GET' }).handler(async () 
 export const connectGoogleDrive = createServerFn({ method: 'POST' })
   .validator((p: unknown) => z.object({
     email: z.string().email(),
+    name: z.string().optional(),
     folderId: z.string().optional(),
     apiKey: z.string().optional(),
+    accessToken: z.string().optional(),
   }).parse(p))
   .handler(async ({ data }) => {
     const db = await readDb();
     if (!db.integrations) db.integrations = {};
+    
+    const existingAccounts: Array<{ email: string; name: string; connectedAt: string }> = 
+      Array.isArray(db.integrations.google?.accounts) ? db.integrations.google.accounts : [];
+    
+    const accountName = data.name || data.email.split('@')[0];
+    const filteredAccounts = existingAccounts.filter((a: any) => a.email.toLowerCase() !== data.email.toLowerCase());
+    filteredAccounts.unshift({
+      email: data.email,
+      name: accountName,
+      connectedAt: new Date().toISOString(),
+    });
+
     db.integrations.google = {
       connected: true,
       authMethod: data.apiKey ? 'apikey' : 'google',
       accountEmail: data.email,
-      accountName: data.email.split('@')[0],
+      accountName,
+      accounts: filteredAccounts,
       planName: 'Google Drive Sincronizado',
       updatedAt: new Date().toISOString(),
       ...(data.apiKey ? { apiKey: data.apiKey } : {}),
+      ...(data.accessToken ? { accessToken: data.accessToken } : {}),
     };
     if (data.folderId) {
       db.drive_folder_id = data.folderId;
@@ -66,6 +84,7 @@ export const disconnectGoogleDrive = createServerFn({ method: 'POST' })
         authMethod: 'google',
         accountEmail: '',
         accountName: '',
+        accounts: db.integrations.google.accounts || [],
         planName: '',
         updatedAt: new Date().toISOString(),
       };

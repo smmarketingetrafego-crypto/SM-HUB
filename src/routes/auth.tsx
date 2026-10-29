@@ -407,20 +407,37 @@ export function AuthPage() {
     setLoading(true);
 
     if (raw.includes("google")) {
-      // Login instantâneo direto com a Conta Google oficial cadastrada
+      let targetEmail = email.trim();
+      let targetName = "";
+
+      if (!targetEmail) {
+        if (savedAccounts.length > 0) {
+          targetEmail = savedAccounts[0].email;
+          targetName = savedAccounts[0].nome || "";
+        } else {
+          const userPrompt = prompt("Informe o e-mail da sua Conta Google para entrar:", "smmarketingetrafego@gmail.com");
+          if (!userPrompt || !userPrompt.includes("@")) {
+            setLoading(false);
+            return;
+          }
+          targetEmail = userPrompt.trim();
+          targetName = targetEmail.split("@")[0];
+        }
+      }
+
       const user = {
-        email: "smmarketingetrafego@gmail.com",
-        name: "Silas Maroto",
+        email: targetEmail,
+        name: targetName || targetEmail.split("@")[0],
         verified: true,
       };
-      toast.success("Login com Conta Google realizado com sucesso!");
+      toast.success(`Login com Conta Google realizado para ${user.email}!`);
       handleAuthCompleted(user);
       setLoading(false);
       return;
     }
 
     if (raw.includes("apple") || raw.includes("microsoft") || raw.includes("hotmail")) {
-      const emailPrompt = prompt(`Informe o e-mail da sua conta ${providerName}:`, "smmarketingetrafego@gmail.com");
+      const emailPrompt = prompt(`Informe o e-mail da sua conta ${providerName}:`, email.trim() || "smmarketingetrafego@gmail.com");
       if (emailPrompt && emailPrompt.includes("@")) {
         handleAuthCompleted({
           email: emailPrompt.trim(),

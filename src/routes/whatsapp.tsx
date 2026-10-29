@@ -29,7 +29,7 @@ export const Route = createFileRoute("/whatsapp")({
 
 function WhatsappPage() {
   const queryClient = useQueryClient();
-  const [activeContactId, setActiveContactId] = useState<string>("c_1");
+  const [activeContactId, setActiveContactId] = useState<string>("client_sos_protecao");
   const [inputText, setInputText] = useState("");
   const [search, setSearch] = useState("");
   const [connectModalOpen, setConnectModalOpen] = useState(false);
@@ -227,21 +227,11 @@ function WhatsappPage() {
               <Button 
                 size="sm" 
                 variant="outline" 
-                onClick={() => {
-                  const width = 1100;
-                  const height = 750;
-                  const left = Math.max(0, window.screenX + (window.outerWidth - width) / 2);
-                  const top = Math.max(0, window.screenY + (window.outerHeight - height) / 2);
-                  window.open(
-                    "https://web.whatsapp.com",
-                    "SMHUB_WHATSAPP_WEB_POPUP",
-                    `width=${width},height=${height},left=${left},top=${top},status=no,menubar=no,toolbar=no,location=no,resizable=yes,scrollbars=yes`
-                  );
-                }}
-                className="text-xs h-8 border-emerald-500/30 text-emerald-400 bg-emerald-500/5 hover:bg-emerald-500/15 rounded-lg"
-                title="Abrir WhatsApp Web Oficial em janela dedicada"
+                onClick={() => setConnectModalOpen(true)}
+                className="text-xs h-8 border-brand/30 text-brand bg-brand/5 hover:bg-brand/15 rounded-lg"
+                title="Configurar Aparelho ou Conexão WhatsApp"
               >
-                <ExternalLink className="size-3.5 mr-1" /> Web
+                <QrCode className="size-3.5 mr-1" /> {isConnected ? "Aparelho" : "Conectar"}
               </Button>
 
               {isConnected && (
@@ -255,14 +245,6 @@ function WhatsappPage() {
                   <PowerOff className="size-3.5" />
                 </Button>
               )}
-              <Button 
-                size="sm" 
-                variant="outline" 
-                onClick={() => setConnectModalOpen(true)}
-                className="text-xs h-8 border-brand/30 text-brand bg-brand/5 hover:bg-brand/15 rounded-lg"
-              >
-                <QrCode className="size-3.5 mr-1" /> {isConnected ? "Aparelho" : "Conectar"}
-              </Button>
             </div>
           </div>
 

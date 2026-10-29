@@ -104,6 +104,7 @@ Instruções para o atendimento:
     try {
       const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
+        signal: AbortSignal.timeout(1500),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${openaiKey}`,
@@ -136,6 +137,7 @@ Instruções para o atendimento:
     try {
       const response = await fetch('https://api.deepseek.com/chat/completions', {
         method: 'POST',
+        signal: AbortSignal.timeout(1500),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${deepseekKey}`,
@@ -168,6 +170,7 @@ Instruções para o atendimento:
     try {
       const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
         method: 'POST',
+        signal: AbortSignal.timeout(1500),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${lovableKey}`,
